@@ -1,6 +1,7 @@
 import { getAccessToken, type TokenBundle } from '../auth/tokenStorage'
+import { formatHttpError, resolveApiBase } from './apiBase'
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
+const apiBase = resolveApiBase(import.meta.env.VITE_API_BASE_URL)
 
 export type Sex = 'MALE' | 'FEMALE'
 export type ActivityLevel = 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'ACTIVE' | 'VERY_ACTIVE'
@@ -133,10 +134,11 @@ export type DaySummary = {
   }
 }
 
+
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(text || `Request failed (${response.status})`)
+    throw new Error(formatHttpError(response.status, text))
   }
   return response.json() as Promise<T>
 }
@@ -144,7 +146,7 @@ async function parseJson<T>(response: Response): Promise<T> {
 async function parseNoContent(response: Response): Promise<void> {
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(text || `Request failed (${response.status})`)
+    throw new Error(formatHttpError(response.status, text))
   }
 }
 

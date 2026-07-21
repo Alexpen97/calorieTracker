@@ -112,7 +112,7 @@ Build args:
 
 | Build arg | Value |
 |---|---|
-| `VITE_API_BASE_URL` | `https://<gateway-domain>` |
+| `VITE_API_BASE_URL` | `https://<gateway-domain>` (include `https://`; host-only values are auto-fixed at build time) |
 | `VITE_GOOGLE_CLIENT_ID` | Google web client id |
 | `VITE_AUTH_MODE` | `dev` or `prod` |
 

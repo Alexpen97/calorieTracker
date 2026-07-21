@@ -11,7 +11,7 @@ npm run dev
 
 Optional env (`.env`):
 
-- `VITE_API_BASE_URL` — empty in local Vite (uses proxy to gateway `:8080`)
+- `VITE_API_BASE_URL` — gateway public URL in production (`https://…` required; host-only values are normalized). Empty in local Vite (uses proxy to gateway `:8080`)
 - `VITE_GOOGLE_CLIENT_ID` — Google OAuth web client id
 - `VITE_AUTH_MODE=dev` — shows Dev login (default)
 
