@@ -49,6 +49,49 @@ export type Nutrient = {
   contentSource: string | null
 }
 
+export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK'
+
+export type DiaryNutrient = {
+  code: string
+  amount: number
+  amountPer100g: number
+  unit: string
+}
+
+export type DiaryEntry = {
+  id: string
+  productId: string
+  productName: string
+  brand: string | null
+  weightG: number
+  mealType: MealType
+  consumedAt: string
+  createdAt: string
+  nutrients: DiaryNutrient[]
+}
+
+export type WaterLog = {
+  id: string
+  amountMl: number
+  loggedAt: string
+}
+
+export type NutrientTotal = {
+  code: string
+  amount: number
+  unit: string
+  target: number | null
+}
+
+export type DaySummary = {
+  date: string
+  totals: NutrientTotal[]
+  water: {
+    amountMl: number
+    targetMl: number | null
+  }
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const text = await response.text()
@@ -57,7 +100,14 @@ async function parseJson<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>
 }
 
-function authHeaders(): HeadersInit {
+async function parseNoContent(response: Response): Promise<void> {
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(text || `Request failed (${response.status})`)
+  }
+}
+
+function authHeaders(): Record<string, string> {
   const token = getAccessToken()
   if (!token) {
     throw new Error('Not authenticated')
@@ -111,4 +161,67 @@ export async function fetchNutrients(): Promise<Nutrient[]> {
     headers: authHeaders(),
   })
   return parseJson<Nutrient[]>(response)
+}
+
+export async function fetchDiaryEntries(date: string): Promise<DiaryEntry[]> {
+  const params = new URLSearchParams({ date })
+  const response = await fetch(`${apiBase}/api/diary/entries?${params}`, {
+    headers: authHeaders(),
+  })
+  return parseJson<DiaryEntry[]>(response)
+}
+
+export async function createDiaryEntry(input: {
+  productId: string
+  weightG: number
+  mealType: MealType
+  consumedAt?: string
+}): Promise<DiaryEntry> {
+  const response = await fetch(`${apiBase}/api/diary/entries`, {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<DiaryEntry>(response)
+}
+
+export async function deleteDiaryEntry(id: string): Promise<void> {
+  const response = await fetch(`${apiBase}/api/diary/entries/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  return parseNoContent(response)
+}
+
+export async function fetchWater(date: string): Promise<WaterLog[]> {
+  const params = new URLSearchParams({ date })
+  const response = await fetch(`${apiBase}/api/diary/water?${params}`, {
+    headers: authHeaders(),
+  })
+  return parseJson<WaterLog[]>(response)
+}
+
+export async function logWater(input: { amountMl: number; loggedAt?: string }): Promise<WaterLog> {
+  const response = await fetch(`${apiBase}/api/diary/water`, {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<WaterLog>(response)
+}
+
+export async function deleteWater(id: string): Promise<void> {
+  const response = await fetch(`${apiBase}/api/diary/water/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  return parseNoContent(response)
+}
+
+export async function fetchDiarySummary(date: string): Promise<DaySummary> {
+  const params = new URLSearchParams({ date })
+  const response = await fetch(`${apiBase}/api/diary/summary?${params}`, {
+    headers: authHeaders(),
+  })
+  return parseJson<DaySummary>(response)
 }
