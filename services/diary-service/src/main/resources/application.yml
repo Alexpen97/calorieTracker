@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: diary-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/diary}
+    username: ${SPRING_DATASOURCE_USERNAME:nutritrack}
+    password: ${SPRING_DATASOURCE_PASSWORD:nutritrack}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+
+server:
+  port: ${PORT:8084}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+nutritrack:
+  diary:
+    food-service-url: ${FOOD_SERVICE_URL:http://localhost:8083}
