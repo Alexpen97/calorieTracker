@@ -1,11 +1,44 @@
 # infra/postgres
 
-PostgreSQL container configuration for the **local** Docker Compose setup.
+PostgreSQL container for NutriTrack — local Compose and Railway.
 
-- Uses the official `postgres` image (no custom Dockerfile needed).
-- `init/` holds `*.sql` scripts mounted into
-  `/docker-entrypoint-initdb.d/` to create the per-service databases
-  (`food_catalog`, `diary`, `users`) on first start.
-- On Railway, managed PostgreSQL instances replace this container; schema
-  creation there is handled by each service's Flyway migrations against its
-  provisioned database.
+- **Dockerfile**: `postgres:16-alpine` + `init/` scripts baked in.
+- `init/01-create-databases.sql` creates per-service databases on first start:
+  `users`, `food_catalog`, `diary`.
+- Schema migrations run inside each Spring Boot service (Flyway), not here.
+
+## Local Compose
+
+Started via `docker compose --profile deps up` or `--profile full up`.
+Credentials default to `nutritrack` / `nutritrack` (see `docker-compose.yml`).
+
+## Railway
+
+| Setting | Value |
+|---|---|
+| Service name | `postgres` (other services reference this hostname) |
+| Root directory | `/infra/postgres` |
+| Watch paths | `/infra/postgres/**` |
+| Networking | Private only |
+| Volume | **Required** — mount persistent storage on `/var/lib/postgresql/data` |
+
+### Variables (postgres service)
+
+| Variable | Example |
+|---|---|
+| `POSTGRES_USER` | `nutritrack` |
+| `POSTGRES_PASSWORD` | strong secret |
+| `POSTGRES_DB` | `postgres` (default DB; app DBs created by init script) |
+
+### JDBC URLs (app services)
+
+Point each service at the same host, different database name:
+
+| App service | `SPRING_DATASOURCE_URL` |
+|---|---|
+| `user-profile-service` | `jdbc:postgresql://postgres.railway.internal:5432/users` |
+| `food-catalog-service` | `jdbc:postgresql://postgres.railway.internal:5432/food_catalog` |
+| `diary-service` | `jdbc:postgresql://postgres.railway.internal:5432/diary` |
+
+Also set `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` to match
+`POSTGRES_USER` / `POSTGRES_PASSWORD`.

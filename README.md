@@ -27,4 +27,4 @@ cp .env.example .env
 docker compose --profile full up --build
 ```
 
-Railway: `docs/railway-phase1.md`, `docs/railway-phase2.md`.
+Railway: `docs/railway-deploy.md` (full stack), `docs/railway-phase1.md`, `docs/railway-phase2.md`.

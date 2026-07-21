@@ -721,18 +721,17 @@ to this GitHub repo:
   services must be self-contained (NFR-7).
 - **Watch paths** per service (e.g. `/services/diary-service/**`) so a push
   only redeploys the services whose folders changed.
-- **Databases**: Railway-managed PostgreSQL (one per service, matching the
-  schema-per-service model; they can start as one instance with three
-  databases on the cheaper plans) and Railway-managed Redis for the catalog
-  cache.
+- **Databases**: containerized PostgreSQL from `infra/postgres` (one instance,
+  three databases: `users`, `food_catalog`, `diary`; persistent volume on
+  Railway) and containerized Redis from `infra/redis` for the catalog cache.
 - **Private networking**: internal service-to-service traffic uses Railway
   private domains — `http://<service>.railway.internal:<port>` (plain `http`
   inside the private network). Only two services get **public domains**: the
   `gateway` and the `frontend`. All other services are private-network only,
   which enforces the gateway as the single entry point.
-- **Environment variables**: managed per Railway service; Railway reference
-  variables inject database URLs (`${{Postgres.DATABASE_URL}}`) and internal
-  hostnames. Same variable names as Compose.
+- **Environment variables**: managed per Railway service; internal hostnames
+  use `<service>.railway.internal`. Same variable names as Compose. See
+  `docs/railway-deploy.md`.
 - **Environments**: Railway environments for `production` and `staging` (PR
   preview environments optional later).
 - **OFF bulk import** (§5.3): runs inside `food-catalog-service` as a

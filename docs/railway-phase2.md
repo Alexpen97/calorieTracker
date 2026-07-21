@@ -1,6 +1,7 @@
 # Railway Phase 2 deploy notes
 
 Extends Phase 1 (`docs/railway-phase1.md`) with `food-catalog-service`.
+Uses container `postgres` and `redis` from `infra/` — see `docs/railway-deploy.md`.
 
 | Railway service | Root directory | Watch paths | Notes |
 |---|---|---|---|
@@ -10,8 +11,9 @@ Extends Phase 1 (`docs/railway-phase1.md`) with `food-catalog-service`.
 
 food-catalog-service:
 
-- `SPRING_DATASOURCE_URL` / username / password (dedicated `food_catalog` DB)
-- `REDIS_HOST` / `REDIS_PORT` (Railway Redis)
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://postgres.railway.internal:5432/food_catalog`
+- `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` (match `postgres` service)
+- `REDIS_HOST=redis.railway.internal` / `REDIS_PORT=6379`
 - `JWKS_URI=http://auth-service.railway.internal:8080/.well-known/jwks.json`
 - `OFF_BASE_URL=https://world.openfoodfacts.org`
 - `OFF_USER_AGENT=NutriTrack - Server - Version 0.1`
