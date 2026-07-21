@@ -35,6 +35,12 @@ spring:
               uri: ${FOOD_SERVICE_URL:http://localhost:8083}
               predicates:
                 - Path=/api/products/**,/api/nutrients/**
+            - id: food-api-docs
+              uri: ${FOOD_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api-docs/food/**
+              filters:
+                - RewritePath=/api-docs/food(?<segment>/?.*), /v3/api-docs$\{segment}
             - id: diary-service
               uri: ${DIARY_SERVICE_URL:http://localhost:8084}
               predicates:
@@ -61,6 +67,8 @@ springdoc:
         url: /api-docs/auth
       - name: user-profile-service
         url: /api-docs/users
+      - name: food-catalog-service
+        url: /api-docs/food
   api-docs:
     enabled: false
 

@@ -34,6 +34,9 @@ export default function ProfilePage() {
         </dl>
       )}
       <div className="cta-row" style={{ justifyContent: 'flex-start', marginTop: '1.5rem' }}>
+        <button className="btn btn-primary" type="button" onClick={() => navigate('/lookup')}>
+          Look up food
+        </button>
         <button className="btn btn-secondary" type="button" onClick={logout}>
           Sign out
         </button>
