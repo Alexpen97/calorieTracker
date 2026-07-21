@@ -1,5 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { createPkcePair, isLoggedIn, saveTokens } from '../auth/tokenStorage'
+import {
+  getGoogleJavascriptOrigin,
+  getGoogleRedirectUri,
+} from '../auth/oauthRedirect'
 import { exchangeGoogleCode } from '../api/client'
 import { useEffect, useState } from 'react'
 
@@ -10,6 +14,9 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const javascriptOrigin = getGoogleJavascriptOrigin()
+  const redirectUri = getGoogleRedirectUri()
 
   useEffect(() => {
     if (isLoggedIn()) {
@@ -25,7 +32,6 @@ export default function LoginPage() {
     }
     const { verifier, challenge } = await createPkcePair()
     sessionStorage.setItem('pkce_verifier', verifier)
-    const redirectUri = `${window.location.origin}/auth/callback`
     const params = new URLSearchParams({
       client_id: googleClientId,
       redirect_uri: redirectUri,
@@ -45,7 +51,7 @@ export default function LoginPage() {
     try {
       const tokens = await exchangeGoogleCode({
         code: 'dev',
-        redirectUri: `${window.location.origin}/auth/callback`,
+        redirectUri,
       })
       saveTokens(tokens)
       navigate('/today')
@@ -53,6 +59,16 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : 'Dev login failed')
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function copyRedirectUri() {
+    try {
+      await navigator.clipboard.writeText(redirectUri)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError(`Copy failed — paste this into Google: ${redirectUri}`)
     }
   }
 
@@ -72,6 +88,28 @@ export default function LoginPage() {
           )}
         </div>
         {error && <p className="error">{error}</p>}
+        {googleClientId && (
+          <section className="oauth-setup" aria-label="Google OAuth setup">
+            <p>
+              If Google shows <code>redirect_uri_mismatch</code>, register these exact values on
+              your <strong>Web application</strong> OAuth client (not the domain alone, and not
+              another Railway app):
+            </p>
+            <dl>
+              <dt>Authorized JavaScript origins</dt>
+              <dd>
+                <code>{javascriptOrigin}</code>
+              </dd>
+              <dt>Authorized redirect URIs</dt>
+              <dd>
+                <code>{redirectUri}</code>
+                <button className="btn btn-secondary btn-compact" type="button" onClick={copyRedirectUri}>
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </dd>
+            </dl>
+          </section>
+        )}
       </div>
     </main>
   )

@@ -116,6 +116,9 @@ Build args:
 | `VITE_GOOGLE_CLIENT_ID` | Google web client id |
 | `VITE_AUTH_MODE` | `dev` or `prod` |
 
+Google OAuth (`redirect_uri_mismatch` fix): `docs/google-oauth-setup.md` —
+register `https://<frontend-domain>/auth/callback` on the Web client.
+
 ## Deploy order
 
 1. `postgres` (+ volume) and `redis`

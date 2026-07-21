@@ -52,6 +52,10 @@ frontend build args:
 - `VITE_GOOGLE_CLIENT_ID`
 - `VITE_AUTH_MODE`
 
+Google OAuth Console URIs (required for `AUTH_MODE=prod`): see
+`docs/google-oauth-setup.md`. Redirect URI must be
+`https://<frontend-domain>/auth/callback` (not the domain alone, not the gateway).
+
 ## Local Compose
 
 ```bash

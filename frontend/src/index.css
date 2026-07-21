@@ -181,6 +181,49 @@ button {
   margin-top: 1rem;
 }
 
+.oauth-setup {
+  margin-top: 1.75rem;
+  text-align: left;
+  color: #5d7166;
+  font-size: 0.92rem;
+}
+
+.oauth-setup p {
+  margin: 0 0 0.75rem;
+}
+
+.oauth-setup dl {
+  margin: 0;
+}
+
+.oauth-setup dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 0.65rem;
+}
+
+.oauth-setup dd {
+  margin: 0.25rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.oauth-setup code {
+  display: inline-block;
+  word-break: break-all;
+  background: rgba(255, 252, 245, 0.7);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.btn-compact {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

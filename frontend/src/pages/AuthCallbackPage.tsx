@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { exchangeGoogleCode } from '../api/client'
+import { getGoogleRedirectUri } from '../auth/oauthRedirect'
 import { saveTokens } from '../auth/tokenStorage'
 
 export default function AuthCallbackPage() {
@@ -15,7 +16,7 @@ export default function AuthCallbackPage() {
       return
     }
     const verifier = sessionStorage.getItem('pkce_verifier') ?? undefined
-    const redirectUri = `${window.location.origin}/auth/callback`
+    const redirectUri = getGoogleRedirectUri()
     exchangeGoogleCode({ code, codeVerifier: verifier, redirectUri })
       .then((tokens) => {
         saveTokens(tokens)
