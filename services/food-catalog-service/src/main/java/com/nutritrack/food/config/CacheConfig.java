@@ -1,6 +1,6 @@
 package com.nutritrack.food.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.nutritrack.food.cache.InMemoryProductCache;
 import com.nutritrack.food.cache.ProductCache;
 import com.nutritrack.food.cache.RedisProductCache;
@@ -20,8 +20,8 @@ public class CacheConfig {
       havingValue = "true",
       matchIfMissing = true)
   ProductCache redisProductCache(
-      StringRedisTemplate redisTemplate, ObjectMapper objectMapper, FoodProperties properties) {
-    return new RedisProductCache(redisTemplate, objectMapper, properties.cache().ttl());
+      StringRedisTemplate redisTemplate, JsonMapper jsonMapper, FoodProperties properties) {
+    return new RedisProductCache(redisTemplate, jsonMapper, properties.cache().ttl());
   }
 
   @Bean
