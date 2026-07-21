@@ -17,45 +17,57 @@ Caused by: java.lang.IllegalArgumentException: Host is not specified
     at reactor.netty.http.client.UriEndpointFactory.createUriEndpoint(...)
 ```
 
-## Root cause
+Downstream services (diary / user / food) show **no request logs**.
 
-The gateway route for `diary-service` has no upstream host. Common causes on
-Railway:
+## How to tell which URL is broken
 
-1. **`DIARY_SERVICE_URL` is missing or an empty string** on the **gateway**
-   service. Spring resolves `${DIARY_SERVICE_URL:http://localhost:8084}`; a
-   blank variable overrides the default.
-2. **The URL omits the `http://` scheme**, e.g. `diary-service.railway.internal:8080`
-   instead of `http://diary-service.railway.internal:8080`. Java URI parsing
-   treats the hostname as the scheme, so the gateway sees no host and throws
-   `Host is not specified`.
-3. **A Railway reference resolved to an empty host**, e.g.
-   `http://${{diary-service.RAILWAY_PRIVATE_DOMAIN}}:8080` becomes `http://:8080`
-   when `diary-service` is not deployed yet or the service name in the reference
-   does not match the Railway service name.
+| Observation | Likely broken var |
+|---|---|
+| `/api-docs/diary` works, but **authenticated** `/api/diary/**` returns 500 | **`JWKS_URI`** (JWT validation WebClient) |
+| Unauthenticated `/api/diary/**` → 401; authenticated → 500; Profile/Lookup also 500 | **`JWKS_URI`** |
+| `/api-docs/diary` also fails | **`DIARY_SERVICE_URL`** |
 
-Phase 3 added diary routes; older gateway deployments may not have the new env
-var yet, or it may have been added in the bare-host form.
+Authenticated-only failures happen because Spring Security only fetches JWKS when a
+Bearer token is present. `/api-docs/**` is `permitAll`, so a bad `JWKS_URI` never
+runs for docs — but diary/user/food APIs all die at the gateway before proxying.
+
+## Root causes
+
+1. **`JWKS_URI` has no host** — e.g. blank, missing `http://`, or a Railway
+   reference that resolved to `http://:8080/.well-known/jwks.json`.
+2. **`DIARY_SERVICE_URL` missing / blank / bare `host:port` / broken `${{...}}`**.
+3. Service name mismatch — hostname must match the **Railway service name**
+   (check Networking / private domain; may be e.g. `calorietracker-8495`).
 
 ## Fix (Railway — operator)
 
-1. Deploy **`diary-service`** (see `docs/railway-phase3.md`).
-2. On **gateway**, set:
+On **gateway**, reveal values with the eye icon and set:
 
-| Variable | Value |
+| Variable | Example |
 |---|---|
-| `DIARY_SERVICE_URL` | `http://diary-service.railway.internal:8080` |
+| `JWKS_URI` | `http://auth.railway.internal:8080/.well-known/jwks.json` |
+| `DIARY_SERVICE_URL` | `http://diary.railway.internal:8080` |
+| `AUTH_SERVICE_URL` | `http://auth.railway.internal:8080` |
+| `USER_SERVICE_URL` | `http://user.railway.internal:8080` |
+| `FOOD_SERVICE_URL` | `http://food.railway.internal:8080` |
 
-3. Redeploy gateway and confirm `diary-service` is healthy.
+Use **your** Railway private hostnames (same pattern as the working ones). Then
+**redeploy gateway**.
+
+Quick check while logged in:
+
+1. Profile or Lookup — if those 500 too, fix `JWKS_URI` first.
+2. Gateway deploy logs should show `Gateway JWKS_URI=...` and
+   `Gateway route diary-service -> http://...` after this fix lands.
 
 ## Fix (code)
 
-- `ServiceUrlEnvironmentPostProcessor` — auto-prefix `http://` when operators set
-  bare `host:port` private URLs.
-- `GatewayStartupValidator` — fail fast at startup when a required route has no
-  host or still points at localhost while `RAILWAY_ENVIRONMENT` is set.
-- Tests: `ServiceUrlNormalizerTest`, `GatewayStartupValidatorTest`,
-  `GatewayApplicationTest`.
+- `ServiceUrlEnvironmentPostProcessor` — auto-prefix `http://` for bare
+  `host:port` (including `JWKS_URI`).
+- `GatewayStartupValidator` — on Railway, fail fast when JWKS or required
+  routes have no host / still point at localhost; log resolved URIs.
+- Drop unused `recommendation-service` route until Phase 6 (blank
+  `RECO_SERVICE_URL` previously broke startup).
 
 ## Related
 

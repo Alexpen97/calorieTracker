@@ -38,12 +38,41 @@ public class GatewayStartupValidator {
     if (!isRailwayDeploy()) {
       return;
     }
+    validateJwksUri();
     Flux<RouteDefinition> routes = routeDefinitionLocator.getRouteDefinitions();
     routes
         .filter(route -> ROUTE_ENV_VARS.containsKey(route.getId()))
         .doOnNext(this::logResolvedRoute)
         .doOnNext(this::validateRoute)
         .blockLast();
+  }
+
+  private void validateJwksUri() {
+    String jwksUri = environment.getProperty("JWKS_URI");
+    String resolved =
+        environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri");
+    log.info("Gateway JWKS_URI={} (resolved jwk-set-uri={})", formatConfiguredValue(jwksUri), resolved);
+    if (resolved == null || resolved.isBlank()) {
+      throw new IllegalStateException(
+          "JWKS_URI is missing on gateway. Set JWKS_URI to"
+              + " http://<auth-service>.railway.internal:8080/.well-known/jwks.json");
+    }
+    URI uri = URI.create(resolved);
+    if (uri.getHost() == null || uri.getHost().isBlank()) {
+      throw new IllegalStateException(
+          "JWKS_URI has no host (value="
+              + formatConfiguredValue(jwksUri)
+              + ", resolved="
+              + resolved
+              + "). Authenticated /api/** calls will fail with 'Host is not specified'."
+              + " Use http://<auth-service-name>.railway.internal:8080/.well-known/jwks.json");
+    }
+    if (isLocalHost(uri.getHost())) {
+      throw new IllegalStateException(
+          "JWKS_URI points at "
+              + uri.getHost()
+              + " but gateway is on Railway. Set JWKS_URI to the auth-service private URL.");
+    }
   }
 
   private void logResolvedRoute(RouteDefinition route) {

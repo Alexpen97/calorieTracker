@@ -15,8 +15,7 @@ import org.springframework.test.context.TestPropertySource;
       "AUTH_SERVICE_URL=http://127.0.0.1:8081",
       "USER_SERVICE_URL=http://127.0.0.1:8082",
       "FOOD_SERVICE_URL=http://127.0.0.1:8083",
-      "DIARY_SERVICE_URL=http://127.0.0.1:8084",
-      "RECO_SERVICE_URL=http://127.0.0.1:8085"
+      "DIARY_SERVICE_URL=http://127.0.0.1:8084"
     })
 class GatewayApplicationTest {
 

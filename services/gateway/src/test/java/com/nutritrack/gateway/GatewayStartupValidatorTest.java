@@ -29,10 +29,34 @@ class GatewayStartupValidatorTest {
                 route("diary-service", "http://diary-service.railway.internal:8080"),
                 route("auth-service", "http://auth-service.railway.internal:8080")));
 
-    Environment environment = new MockEnvironment().withProperty("RAILWAY_ENVIRONMENT", "production");
+    Environment environment =
+        new MockEnvironment()
+            .withProperty("RAILWAY_ENVIRONMENT", "production")
+            .withProperty(
+                "spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+                "http://auth-service.railway.internal:8080/.well-known/jwks.json");
     GatewayStartupValidator validator = new GatewayStartupValidator(routeDefinitionLocator, environment);
 
     assertThatCode(validator::validateRouteTargets).doesNotThrowAnyException();
+  }
+
+  @Test
+  void rejectsJwksUriWithoutHostOnRailway() {
+    Environment environment =
+        new MockEnvironment()
+            .withProperty("RAILWAY_ENVIRONMENT", "production")
+            .withProperty("JWKS_URI", "http://:8080/.well-known/jwks.json")
+            .withProperty(
+                "spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+                "http://:8080/.well-known/jwks.json");
+
+    GatewayStartupValidator validator =
+        new GatewayStartupValidator(routeDefinitionLocator, environment);
+
+    assertThatThrownBy(validator::validateRouteTargets)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("JWKS_URI")
+        .hasMessageContaining("Host is not specified");
   }
 
   @Test
@@ -40,7 +64,12 @@ class GatewayStartupValidatorTest {
     when(routeDefinitionLocator.getRouteDefinitions())
         .thenReturn(Flux.just(route("diary-service", "")));
 
-    Environment environment = new MockEnvironment().withProperty("RAILWAY_ENVIRONMENT", "production");
+    Environment environment =
+        new MockEnvironment()
+            .withProperty("RAILWAY_ENVIRONMENT", "production")
+            .withProperty(
+                "spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+                "http://auth-service.railway.internal:8080/.well-known/jwks.json");
     GatewayStartupValidator validator = new GatewayStartupValidator(routeDefinitionLocator, environment);
 
     assertThatThrownBy(validator::validateRouteTargets)
@@ -54,7 +83,12 @@ class GatewayStartupValidatorTest {
     when(routeDefinitionLocator.getRouteDefinitions())
         .thenReturn(Flux.just(route("diary-service", "http://localhost:8084")));
 
-    Environment environment = new MockEnvironment().withProperty("RAILWAY_ENVIRONMENT", "production");
+    Environment environment =
+        new MockEnvironment()
+            .withProperty("RAILWAY_ENVIRONMENT", "production")
+            .withProperty(
+                "spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+                "http://auth-service.railway.internal:8080/.well-known/jwks.json");
     GatewayStartupValidator validator = new GatewayStartupValidator(routeDefinitionLocator, environment);
 
     assertThatThrownBy(validator::validateRouteTargets)

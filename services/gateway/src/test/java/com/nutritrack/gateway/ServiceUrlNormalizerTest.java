@@ -21,6 +21,14 @@ class ServiceUrlNormalizerTest {
   }
 
   @Test
+  void normalizesJwksUriWithoutScheme() {
+    assertThat(
+            ServiceUrlNormalizer.normalize(
+                "auth.railway.internal:8080/.well-known/jwks.json"))
+        .isEqualTo("http://auth.railway.internal:8080/.well-known/jwks.json");
+  }
+
+  @Test
   void rejectsBlankHost() {
     assertThatThrownBy(() -> ServiceUrlNormalizer.normalize("http://"))
         .isInstanceOf(IllegalArgumentException.class)
