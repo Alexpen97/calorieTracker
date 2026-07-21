@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: auth-service
+            path: services/auth-service
+            type: maven
+          - name: user-profile-service
+            path: services/user-profile-service
+            type: maven
+          - name: food-catalog-service
+            path: services/food-catalog-service
+            type: maven
+          - name: diary-service
+            path: services/diary-service
+            type: maven
+          - name: gateway
+            path: services/gateway
+            type: maven
+          - name: frontend
+            path: frontend
+            type: npm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        if: matrix.type == 'maven'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: ${{ matrix.path }}/pom.xml
+
+      - name: Run Maven tests
+        if: matrix.type == 'maven'
+        working-directory: ${{ matrix.path }}
+        run: mvn -B test
+
+      - name: Set up Node.js 22
+        if: matrix.type == 'npm'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ${{ matrix.path }}/package-lock.json
+
+      - name: Install frontend dependencies
+        if: matrix.type == 'npm'
+        working-directory: ${{ matrix.path }}
+        run: npm ci
+
+      - name: Run frontend tests
+        if: matrix.type == 'npm'
+        working-directory: ${{ matrix.path }}
+        run: npm test
