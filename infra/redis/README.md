@@ -1,8 +1,4 @@
-# infra/redis
+# redis
 
-Redis container configuration for the **local** Docker Compose setup.
-
-- Uses the official `redis` image (no custom Dockerfile needed).
-- `redis.conf` overrides live here if defaults ever need changing (memory
-  limit, eviction policy for the product cache — `allkeys-lru` recommended).
-- On Railway, a managed Redis instance replaces this container.
+Official Redis image for local Compose (catalog cache in later phases).
+Config overrides live in `redis.conf`.
