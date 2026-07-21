@@ -15,8 +15,8 @@
 - 2026-07-21: Scaffolded the per-container folder structure in the repo:
   `services/{gateway,auth-service,user-profile-service,food-catalog-service,diary-service,recommendation-service}`,
   `frontend/`, and `infra/{postgres,redis}` — one folder per container, each
-  with a README (purpose, ports, env vars). `infra/postgres/init/` holds the
-  SQL creating the per-service databases for local Compose.
+  with a README (purpose, ports, env vars) and Dockerfile for Railway deploy.
+  `infra/postgres/init/` holds the SQL creating the per-service databases.
 - 2026-07-21: **Phase 1 walking skeleton** implemented on
   `cursor/phase-1-walking-skeleton-58e0`:
   - Spring Boot 4.1 / Gateway 5.0.2 services: gateway, auth-service,
@@ -39,9 +39,10 @@
   `diary-service`, `user-profile-service`, `recommendation-service` (stub
   until Phase 6); PostgreSQL per service + Redis cache.
 - Deployment: Docker Compose locally (profiles: full stack vs deps-only);
-  Railway in the cloud — one Railway service per folder, root directory +
-  watch paths per service, private networking (`<service>.railway.internal`,
-  plain http), public domains only on gateway + frontend.
+  Railway in the cloud — one Railway service per folder (including `infra/postgres`
+  and `infra/redis`), root directory + watch paths per service, private
+  networking (`<service>.railway.internal`, plain http), public domains only on
+  gateway + frontend. See `docs/railway-deploy.md`.
 - Auth Phase 1: SPA Authorization Code + PKCE; `auth-service` issues RS256
   JWTs; `AUTH_MODE=dev` accepts code `dev` without Google for local/CI.
 

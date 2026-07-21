@@ -1,13 +1,16 @@
 # Railway Phase 1 deploy notes
 
 Phase 1 services to create in one Railway project (public domains only on
-`gateway` and `frontend`):
+`gateway` and `frontend`). Infrastructure (`postgres`, `redis`) is deployed
+from `infra/` Dockerfiles — see `docs/railway-deploy.md` for the full matrix.
 
 | Railway service | Root directory | Watch paths | Notes |
 |---|---|---|---|
+| `postgres` | `/infra/postgres` | `/infra/postgres/**` | Private + persistent volume |
+| `redis` | `/infra/redis` | `/infra/redis/**` | Private (Phase 2+; optional in Phase 1) |
 | `gateway` | `/services/gateway` | `/services/gateway/**` | Public HTTPS |
 | `auth-service` | `/services/auth-service` | `/services/auth-service/**` | Private network |
-| `user-profile-service` | `/services/user-profile-service` | `/services/user-profile-service/**` | Private network + Postgres |
+| `user-profile-service` | `/services/user-profile-service` | `/services/user-profile-service/**` | Private network + Postgres `users` |
 | `frontend` | `/frontend` | `/frontend/**` | Public HTTPS |
 
 ## Shared / per-service variables
@@ -25,9 +28,15 @@ auth-service:
 
 user-profile-service:
 
-- `SPRING_DATASOURCE_URL` / username / password from Railway Postgres (JDBC form)
+- `SPRING_DATASOURCE_URL=jdbc:postgresql://postgres.railway.internal:5432/users`
+- `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` (match `postgres` service)
 - `JWKS_URI=http://auth-service.railway.internal:8080/.well-known/jwks.json`
 - `INTERNAL_API_KEY`
+
+postgres service:
+
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB=postgres`
+- Mount a volume on `/var/lib/postgresql/data`
 
 gateway:
 
