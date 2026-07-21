@@ -51,6 +51,10 @@
 - Roadmap phases 4–6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.
+- Google `redirect_uri_mismatch`: register **frontend**
+  `https://<frontend>/auth/callback` (not domain-only, not gateway, not another
+  Railway app). Live NutriTrack example and checklist:
+  `docs/google-oauth-setup.md`. Login page shows the exact URIs for the current origin.
 - Resolve open questions in design doc §15 before the relevant phases.
 - Phase 2 follow-ups: OFF bulk mirror import + FTS search (Phase 4); harden
   barcode scanner fallbacks for browsers without `BarcodeDetector`.

@@ -15,6 +15,9 @@ Optional env (`.env`):
 - `VITE_GOOGLE_CLIENT_ID` — Google OAuth web client id
 - `VITE_AUTH_MODE=dev` — shows Dev login (default)
 
+Google Console must allow `https://<this-origin>/auth/callback` — see
+`docs/google-oauth-setup.md`. The login page prints the exact URIs to register.
+
 ## Scripts
 
 - `npm test` — Vitest
