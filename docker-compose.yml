@@ -79,6 +79,27 @@ services:
       auth-service:
         condition: service_started
 
+  diary-service:
+    profiles: ["full"]
+    build: ./services/diary-service
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/diary
+      SPRING_DATASOURCE_USERNAME: nutritrack
+      SPRING_DATASOURCE_PASSWORD: nutritrack
+      JWKS_URI: http://auth-service:8080/.well-known/jwks.json
+      FOOD_SERVICE_URL: http://food-catalog-service:8080
+      USER_SERVICE_URL: http://user-profile-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      food-catalog-service:
+        condition: service_started
+      user-profile-service:
+        condition: service_started
+
   gateway:
     profiles: ["full"]
     build: ./services/gateway
@@ -98,6 +119,7 @@ services:
       - auth-service
       - user-profile-service
       - food-catalog-service
+      - diary-service
 
   frontend:
     profiles: ["full"]
