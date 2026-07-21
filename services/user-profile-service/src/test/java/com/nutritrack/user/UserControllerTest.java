@@ -1,5 +1,7 @@
 package com.nutritrack.user;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -199,6 +201,100 @@ class UserControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void recalculatePreviewReturnsSuggestionsWithoutWriting() throws Exception {
+    Jwt jwt = jwtForNewUser("goals-preview");
+    updateProfile(
+        jwt,
+        """
+        {"sex":"MALE","birthDate":"1996-07-21","heightCm":180,"activityLevel":"MODERATE","objective":"MAINTAIN"}
+        """);
+    postWeight(jwt, "80.0", "2026-07-21T10:00:00Z");
+
+    mockMvc
+        .perform(
+            post("/api/users/me/goals/recalculate")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.needsProfile").value(false))
+        .andExpect(jsonPath("$.current.length()").value(0))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("energy_kcal")))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("protein")))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("water_ml")))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("fiber")));
+
+    mockMvc
+        .perform(get("/api/users/me/goals").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void putOverridesAndRecalculateApplyPreservesUserOverrides() throws Exception {
+    Jwt jwt = jwtForNewUser("goals-apply");
+    updateProfile(
+        jwt,
+        """
+        {"sex":"MALE","birthDate":"1996-07-21","heightCm":180,"activityLevel":"MODERATE","objective":"MAINTAIN"}
+        """);
+    postWeight(jwt, "80.0", "2026-07-21T10:00:00Z");
+
+    mockMvc
+        .perform(
+            put("/api/users/me/goals")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"goals":[{"nutrientCode":"protein","dailyTarget":123,"unit":"g"}]}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].nutrientCode").value("protein"))
+        .andExpect(jsonPath("$[0].dailyTarget").value(123))
+        .andExpect(jsonPath("$[0].origin").value("USER_OVERRIDE"))
+        .andExpect(jsonPath("$[0].computedAt").doesNotExist());
+
+    mockMvc
+        .perform(
+            post("/api/users/me/goals/recalculate")
+                .queryParam("apply", "true")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.needsProfile").value(false))
+        .andExpect(jsonPath("$.current[*].nutrientCode", hasItem("protein")))
+        .andExpect(jsonPath("$.current[*].nutrientCode", hasItem("energy_kcal")))
+        .andExpect(jsonPath("$.current[*].nutrientCode", hasItem("water_ml")))
+        .andExpect(jsonPath("$.current[*].origin", hasItem("USER_OVERRIDE")))
+        .andExpect(jsonPath("$.current[*].origin", hasItem("COMPUTED")));
+
+    mockMvc
+        .perform(get("/api/users/me/goals").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.nutrientCode == 'protein')].dailyTarget").value(123))
+        .andExpect(jsonPath("$[?(@.nutrientCode == 'protein')].origin").value("USER_OVERRIDE"));
+  }
+
+  @Test
+  void recalculateWithIncompleteProfileSkipsBodyTargetsButKeepsAgeSexDrvs() throws Exception {
+    Jwt jwt = jwtForNewUser("goals-incomplete");
+    updateProfile(
+        jwt,
+        """
+        {"sex":"FEMALE","birthDate":"1990-01-01"}
+        """);
+
+    mockMvc
+        .perform(
+            post("/api/users/me/goals/recalculate")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.needsProfile").value(true))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("iron")))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", not(hasItem("energy_kcal"))))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", not(hasItem("protein"))))
+        .andExpect(jsonPath("$.suggested[*].nutrientCode", not(hasItem("water_ml"))));
+  }
+
   private Jwt jwtForNewUser(String prefix) throws Exception {
     String unique = prefix + "-" + java.util.UUID.randomUUID();
     MvcResult upsert =
@@ -236,6 +332,16 @@ class UserControllerTest {
                     {"weightKg":%s,"measuredAt":"%s"}
                     """
                         .formatted(weightKg, measuredAt)))
+        .andExpect(status().isOk());
+  }
+
+  private void updateProfile(Jwt jwt, String body) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/users/me")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
         .andExpect(status().isOk());
   }
 }
