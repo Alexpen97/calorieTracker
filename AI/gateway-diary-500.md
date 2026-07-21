@@ -29,6 +29,10 @@ Railway:
    instead of `http://diary-service.railway.internal:8080`. Java URI parsing
    treats the hostname as the scheme, so the gateway sees no host and throws
    `Host is not specified`.
+3. **A Railway reference resolved to an empty host**, e.g.
+   `http://${{diary-service.RAILWAY_PRIVATE_DOMAIN}}:8080` becomes `http://:8080`
+   when `diary-service` is not deployed yet or the service name in the reference
+   does not match the Railway service name.
 
 Phase 3 added diary routes; older gateway deployments may not have the new env
 var yet, or it may have been added in the bare-host form.

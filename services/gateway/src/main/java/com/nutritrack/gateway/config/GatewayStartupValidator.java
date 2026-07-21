@@ -2,6 +2,8 @@ package com.nutritrack.gateway.config;
 
 import java.net.URI;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
@@ -12,6 +14,8 @@ import reactor.core.publisher.Flux;
 
 @Component
 public class GatewayStartupValidator {
+
+  private static final Logger log = LoggerFactory.getLogger(GatewayStartupValidator.class);
 
   private static final Map<String, String> ROUTE_ENV_VARS =
       Map.of(
@@ -37,8 +41,20 @@ public class GatewayStartupValidator {
     Flux<RouteDefinition> routes = routeDefinitionLocator.getRouteDefinitions();
     routes
         .filter(route -> ROUTE_ENV_VARS.containsKey(route.getId()))
+        .doOnNext(this::logResolvedRoute)
         .doOnNext(this::validateRoute)
         .blockLast();
+  }
+
+  private void logResolvedRoute(RouteDefinition route) {
+    String envVar = ROUTE_ENV_VARS.get(route.getId());
+    String configured = environment.getProperty(envVar);
+    log.info(
+        "Gateway route {} -> {} ({}={})",
+        route.getId(),
+        route.getUri(),
+        envVar,
+        configured == null ? "<unset>" : configured);
   }
 
   private void validateRoute(RouteDefinition route) {
@@ -62,11 +78,24 @@ public class GatewayStartupValidator {
     throw new IllegalStateException(
         routeMisconfigurationMessage(
             route.getId(),
-            "has no host (value="
+            "has no host (routeUri="
                 + uri
-                + "). Include the http:// scheme, e.g. http://"
-                + railwayHostHint(route.getId())
-                + ".railway.internal:8080"));
+                + ", "
+                + ROUTE_ENV_VARS.get(route.getId())
+                + "="
+                + formatConfiguredValue(environment.getProperty(ROUTE_ENV_VARS.get(route.getId())))
+                + "). If using a Railway reference like http://${{service.RAILWAY_PRIVATE_DOMAIN}}:8080,"
+                + " ensure that service exists and redeploy gateway after it is healthy"));
+  }
+
+  private static String formatConfiguredValue(String configured) {
+    if (configured == null) {
+      return "<unset>";
+    }
+    if (configured.isBlank()) {
+      return "<blank>";
+    }
+    return configured;
   }
 
   private String routeMisconfigurationMessage(String routeId, String problem) {
