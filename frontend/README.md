@@ -23,3 +23,8 @@ Optional env (`.env`):
 ## Container
 
 Multi-stage `Dockerfile` (Node build → nginx). Railway root directory = `/frontend`.
+
+Nginx listens on Railway's injected `PORT` (defaults to `80` locally). For
+same-origin API proxying in Docker Compose, `GATEWAY_UPSTREAM` defaults to
+`gateway:8080`. On Railway, prefer setting build arg `VITE_API_BASE_URL` to the
+gateway public URL instead of relying on the nginx proxy.

@@ -100,7 +100,15 @@ See `infra/redis/README.md`.
 | `CORS_ALLOWED_ORIGINS` | `https://<frontend-domain>` |
 | `SWAGGER_UI_ENABLED` | `true` |
 
-### frontend (build args)
+### frontend
+
+Runtime (optional — Railway injects `PORT` automatically; nginx uses it):
+
+| Variable | Value |
+|---|---|
+| `GATEWAY_UPSTREAM` | `gateway.railway.internal:8080` only if using nginx `/api` proxy (usually leave unset and use `VITE_API_BASE_URL` instead) |
+
+Build args:
 
 | Build arg | Value |
 |---|---|
