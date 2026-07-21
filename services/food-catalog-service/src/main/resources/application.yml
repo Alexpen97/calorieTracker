@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: food-catalog-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/food_catalog}
+    username: ${SPRING_DATASOURCE_USERNAME:nutritrack}
+    password: ${SPRING_DATASOURCE_PASSWORD:nutritrack}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+
+server:
+  port: ${PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+nutritrack:
+  food:
+    off:
+      base-url: ${OFF_BASE_URL:https://world.openfoodfacts.org}
+      user-agent: ${OFF_USER_AGENT:NutriTrack - Server - Version 0.1}
+      fields: product_name,generic_name,brands,nutriments,nutrition_grades,nutriscore_grade,ingredients_text,allergens_tags,serving_size,quantity,image_url,image_front_url
+    cache:
+      redis-enabled: ${FOOD_REDIS_ENABLED:true}
+      ttl: ${FOOD_CACHE_TTL:24h}
+    resilience:
+      rate-limit-per-minute: ${OFF_RATE_LIMIT_PER_MINUTE:12}
+      circuit-wait-duration: 30s
+      retry-max-attempts: 2

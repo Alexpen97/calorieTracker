@@ -20,7 +20,7 @@ export default function AuthCallbackPage() {
       .then((tokens) => {
         saveTokens(tokens)
         sessionStorage.removeItem('pkce_verifier')
-        navigate('/me', { replace: true })
+        navigate('/lookup', { replace: true })
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Login failed')

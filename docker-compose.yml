@@ -57,6 +57,28 @@ services:
       postgres:
         condition: service_healthy
 
+  food-catalog-service:
+    profiles: ["full"]
+    build: ./services/food-catalog-service
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/food_catalog
+      SPRING_DATASOURCE_USERNAME: nutritrack
+      SPRING_DATASOURCE_PASSWORD: nutritrack
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWKS_URI: http://auth-service:8080/.well-known/jwks.json
+      OFF_BASE_URL: ${OFF_BASE_URL:-https://world.openfoodfacts.org}
+      OFF_USER_AGENT: ${OFF_USER_AGENT:-NutriTrack - Server - Version 0.1}
+      FOOD_REDIS_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      auth-service:
+        condition: service_started
+
   gateway:
     profiles: ["full"]
     build: ./services/gateway
@@ -75,6 +97,7 @@ services:
     depends_on:
       - auth-service
       - user-profile-service
+      - food-catalog-service
 
   frontend:
     profiles: ["full"]
