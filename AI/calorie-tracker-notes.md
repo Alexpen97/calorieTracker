@@ -12,6 +12,11 @@
   (FR-10), water-intake tracking (FR-11), sex/weight-based computed nutrient
   goals (FR-12), recommendation service for meal/cooking advice (FR-13,
   later phase), and Swagger aggregation on the gateway.
+- 2026-07-21: Scaffolded the per-container folder structure in the repo:
+  `services/{gateway,auth-service,user-profile-service,food-catalog-service,diary-service,recommendation-service}`,
+  `frontend/`, and `infra/{postgres,redis}` — one folder per container, each
+  with a README (purpose, ports, env vars). `infra/postgres/init/` holds the
+  SQL creating the per-service databases for local Compose.
 
 ## Key decisions recorded in the design doc
 

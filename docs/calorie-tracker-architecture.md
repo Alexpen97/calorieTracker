@@ -90,31 +90,42 @@ Key product decisions captured in this document:
 
 ## 3. Repository layout (monorepo)
 
-Everything lives in this repository. Each deployable container has its own
-top-level folder under `services/` (or `frontend/`), each with its own
-`Dockerfile`, so both Docker Compose and Railway can build any service from its
-folder alone:
+Everything lives in this repository. **Every container in the stack has its own
+folder**: each deployable app under `services/` (or `frontend/`) with its own
+`Dockerfile`, and each infrastructure container (official images, no custom
+build) under `infra/` holding its init scripts/config. Docker Compose and
+Railway can therefore build or configure any container from its folder alone.
+These folders exist in the repo now (with a README each); code lands in them
+per the roadmap phases:
 
 ```text
 calorieTracker/
-├── docker-compose.yml          # local orchestration: all services + Postgres + Redis
+├── docker-compose.yml          # local orchestration: all containers below
 ├── docs/                       # architecture & design documents
 ├── AI/                         # AI working notes
 ├── scripts/                    # tooling (context7 helper, db seeds, OFF import triggers)
 ├── services/
-│   ├── gateway/                # Spring Cloud Gateway + aggregated Swagger UI
+│   ├── gateway/                # container: Spring Cloud Gateway + aggregated Swagger UI
 │   │   ├── Dockerfile
 │   │   ├── pom.xml
 │   │   └── src/...
-│   ├── auth-service/           # Google OIDC login, JWT issuing
-│   ├── user-profile-service/   # profile, body weight log, goals engine
-│   ├── food-catalog-service/   # products, nutrients + education content, submissions
-│   ├── diary-service/          # food entries, water intake, daily summaries
-│   └── recommendation-service/ # meal & cooking advice (later phase)
-└── frontend/                   # React SPA + Capacitor Android shell
-    ├── Dockerfile              # nginx static build (used locally; Railway can also serve it)
-    └── src/...
+│   ├── auth-service/           # container: Google OIDC login, JWT issuing
+│   ├── user-profile-service/   # container: profile, body weight log, goals engine
+│   ├── food-catalog-service/   # container: products, nutrient education, submissions
+│   ├── diary-service/          # container: food entries, water intake, daily summaries
+│   └── recommendation-service/ # container: meal & cooking advice (stub until Phase 6)
+├── frontend/                   # container: React SPA (nginx) + Capacitor Android shell
+│   ├── Dockerfile
+│   └── src/...
+└── infra/                      # infrastructure containers (local Compose config)
+    ├── postgres/               # container: official postgres image
+    │   └── init/               #   *.sql mounted into /docker-entrypoint-initdb.d/
+    │                           #   creates food_catalog, diary, users databases
+    └── redis/                  # container: official redis image (+ redis.conf overrides)
 ```
+
+On Railway the `infra/` containers are replaced by managed PostgreSQL and
+Redis instances; `infra/` is used by the local Docker Compose stack only.
 
 Build independence (NFR-7): each service is a **standalone Maven project**
 (its own `pom.xml`), not modules of one parent POM. Railway's root-directory
@@ -690,7 +701,8 @@ locally; on Railway it can deploy the same way or as a static site.
 One `docker-compose.yml` at the repo root runs the full stack:
 
 - `postgres` (single container, one database per service: `food_catalog`,
-  `diary`, `users`), `redis`;
+  `diary`, `users` — created by the init scripts in `infra/postgres/init/`)
+  and `redis` (config overrides in `infra/redis/`);
 - every Spring service built from its folder (`build: ./services/<name>`);
 - `frontend` (nginx) on port 80, `gateway` on 8080;
 - inter-service URLs use Compose DNS names (`http://food-catalog-service:8080`),
