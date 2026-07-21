@@ -51,7 +51,9 @@ See `infra/redis/README.md`.
 
 | Variable | Value |
 |---|---|
-| `USER_SERVICE_URL` | `http://user-profile-service.railway.internal:8080` |
+| `USER_SERVICE_URL` | `http://user-profile-service.railway.internal:8080` (**required on Railway** — unset defaults to `localhost:8082` and login fails with 403/503) |
+| `INTERNAL_API_KEY` | same value as on `user-profile-service` |
+| `AUTH_MODE` | `prod` for live Google login |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth (when `AUTH_MODE=prod`) |
 | `JWT_PRIVATE_KEY_PEM` | RS256 private key PEM |
 

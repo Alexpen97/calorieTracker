@@ -45,4 +45,13 @@ describe('formatHttpError', () => {
     expect(formatHttpError(500, 'server error')).toBe('server error')
     expect(formatHttpError(404, '')).toBe('Request failed (404)')
   })
+
+  it('surfaces JSON error messages from auth callback failures', () => {
+    expect(
+      formatHttpError(
+        503,
+        '{"error":"Verify USER_SERVICE_URL on auth-service"}',
+      ),
+    ).toBe('Verify USER_SERVICE_URL on auth-service')
+  })
 })
