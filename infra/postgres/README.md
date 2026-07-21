@@ -24,11 +24,14 @@ Credentials default to `nutritrack` / `nutritrack` (see `docker-compose.yml`).
 
 ### Variables (postgres service)
 
-| Variable | Example |
+Defaults are baked into the image (`nutritrack` / `nutritrack` / `postgres`).
+Override at runtime only if you need different credentials:
+
+| Variable | Default |
 |---|---|
 | `POSTGRES_USER` | `nutritrack` |
-| `POSTGRES_PASSWORD` | strong secret |
-| `POSTGRES_DB` | `postgres` (default DB; app DBs created by init script) |
+| `POSTGRES_PASSWORD` | `nutritrack` |
+| `POSTGRES_DB` | `postgres` (app DBs created by init script) |
 
 ### JDBC URLs (app services)
 
