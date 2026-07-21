@@ -3,8 +3,11 @@ package com.nutritrack.diary.web;
 import com.nutritrack.diary.domain.DiaryEntry;
 import com.nutritrack.diary.domain.DiaryEntryNutrient;
 import com.nutritrack.diary.domain.MealType;
+import com.nutritrack.diary.domain.WaterIntake;
 import com.nutritrack.diary.service.DiaryEntryService;
 import com.nutritrack.diary.service.PortionMath;
+import com.nutritrack.diary.service.SummaryService;
+import com.nutritrack.diary.service.WaterIntakeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -33,9 +36,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiaryController {
 
   private final DiaryEntryService entryService;
+  private final WaterIntakeService waterService;
+  private final SummaryService summaryService;
 
-  public DiaryController(DiaryEntryService entryService) {
+  public DiaryController(
+      DiaryEntryService entryService, WaterIntakeService waterService, SummaryService summaryService) {
     this.entryService = entryService;
+    this.waterService = waterService;
+    this.summaryService = summaryService;
   }
 
   @PostMapping("/api/diary/entries")
@@ -83,6 +91,45 @@ public class DiaryController {
     entryService.delete(UUID.fromString(jwt.getSubject()), id);
   }
 
+  @PostMapping("/api/diary/water")
+  public WaterIntakeResponse createWater(
+      @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateWaterIntakeRequest request) {
+    WaterIntake water =
+        waterService.create(UUID.fromString(jwt.getSubject()), request.amountMl(), request.loggedAt());
+    return WaterIntakeResponse.from(water);
+  }
+
+  @GetMapping("/api/diary/water")
+  public List<WaterIntakeResponse> listWater(
+      @AuthenticationPrincipal Jwt jwt, @RequestParam LocalDate date) {
+    return waterService.listByDate(UUID.fromString(jwt.getSubject()), date).stream()
+        .map(WaterIntakeResponse::from)
+        .toList();
+  }
+
+  @DeleteMapping("/api/diary/water/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteWater(@AuthenticationPrincipal Jwt jwt, @PathVariable("id") UUID id) {
+    waterService.delete(UUID.fromString(jwt.getSubject()), id);
+  }
+
+  @GetMapping("/api/diary/summary")
+  public SummaryService.DailySummary dailySummary(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+      @RequestParam LocalDate date) {
+    return summaryService.summarize(UUID.fromString(jwt.getSubject()), date, authorization);
+  }
+
+  @GetMapping("/api/diary/summary/range")
+  public List<SummaryService.DailySummary> rangeSummary(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+      @RequestParam LocalDate from,
+      @RequestParam LocalDate to) {
+    return summaryService.summarizeRange(UUID.fromString(jwt.getSubject()), from, to, authorization);
+  }
+
   public record CreateDiaryEntryRequest(
       @NotNull UUID productId,
       @NotNull @Positive BigDecimal weightG,
@@ -91,6 +138,8 @@ public class DiaryController {
 
   public record UpdateDiaryEntryRequest(
       @Positive BigDecimal weightG, MealType mealType, Instant consumedAt) {}
+
+  public record CreateWaterIntakeRequest(@NotNull @Positive BigDecimal amountMl, Instant loggedAt) {}
 
   public record DiaryEntryResponse(
       UUID id,
@@ -127,6 +176,12 @@ public class DiaryController {
           PortionMath.scale(nutrient.getAmountPer100g(), weightG),
           nutrient.getAmountPer100g(),
           nutrient.getUnit());
+    }
+  }
+
+  public record WaterIntakeResponse(UUID id, BigDecimal amountMl, Instant loggedAt) {
+    static WaterIntakeResponse from(WaterIntake water) {
+      return new WaterIntakeResponse(water.getId(), water.getAmountMl(), water.getLoggedAt());
     }
   }
 }
