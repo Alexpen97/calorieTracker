@@ -1,7 +1,7 @@
 package com.nutritrack.food.cache;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import com.nutritrack.food.web.dto.ProductResponse;
 import java.time.Duration;
 import java.util.Optional;
@@ -12,13 +12,13 @@ public class RedisProductCache implements ProductCache {
   private static final String KEY_PREFIX = "product:barcode:";
 
   private final StringRedisTemplate redisTemplate;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper jsonMapper;
   private final Duration ttl;
 
   public RedisProductCache(
-      StringRedisTemplate redisTemplate, ObjectMapper objectMapper, Duration ttl) {
+      StringRedisTemplate redisTemplate, JsonMapper jsonMapper, Duration ttl) {
     this.redisTemplate = redisTemplate;
-    this.objectMapper = objectMapper;
+    this.jsonMapper = jsonMapper;
     this.ttl = ttl;
   }
 
@@ -29,8 +29,8 @@ public class RedisProductCache implements ProductCache {
       return Optional.empty();
     }
     try {
-      return Optional.of(objectMapper.readValue(json, ProductResponse.class));
-    } catch (JsonProcessingException e) {
+      return Optional.of(jsonMapper.readValue(json, ProductResponse.class));
+    } catch (JacksonException e) {
       redisTemplate.delete(KEY_PREFIX + barcode);
       return Optional.empty();
     }
@@ -39,9 +39,9 @@ public class RedisProductCache implements ProductCache {
   @Override
   public void putByBarcode(String barcode, ProductResponse product) {
     try {
-      String json = objectMapper.writeValueAsString(product);
+      String json = jsonMapper.writeValueAsString(product);
       redisTemplate.opsForValue().set(KEY_PREFIX + barcode, json, ttl);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new IllegalStateException("Failed to serialize product for cache", e);
     }
   }

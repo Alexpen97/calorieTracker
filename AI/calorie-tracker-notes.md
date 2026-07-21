@@ -68,6 +68,8 @@ Implemented on `cursor/phase-2-food-lookup-84b9`:
 - Gateway food OpenAPI aggregation + Compose service wiring
 - Frontend lookup (manual + BarcodeDetector), product detail, nutrient sheets
 - Tests: normalizer + MockMvc food APIs; Vitest barcode helpers
+- 2026-07-21: Fixed Railway crash — `CacheConfig` now injects Spring Boot 4's
+  auto-configured `JsonMapper` (Jackson 3) instead of Jackson 2 `ObjectMapper`
 
 ## Phase 3 (2026-07-21)
 
