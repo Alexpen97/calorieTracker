@@ -22,7 +22,7 @@ API Gateway container — Spring Cloud Gateway. See `docs/calorie-tracker-archit
 | `AUTH_SERVICE_URL` | e.g. `http://auth-service:8080` / `http://auth-service.railway.internal:8080` |
 | `USER_SERVICE_URL` | user-profile-service base URL |
 | `FOOD_SERVICE_URL` | food-catalog-service base URL |
-| `DIARY_SERVICE_URL` | diary-service base URL |
+| `DIARY_SERVICE_URL` | diary-service base URL (**required on Railway** — unset/empty breaks `/api/diary/**` with gateway 500) |
 | `RECO_SERVICE_URL` | recommendation-service base URL (optional until Phase 6) |
 | `JWKS_URI` | auth-service JWKS endpoint for JWT validation |
 | `CORS_ALLOWED_ORIGINS` | SPA + Capacitor origins |
