@@ -2,16 +2,57 @@ import { getAccessToken, type TokenBundle } from '../auth/tokenStorage'
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
 
+export type Sex = 'MALE' | 'FEMALE'
+export type ActivityLevel = 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'ACTIVE' | 'VERY_ACTIVE'
+export type Objective = 'LOSE' | 'MAINTAIN' | 'GAIN'
+export type GoalOrigin = 'COMPUTED' | 'USER_OVERRIDE'
+
 export type UserProfile = {
   id: string
   email: string
   displayName: string
   avatarUrl: string | null
   role: string
-  sex: string | null
+  sex: Sex | null
+  birthDate: string | null
   heightCm: number | null
-  activityLevel: string | null
-  objective: string
+  activityLevel: ActivityLevel | null
+  objective: Objective
+}
+
+export type UpdateMeInput = {
+  displayName?: string
+  sex?: Sex
+  birthDate?: string
+  heightCm?: number
+  activityLevel?: ActivityLevel
+  objective?: Objective
+}
+
+export type WeightLog = {
+  id: string
+  weightKg: number
+  measuredAt: string
+}
+
+export type Goal = {
+  nutrientCode: string
+  dailyTarget: number
+  unit: string
+  origin: GoalOrigin
+  computedAt: string | null
+}
+
+export type GoalOverride = {
+  nutrientCode: string
+  dailyTarget: number
+  unit: string
+}
+
+export type RecalculateGoalsResult = {
+  needsProfile: boolean
+  suggested: Goal[]
+  current: Goal[]
 }
 
 export type ProductNutrient = {
@@ -133,6 +174,64 @@ export async function fetchMe(): Promise<UserProfile> {
     headers: authHeaders(),
   })
   return parseJson<UserProfile>(response)
+}
+
+export async function updateMe(input: UpdateMeInput): Promise<UserProfile> {
+  const response = await fetch(`${apiBase}/api/users/me`, {
+    method: 'PUT',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<UserProfile>(response)
+}
+
+export async function logWeight(input: { weightKg: number; measuredAt?: string }): Promise<WeightLog> {
+  const response = await fetch(`${apiBase}/api/users/me/weight`, {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<WeightLog>(response)
+}
+
+export async function fetchWeightHistory(input: { from?: string; to?: string } = {}): Promise<WeightLog[]> {
+  const params = new URLSearchParams()
+  if (input.from) {
+    params.set('from', input.from)
+  }
+  if (input.to) {
+    params.set('to', input.to)
+  }
+  const query = params.toString()
+  const response = await fetch(`${apiBase}/api/users/me/weight${query ? `?${query}` : ''}`, {
+    headers: authHeaders(),
+  })
+  return parseJson<WeightLog[]>(response)
+}
+
+export async function fetchGoals(): Promise<Goal[]> {
+  const response = await fetch(`${apiBase}/api/users/me/goals`, {
+    headers: authHeaders(),
+  })
+  return parseJson<Goal[]>(response)
+}
+
+export async function overrideGoals(input: { goals: GoalOverride[] }): Promise<Goal[]> {
+  const response = await fetch(`${apiBase}/api/users/me/goals`, {
+    method: 'PUT',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<Goal[]>(response)
+}
+
+export async function recalculateGoals(apply: boolean): Promise<RecalculateGoalsResult> {
+  const params = new URLSearchParams({ apply: String(apply) })
+  const response = await fetch(`${apiBase}/api/users/me/goals/recalculate?${params}`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  return parseJson<RecalculateGoalsResult>(response)
 }
 
 export async function fetchProductByBarcode(ean: string): Promise<Product> {
