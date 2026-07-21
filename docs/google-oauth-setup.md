@@ -54,6 +54,10 @@ Character-for-character match is required (scheme, host, path, no trailing slash
 6. **Wrong client type** — must be **Web application**, not Android / iOS / Desktop.
 7. **Wrong client ID** — frontend build arg `VITE_GOOGLE_CLIENT_ID` and auth-service
    `GOOGLE_CLIENT_ID` must be the same Web client.
+8. **`VITE_API_BASE_URL` without `https://`** — e.g. `gateway-production.up.railway.app`
+   instead of `https://gateway-production.up.railway.app`. After Google redirects back,
+   the token `POST` hits the SPA nginx and returns **405 Not Allowed**. Use the full
+   gateway URL with scheme (see `AI/login-405-nginx.md`).
 
 ## Env / Railway checklist
 
