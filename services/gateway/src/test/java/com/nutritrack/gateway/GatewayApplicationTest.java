@@ -30,6 +30,12 @@ class GatewayApplicationTest {
             .map(def -> def.getId())
             .collectList()
             .block();
-    assertThat(ids).contains("auth-service", "user-profile-service");
+    assertThat(ids)
+        .contains(
+            "auth-service",
+            "user-profile-service",
+            "food-catalog-service",
+            "diary-service",
+            "diary-api-docs");
   }
 }

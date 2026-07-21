@@ -47,7 +47,7 @@
 
 ## Remaining work / TODOs
 
-- Roadmap phases 3–6 (design doc §14).
+- Roadmap phases 4–6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.
 - Resolve open questions in design doc §15 before the relevant phases.
@@ -63,3 +63,15 @@ Implemented on `cursor/phase-2-food-lookup-84b9`:
 - Gateway food OpenAPI aggregation + Compose service wiring
 - Frontend lookup (manual + BarcodeDetector), product detail, nutrient sheets
 - Tests: normalizer + MockMvc food APIs; Vitest barcode helpers
+
+## Phase 3 (2026-07-21)
+
+Implemented on `cursor/phase-3-diary-tracking-29d6` (PR #5):
+
+- `user-profile-service`: body-weight log + goals engine (Mifflin-St Jeor,
+  DRV seed, overrides / recalculate)
+- `diary-service`: food entries with nutrient snapshots, water intake, daily
+  summaries vs goals
+- Gateway diary OpenAPI + Compose `diary-service` + `docs/railway-phase3.md`
+- Frontend: Today diary, water quick-add, log-from-product, profile weight/goals
+- Tests: user-profile 12, diary 11, gateway route assert, frontend Vitest 8

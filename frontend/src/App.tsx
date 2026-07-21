@@ -5,6 +5,7 @@ import ProfilePage from './pages/ProfilePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import LookupPage from './pages/LookupPage'
 import ProductPage from './pages/ProductPage'
+import DiaryPage from './pages/DiaryPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -18,19 +19,28 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link to={loggedIn ? '/lookup' : '/'} className="brand">
+        <Link to={loggedIn ? '/today' : '/'} className="brand">
           NutriTrack
         </Link>
         {loggedIn && (
           <nav className="topnav">
+            <Link to="/today">Today</Link>
             <Link to="/lookup">Lookup</Link>
             <Link to="/me">Profile</Link>
           </nav>
         )}
       </header>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={loggedIn ? <Navigate to="/today" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route
+          path="/today"
+          element={
+            <RequireAuth>
+              <DiaryPage />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/lookup"
           element={

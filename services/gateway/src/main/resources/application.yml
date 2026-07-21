@@ -45,6 +45,12 @@ spring:
               uri: ${DIARY_SERVICE_URL:http://localhost:8084}
               predicates:
                 - Path=/api/diary/**
+            - id: diary-api-docs
+              uri: ${DIARY_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api-docs/diary/**
+              filters:
+                - RewritePath=/api-docs/diary(?<segment>/?.*), /v3/api-docs$\{segment}
             - id: recommendation-service
               uri: ${RECO_SERVICE_URL:http://localhost:8085}
               predicates:
@@ -69,6 +75,8 @@ springdoc:
         url: /api-docs/users
       - name: food-catalog-service
         url: /api-docs/food
+      - name: diary-service
+        url: /api-docs/diary
   api-docs:
     enabled: false
 

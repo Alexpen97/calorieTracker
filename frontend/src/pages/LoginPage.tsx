@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isLoggedIn()) {
-      navigate('/lookup', { replace: true })
+      navigate('/today', { replace: true })
     }
   }, [navigate])
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
         redirectUri: `${window.location.origin}/auth/callback`,
       })
       saveTokens(tokens)
-      navigate('/lookup')
+      navigate('/today')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Dev login failed')
     } finally {

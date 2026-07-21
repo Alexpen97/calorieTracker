@@ -1,17 +1,41 @@
+import { useMutation } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
-import { fetchProductById } from '../api/client'
-import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { createDiaryEntry, fetchProductById, type MealType } from '../api/client'
+import { useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
 
 export default function ProductPage() {
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
+  const [weightG, setWeightG] = useState('100')
+  const [mealType, setMealType] = useState<MealType>('BREAKFAST')
+  const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
     queryKey: ['product', id],
     queryFn: () => fetchProductById(id),
     enabled: Boolean(id),
   })
+  const addEntry = useMutation({
+    mutationFn: (input: { productId: string; weightG: number; mealType: MealType }) =>
+      createDiaryEntry(input),
+    onSuccess: () => navigate('/today'),
+  })
+
+  async function onAddToDiary(event: FormEvent) {
+    event.preventDefault()
+    if (!data) {
+      return
+    }
+    const parsedWeight = Number(weightG)
+    if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+      setEntryError('Enter a positive gram amount.')
+      return
+    }
+    setEntryError(null)
+    addEntry.mutate({ productId: data.id, weightG: parsedWeight, mealType })
+  }
 
   return (
     <main className="panel product-panel">
@@ -42,6 +66,40 @@ export default function ProductPage() {
               )}
             </div>
           </div>
+
+          <section className="nutrient-section">
+            <h3>Add to today</h3>
+            <form className="lookup-form" onSubmit={onAddToDiary}>
+              <label htmlFor="diary-weight">Amount (g)</label>
+              <input
+                id="diary-weight"
+                inputMode="decimal"
+                min="1"
+                onChange={(event) => setWeightG(event.target.value)}
+                type="number"
+                value={weightG}
+              />
+              <label htmlFor="diary-meal">Meal</label>
+              <select
+                id="diary-meal"
+                onChange={(event) => setMealType(event.target.value as MealType)}
+                value={mealType}
+              >
+                <option value="BREAKFAST">Breakfast</option>
+                <option value="LUNCH">Lunch</option>
+                <option value="DINNER">Dinner</option>
+                <option value="SNACK">Snack</option>
+              </select>
+              <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
+                <button className="btn btn-primary" disabled={addEntry.isPending} type="submit">
+                  {addEntry.isPending ? 'Adding…' : 'Add to diary'}
+                </button>
+              </div>
+            </form>
+            {(entryError || addEntry.error) && (
+              <p className="error">{entryError ?? (addEntry.error as Error).message}</p>
+            )}
+          </section>
 
           <section className="nutrient-section">
             <h3>Nutrition per 100 g</h3>
