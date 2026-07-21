@@ -30,6 +30,7 @@ See `docs/calorie-tracker-architecture.md` §5.3 and `AI/phase-2-food-lookup.md`
 | `SPRING_DATASOURCE_URL` | PostgreSQL `food_catalog` JDBC URL |
 | `REDIS_HOST` / `REDIS_PORT` | Redis cache |
 | `FOOD_REDIS_ENABLED` | `false` to use in-memory cache (tests) |
-| `OFF_BASE_URL` | Open Food Facts API base |
-| `OFF_USER_AGENT` | Required OFF User-Agent identifying this app |
+| `NUTRITRACK_FOOD_OFF_BASE_URL` | Open Food Facts API base (preferred Spring env name) |
+| `OFF_BASE_URL` | Same value; resolved via `application.yml` placeholder |
+| `NUTRITRACK_FOOD_OFF_USER_AGENT` / `OFF_USER_AGENT` | Required OFF User-Agent identifying this app |
 | `JWKS_URI` | auth-service JWKS endpoint for JWT validation |
