@@ -262,9 +262,16 @@ export async function fetchNutrients(): Promise<Nutrient[]> {
   return parseJson<Nutrient[]>(response)
 }
 
+export function browserTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+}
+
+function withDateAndZone(date: string): URLSearchParams {
+  return new URLSearchParams({ date, zone: browserTimeZone() })
+}
+
 export async function fetchDiaryEntries(date: string): Promise<DiaryEntry[]> {
-  const params = new URLSearchParams({ date })
-  const response = await fetch(`${apiBase}/api/diary/entries?${params}`, {
+  const response = await fetch(`${apiBase}/api/diary/entries?${withDateAndZone(date)}`, {
     headers: authHeaders(),
   })
   return parseJson<DiaryEntry[]>(response)
@@ -293,8 +300,7 @@ export async function deleteDiaryEntry(id: string): Promise<void> {
 }
 
 export async function fetchWater(date: string): Promise<WaterLog[]> {
-  const params = new URLSearchParams({ date })
-  const response = await fetch(`${apiBase}/api/diary/water?${params}`, {
+  const response = await fetch(`${apiBase}/api/diary/water?${withDateAndZone(date)}`, {
     headers: authHeaders(),
   })
   return parseJson<WaterLog[]>(response)
@@ -318,8 +324,7 @@ export async function deleteWater(id: string): Promise<void> {
 }
 
 export async function fetchDiarySummary(date: string): Promise<DaySummary> {
-  const params = new URLSearchParams({ date })
-  const response = await fetch(`${apiBase}/api/diary/summary?${params}`, {
+  const response = await fetch(`${apiBase}/api/diary/summary?${withDateAndZone(date)}`, {
     headers: authHeaders(),
   })
   return parseJson<DaySummary>(response)

@@ -10,7 +10,7 @@ import com.nutritrack.diary.domain.WaterIntakeRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,9 +40,9 @@ public class SummaryService {
   }
 
   @Transactional(readOnly = true)
-  public DailySummary summarize(UUID userId, LocalDate date, String bearerToken) {
-    Instant from = date.atStartOfDay().toInstant(ZoneOffset.UTC);
-    Instant to = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+  public DailySummary summarize(UUID userId, LocalDate date, ZoneId zone, String bearerToken) {
+    Instant from = DayBounds.startOfDay(date, zone);
+    Instant to = DayBounds.startOfNextDay(date, zone);
     List<DiaryEntry> entries =
         entryRepository
             .findByUserIdAndConsumedAtGreaterThanEqualAndConsumedAtLessThanOrderByConsumedAtDesc(
@@ -56,24 +56,24 @@ public class SummaryService {
 
   @Transactional(readOnly = true)
   public List<DailySummary> summarizeRange(
-      UUID userId, LocalDate fromDate, LocalDate toDate, String bearerToken) {
+      UUID userId, LocalDate fromDate, LocalDate toDate, ZoneId zone, String bearerToken) {
     if (toDate.isBefore(fromDate)) {
       return List.of();
     }
-    Instant from = fromDate.atStartOfDay().toInstant(ZoneOffset.UTC);
-    Instant to = toDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+    Instant from = DayBounds.startOfDay(fromDate, zone);
+    Instant to = DayBounds.startOfNextDay(toDate, zone);
     Map<LocalDate, List<DiaryEntry>> entriesByDate =
         entryRepository
             .findByUserIdAndConsumedAtGreaterThanEqualAndConsumedAtLessThanOrderByConsumedAtDesc(
                 userId, from, to)
             .stream()
-            .collect(Collectors.groupingBy(entry -> utcDate(entry.getConsumedAt())));
+            .collect(Collectors.groupingBy(entry -> DayBounds.localDate(entry.getConsumedAt(), zone)));
     Map<LocalDate, List<WaterIntake>> waterByDate =
         waterRepository
             .findByUserIdAndLoggedAtGreaterThanEqualAndLoggedAtLessThanOrderByLoggedAtDesc(
                 userId, from, to)
             .stream()
-            .collect(Collectors.groupingBy(water -> utcDate(water.getLoggedAt())));
+            .collect(Collectors.groupingBy(water -> DayBounds.localDate(water.getLoggedAt(), zone)));
     GoalTargets targets = loadTargets(bearerToken);
     List<DailySummary> summaries = new ArrayList<>();
     for (LocalDate date = fromDate; !date.isAfter(toDate); date = date.plusDays(1)) {
@@ -127,10 +127,6 @@ public class SummaryService {
     } catch (RuntimeException ex) {
       return new GoalTargets(Map.of(), null);
     }
-  }
-
-  private LocalDate utcDate(Instant instant) {
-    return instant.atOffset(ZoneOffset.UTC).toLocalDate();
   }
 
   public record DailySummary(LocalDate date, List<NutrientTotal> totals, WaterSummary water) {}

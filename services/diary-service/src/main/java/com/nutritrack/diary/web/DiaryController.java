@@ -4,6 +4,7 @@ import com.nutritrack.diary.domain.DiaryEntry;
 import com.nutritrack.diary.domain.DiaryEntryNutrient;
 import com.nutritrack.diary.domain.MealType;
 import com.nutritrack.diary.domain.WaterIntake;
+import com.nutritrack.diary.service.DayBounds;
 import com.nutritrack.diary.service.DiaryEntryService;
 import com.nutritrack.diary.service.PortionMath;
 import com.nutritrack.diary.service.SummaryService;
@@ -64,8 +65,12 @@ public class DiaryController {
 
   @GetMapping("/api/diary/entries")
   public List<DiaryEntryResponse> listEntries(
-      @AuthenticationPrincipal Jwt jwt, @RequestParam LocalDate date) {
-    return entryService.listByDate(UUID.fromString(jwt.getSubject()), date).stream()
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestParam LocalDate date,
+      @RequestParam(required = false) String zone) {
+    return entryService
+        .listByDate(UUID.fromString(jwt.getSubject()), date, DayBounds.resolveZone(zone))
+        .stream()
         .map(DiaryEntryResponse::from)
         .toList();
   }
@@ -101,8 +106,12 @@ public class DiaryController {
 
   @GetMapping("/api/diary/water")
   public List<WaterIntakeResponse> listWater(
-      @AuthenticationPrincipal Jwt jwt, @RequestParam LocalDate date) {
-    return waterService.listByDate(UUID.fromString(jwt.getSubject()), date).stream()
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestParam LocalDate date,
+      @RequestParam(required = false) String zone) {
+    return waterService
+        .listByDate(UUID.fromString(jwt.getSubject()), date, DayBounds.resolveZone(zone))
+        .stream()
         .map(WaterIntakeResponse::from)
         .toList();
   }
@@ -117,8 +126,10 @@ public class DiaryController {
   public SummaryService.DailySummary dailySummary(
       @AuthenticationPrincipal Jwt jwt,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
-      @RequestParam LocalDate date) {
-    return summaryService.summarize(UUID.fromString(jwt.getSubject()), date, authorization);
+      @RequestParam LocalDate date,
+      @RequestParam(required = false) String zone) {
+    return summaryService.summarize(
+        UUID.fromString(jwt.getSubject()), date, DayBounds.resolveZone(zone), authorization);
   }
 
   @GetMapping("/api/diary/summary/range")
@@ -126,8 +137,14 @@ public class DiaryController {
       @AuthenticationPrincipal Jwt jwt,
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
       @RequestParam LocalDate from,
-      @RequestParam LocalDate to) {
-    return summaryService.summarizeRange(UUID.fromString(jwt.getSubject()), from, to, authorization);
+      @RequestParam LocalDate to,
+      @RequestParam(required = false) String zone) {
+    return summaryService.summarizeRange(
+        UUID.fromString(jwt.getSubject()),
+        from,
+        to,
+        DayBounds.resolveZone(zone),
+        authorization);
   }
 
   public record CreateDiaryEntryRequest(

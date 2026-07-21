@@ -5,7 +5,7 @@ import com.nutritrack.diary.domain.WaterIntakeRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -31,9 +31,9 @@ public class WaterIntakeService {
   }
 
   @Transactional(readOnly = true)
-  public List<WaterIntake> listByDate(UUID userId, LocalDate date) {
-    Instant from = date.atStartOfDay().toInstant(ZoneOffset.UTC);
-    Instant to = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+  public List<WaterIntake> listByDate(UUID userId, LocalDate date, ZoneId zone) {
+    Instant from = DayBounds.startOfDay(date, zone);
+    Instant to = DayBounds.startOfNextDay(date, zone);
     return waterRepository
         .findByUserIdAndLoggedAtGreaterThanEqualAndLoggedAtLessThanOrderByLoggedAtDesc(
             userId, from, to);

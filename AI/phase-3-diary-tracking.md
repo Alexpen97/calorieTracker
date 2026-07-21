@@ -47,12 +47,13 @@ Completed on `cursor/phase-3-diary-tracking-29d6` (PR #5).
 - `/today` DiaryPage: energy/macros/water, meal entries, quick-add water
 - ProductPage: grams + meal type → add to diary
 - ProfilePage: profile edit, weight log, goals override + recalculate
+- Diary date queries accept optional `zone` (IANA); SPA sends browser timezone
 - Nav: Today | Lookup | Profile
 
 ## Verification (2026-07-21)
 
 - user-profile: 12 tests pass
-- diary: 11 tests pass
+- diary: 14 tests pass (incl. timezone day bounds)
 - gateway: 1 test pass
 - food-catalog + auth: regression green
 - frontend Vitest: 8 tests pass
@@ -61,4 +62,5 @@ Completed on `cursor/phase-3-diary-tracking-29d6` (PR #5).
 
 - Persist refresh tokens before multi-instance auth
 - Harden barcode scanner fallbacks (Phase 2 leftover)
+- Expand DRV age bands beyond 19–50
 - Phase 4: OFF bulk mirror + FTS + user submissions

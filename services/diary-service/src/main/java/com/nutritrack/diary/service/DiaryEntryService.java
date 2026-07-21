@@ -9,7 +9,7 @@ import com.nutritrack.diary.domain.MealType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -52,9 +52,9 @@ public class DiaryEntryService {
   }
 
   @Transactional(readOnly = true)
-  public List<DiaryEntry> listByDate(UUID userId, LocalDate date) {
-    Instant from = date.atStartOfDay().toInstant(ZoneOffset.UTC);
-    Instant to = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+  public List<DiaryEntry> listByDate(UUID userId, LocalDate date, ZoneId zone) {
+    Instant from = DayBounds.startOfDay(date, zone);
+    Instant to = DayBounds.startOfNextDay(date, zone);
     return entryRepository
         .findByUserIdAndConsumedAtGreaterThanEqualAndConsumedAtLessThanOrderByConsumedAtDesc(
             userId, from, to);
