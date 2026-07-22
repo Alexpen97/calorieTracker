@@ -1245,10 +1245,19 @@ button {
 }
 
 .dashboard-micro-pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: 0.9rem;
-  align-items: start;
+  width: 100%;
+}
+
+.dashboard-micro-pair > .dashboard-card {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  grid-column: auto;
 }
 
 .micro-grid {
@@ -1789,8 +1798,12 @@ button {
 
   .dashboard-page .mobile-hero,
   .analytics-page .mobile-hero,
-  .dashboard-page .dashboard-card:first-of-type,
-  .analytics-page .dashboard-card:first-of-type {
+  .dashboard-page > .dashboard-card:first-of-type,
+  .analytics-page > .dashboard-card:first-of-type {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-page > .dashboard-micro-pair {
     grid-column: 1 / -1;
   }
 

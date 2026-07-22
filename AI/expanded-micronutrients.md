@@ -9,7 +9,9 @@ backed by catalog education rows, goals DRVs, and Open Food Facts mappings.
 
 - Order: Today Summary → Vitamins | Minerals (side-by-side) → Weight Progress
 - Removed standalone Macros card (macros remain in the nested summary ring)
-- Vitamins/minerals stay side-by-side (`dashboard-micro-pair`) with compact 4-column grids and no % labels
+- Vitamins/minerals stay side-by-side via flex (`dashboard-micro-pair`); nested
+  cards must not inherit the page-level `:first-of-type` full-span rule
+- Each checklist uses a compact 4-column grid with thin bars and no % labels
 
 ## Codes
 
