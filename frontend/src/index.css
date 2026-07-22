@@ -935,3 +935,24 @@ button {
   gap: 0.7rem;
 }
 
+.diary-mobile-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meal-card {
+  padding: 1rem 0;
+  border-top: 1px solid rgba(31, 74, 55, 0.1);
+}
+
+.meal-card:first-of-type {
+  border-top: 0;
+}
+
+.meal-card h3 {
+  margin: 0 0 0.45rem;
+  color: var(--leaf-deep);
+}
+
