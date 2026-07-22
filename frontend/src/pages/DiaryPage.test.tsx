@@ -22,6 +22,8 @@ describe('DiaryPage', () => {
       water: { amountMl: 750, targetMl: 2500 },
     })
     vi.spyOn(client, 'fetchWater').mockResolvedValue([])
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue([])
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([])
     vi.spyOn(client, 'fetchDiaryEntries').mockResolvedValue([
       {
         id: 'entry-1',

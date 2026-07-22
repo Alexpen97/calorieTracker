@@ -18,12 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SummaryService {
 
+  private static final Logger log = LoggerFactory.getLogger(SummaryService.class);
   private static final String WATER_NUTRIENT_CODE = "water_ml";
 
   private final DiaryEntryRepository entryRepository;
@@ -133,6 +136,7 @@ public class SummaryService {
       }
       return new GoalTargets(Map.copyOf(nutrients), waterTarget);
     } catch (RuntimeException ex) {
+      log.warn("Diary summary could not load user goals; returning null targets", ex);
       return new GoalTargets(Map.of(), null);
     }
   }

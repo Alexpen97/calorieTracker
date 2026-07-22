@@ -3,12 +3,14 @@ import {
   deleteDiaryEntry,
   fetchDiaryEntries,
   fetchDiarySummary,
+  fetchGoals,
   fetchWater,
   fetchWeightHistory,
 } from '../api/client'
 import {
   formatLocalDate,
 } from '../diary/formatDay'
+import { mergeSummaryWithGoals } from '../diary/mergeSummaryGoals'
 import DiaryView from '../screens/DiaryView'
 
 export default function DiaryPage() {
@@ -18,6 +20,10 @@ export default function DiaryPage() {
   const summaryQuery = useQuery({
     queryKey: ['diary-summary', today],
     queryFn: () => fetchDiarySummary(today),
+  })
+  const goalsQuery = useQuery({
+    queryKey: ['goals'],
+    queryFn: fetchGoals,
   })
   const entriesQuery = useQuery({
     queryKey: ['diary-entries', today],
@@ -48,6 +54,7 @@ export default function DiaryPage() {
   const weights = weightQuery.data ?? []
   const errors = [
     summaryQuery.error,
+    goalsQuery.error,
     entriesQuery.error,
     waterQuery.error,
     weightQuery.error,
@@ -68,7 +75,7 @@ export default function DiaryPage() {
       {summary && (
         <DiaryView
           dateLabel={`Today, ${today}`}
-          summary={summary}
+          summary={mergeSummaryWithGoals(summary, goalsQuery.data)}
           entries={entries}
           waterLogs={waterLogs}
           weightHistory={weights}

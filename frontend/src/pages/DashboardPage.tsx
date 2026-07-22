@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchDiarySummary, fetchMe, fetchWeightHistory } from '../api/client'
+import { fetchDiarySummary, fetchGoals, fetchMe, fetchWeightHistory } from '../api/client'
 import { formatLocalDate } from '../diary/formatDay'
+import { mergeSummaryWithGoals } from '../diary/mergeSummaryGoals'
 import DashboardView from '../screens/DashboardView'
 
 export default function DashboardPage() {
@@ -13,6 +14,10 @@ export default function DashboardPage() {
     queryKey: ['diary-summary', today],
     queryFn: () => fetchDiarySummary(today),
   })
+  const goalsQuery = useQuery({
+    queryKey: ['goals'],
+    queryFn: fetchGoals,
+  })
   const weightQuery = useQuery({
     queryKey: ['weight-history'],
     queryFn: () => fetchWeightHistory(),
@@ -23,7 +28,7 @@ export default function DashboardPage() {
       {(meQuery.isLoading || summaryQuery.isLoading || weightQuery.isLoading) && (
         <p className="mobile-page">Loading dashboard…</p>
       )}
-      {[meQuery.error, summaryQuery.error, weightQuery.error]
+      {[meQuery.error, summaryQuery.error, goalsQuery.error, weightQuery.error]
         .filter(Boolean)
         .map((error, index) => (
           <p className="error mobile-page" key={index}>
@@ -33,7 +38,7 @@ export default function DashboardPage() {
       {summaryQuery.data && (
         <DashboardView
           me={meQuery.data ?? null}
-          summary={summaryQuery.data}
+          summary={mergeSummaryWithGoals(summaryQuery.data, goalsQuery.data)}
           weightHistory={weightQuery.data ?? []}
         />
       )}

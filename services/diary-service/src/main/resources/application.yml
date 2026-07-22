@@ -1,6 +1,9 @@
 spring:
   application:
     name: diary-service
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/diary}
     username: ${SPRING_DATASOURCE_USERNAME:nutritrack}

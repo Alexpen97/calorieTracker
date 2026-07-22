@@ -1,7 +1,6 @@
 package com.nutritrack.diary.client;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
-public record UserGoalResponse(
-    String nutrientCode, BigDecimal dailyTarget, String unit, String origin, Instant computedAt) {}
+/** Subset of user-profile GoalResponse used by diary summaries. */
+public record UserGoalResponse(String nutrientCode, BigDecimal dailyTarget, String unit) {}

@@ -471,7 +471,6 @@ class DiaryControllerTest {
   }
 
   private UserGoalResponse goal(String nutrientCode, String dailyTarget, String unit) {
-    return new UserGoalResponse(
-        nutrientCode, new BigDecimal(dailyTarget), unit, "COMPUTED", Instant.parse("2026-07-21T00:00:00Z"));
+    return new UserGoalResponse(nutrientCode, new BigDecimal(dailyTarget), unit);
   }
 }

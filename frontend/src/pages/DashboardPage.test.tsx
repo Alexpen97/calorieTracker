@@ -39,6 +39,7 @@ describe('DashboardPage', () => {
       { id: 'w1', weightKg: 72.4, measuredAt: '2026-07-20T08:00:00Z' },
       { id: 'w2', weightKg: 72.1, measuredAt: '2026-07-22T08:00:00Z' },
     ])
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue([])
 
     renderWithClient(<DashboardPage />)
 
@@ -61,7 +62,7 @@ describe('DashboardPage', () => {
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
   })
 
-  it('shows calorie and macro goals on an empty day', async () => {
+  it('fills calorie and macro goals from fetchGoals when summary targets are null', async () => {
     vi.spyOn(client, 'fetchMe').mockResolvedValue({
       id: 'u1',
       email: 'alex@example.com',
@@ -77,21 +78,51 @@ describe('DashboardPage', () => {
     vi.spyOn(client, 'fetchDiarySummary').mockResolvedValue({
       date: '2026-07-22',
       totals: [
-        { code: 'energy_kcal', amount: 0, unit: 'kcal', target: 2100 },
-        { code: 'protein', amount: 0, unit: 'g', target: 100 },
-        { code: 'carbohydrates', amount: 0, unit: 'g', target: 250 },
-        { code: 'fat', amount: 0, unit: 'g', target: 70 },
+        { code: 'energy_kcal', amount: 2333, unit: 'kcal', target: null },
+        { code: 'protein', amount: 233, unit: 'g', target: null },
+        { code: 'carbohydrates', amount: 23, unit: 'g', target: null },
+        { code: 'fat', amount: 223, unit: 'g', target: null },
       ],
-      water: { amountMl: 0, targetMl: 2500 },
+      water: { amountMl: 0, targetMl: null },
     })
     vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([])
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue([
+      {
+        nutrientCode: 'energy_kcal',
+        dailyTarget: 2100,
+        unit: 'kcal',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
+      {
+        nutrientCode: 'protein',
+        dailyTarget: 100,
+        unit: 'g',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
+      {
+        nutrientCode: 'carbohydrates',
+        dailyTarget: 250,
+        unit: 'g',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
+      {
+        nutrientCode: 'fat',
+        dailyTarget: 70,
+        unit: 'g',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
+    ])
 
     renderWithClient(<DashboardPage />)
 
-    expect(await screen.findByLabelText(/^Calories: 0 \/ 2.100$|^Calories: 0 \/ 2,100$/)).toBeInTheDocument()
-    expect(screen.getByLabelText('Protein: 0 / 100 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 0 / 250 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 0 / 70 g')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/^Calories: 2.333 \/ 2.100$|^Calories: 2,333 \/ 2,100$/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 233 / 100 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 23 / 250 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 223 / 70 g')).toBeInTheDocument()
   })
 })
 
