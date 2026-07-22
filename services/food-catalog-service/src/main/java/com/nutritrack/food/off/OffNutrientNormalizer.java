@@ -1,6 +1,5 @@
 package com.nutritrack.food.off;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,10 +9,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import tools.jackson.databind.JsonNode;
 
 public final class OffNutrientNormalizer {
 
-  private static final Pattern SERVING_GRAMS = Pattern.compile("([0-9]+(?:\\.[0-9]+)?)\\s*g", Pattern.CASE_INSENSITIVE);
+  private static final Pattern SERVING_GRAMS =
+      Pattern.compile("([0-9]+(?:\\.[0-9]+)?)\\s*g", Pattern.CASE_INSENSITIVE);
 
   private static final Map<String, Mapping> MAPPINGS = buildMappings();
 
@@ -30,8 +31,10 @@ public final class OffNutrientNormalizer {
 
     String brand = text(productNode, "brands");
     String quantity = text(productNode, "quantity");
-    String imageUrl = firstNonBlank(text(productNode, "image_url"), text(productNode, "image_front_url"));
-    String nutriScore = firstNonBlank(text(productNode, "nutrition_grades"), text(productNode, "nutriscore_grade"));
+    String imageUrl =
+        firstNonBlank(text(productNode, "image_url"), text(productNode, "image_front_url"));
+    String nutriScore =
+        firstNonBlank(text(productNode, "nutrition_grades"), text(productNode, "nutriscore_grade"));
     if (nutriScore != null) {
       nutriScore = nutriScore.substring(0, 1).toUpperCase(Locale.ROOT);
     }
@@ -120,8 +123,8 @@ public final class OffNutrientNormalizer {
     List<String> tags = new ArrayList<>();
     node.forEach(
         item -> {
-          if (item.isTextual() && !item.asText().isBlank()) {
-            tags.add(item.asText());
+          if (item.isString() && !item.asString().isBlank()) {
+            tags.add(item.asString());
           }
         });
     return List.copyOf(tags);
@@ -129,10 +132,10 @@ public final class OffNutrientNormalizer {
 
   private static String text(JsonNode node, String field) {
     JsonNode value = node.get(field);
-    if (value == null || value.isNull() || !value.isTextual()) {
+    if (value == null || value.isNull() || !value.isString()) {
       return null;
     }
-    return value.asText();
+    return value.asString();
   }
 
   private static String firstNonBlank(String... values) {

@@ -1,7 +1,5 @@
 package com.nutritrack.food.batch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nutritrack.food.off.NormalizedOffProduct;
 import com.nutritrack.food.off.OffNutrientNormalizer;
 import com.nutritrack.food.service.OffProductUpsertService;
@@ -23,6 +21,8 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.transaction.PlatformTransactionManager;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 public class OffBulkImportJobConfig {
@@ -30,7 +30,7 @@ public class OffBulkImportJobConfig {
   public static final String JOB_NAME = "offBulkImportJob";
   public static final String PARAM_INPUT = "input.resource";
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
   @Bean
   Job offBulkImportJob(JobRepository jobRepository, Step offBulkImportStep) {
@@ -71,7 +71,7 @@ public class OffBulkImportJobConfig {
       if (line == null || line.isBlank()) {
         return null;
       }
-      JsonNode node = objectMapper.readTree(line);
+      JsonNode node = jsonMapper.readTree(line);
       String code = text(node, "code");
       if (code == null || code.isBlank()) {
         return null;
@@ -104,7 +104,7 @@ public class OffBulkImportJobConfig {
     if (value == null || value.isNull()) {
       return null;
     }
-    String text = value.asText();
+    String text = value.asString();
     return text == null || text.isBlank() ? null : text;
   }
 }

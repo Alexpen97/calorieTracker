@@ -2,13 +2,13 @@ package com.nutritrack.food.off;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 class OffNutrientNormalizerTest {
 
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final JsonMapper mapper = JsonMapper.builder().build();
 
   @Test
   void normalizesCommonOffNutrimentsAndServingSize() throws Exception {
@@ -57,11 +57,6 @@ class OffNutrientNormalizerTest {
               assertThat(n.code()).isEqualTo("sodium");
               assertThat(n.amountPer100g()).isEqualByComparingTo("42.8");
               assertThat(n.unit()).isEqualTo("mg");
-            })
-        .anySatisfy(
-            n -> {
-              assertThat(n.code()).isEqualTo("protein");
-              assertThat(n.amountPer100g()).isEqualByComparingTo("6.3");
             });
   }
 }

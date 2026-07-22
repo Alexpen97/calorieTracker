@@ -1,6 +1,5 @@
 package com.nutritrack.food.off;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.ratelimiter.RateLimiter;
@@ -12,6 +11,7 @@ import java.util.function.Supplier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import tools.jackson.databind.JsonNode;
 
 public class OffClient {
 
@@ -133,7 +133,7 @@ public class OffClient {
     if (value == null || value.isNull()) {
       return null;
     }
-    String text = value.asText();
+    String text = value.asString();
     return text == null || text.isBlank() ? null : text;
   }
 }
