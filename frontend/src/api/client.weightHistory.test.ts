@@ -2,15 +2,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearTokens, saveTokens } from '../auth/tokenStorage'
 
 describe('weight history API client', () => {
-  afterEach(() => {
-    clearTokens()
+  afterEach(async () => {
+    await clearTokens()
     vi.unstubAllGlobals()
     vi.resetModules()
     vi.restoreAllMocks()
   })
 
   it('converts LocalDate from/to into Instant query params', async () => {
-    saveTokens({
+    await saveTokens({
       accessToken: 'access',
       refreshToken: 'refresh',
       tokenType: 'Bearer',
@@ -32,7 +32,7 @@ describe('weight history API client', () => {
   })
 
   it('passes Instant from/to through unchanged', async () => {
-    saveTokens({
+    await saveTokens({
       accessToken: 'access',
       refreshToken: 'refresh',
       tokenType: 'Bearer',
@@ -57,7 +57,7 @@ describe('weight history API client', () => {
   })
 
   it('omits query string when no range is provided', async () => {
-    saveTokens({
+    await saveTokens({
       accessToken: 'access',
       refreshToken: 'refresh',
       tokenType: 'Bearer',

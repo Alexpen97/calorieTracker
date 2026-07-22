@@ -2,15 +2,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearTokens, saveTokens } from '../auth/tokenStorage'
 
 describe('diary range API client', () => {
-  afterEach(() => {
-    clearTokens()
+  afterEach(async () => {
+    await clearTokens()
     vi.unstubAllGlobals()
     vi.resetModules()
     vi.restoreAllMocks()
   })
 
   it('calls the range summary endpoint with from, to, and browser zone', async () => {
-    saveTokens({
+    await saveTokens({
       accessToken: 'access',
       refreshToken: 'refresh',
       tokenType: 'Bearer',

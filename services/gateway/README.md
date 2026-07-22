@@ -25,5 +25,5 @@ API Gateway container — Spring Cloud Gateway. See `docs/calorie-tracker-archit
 | `DIARY_SERVICE_URL` | diary-service base URL (**required on Railway** — unset/empty breaks `/api/diary/**` with gateway 500) |
 | `RECO_SERVICE_URL` | recommendation-service base URL (optional until Phase 6) |
 | `JWKS_URI` | auth-service JWKS endpoint for JWT validation |
-| `CORS_ALLOWED_ORIGINS` | SPA + Capacitor origins |
+| `CORS_ALLOWED_ORIGINS` | SPA + Capacitor origins (`https://localhost` for Android WebView) |
 | `SWAGGER_UI_ENABLED` | enable/restrict Swagger UI per environment |

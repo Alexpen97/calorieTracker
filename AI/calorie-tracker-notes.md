@@ -74,7 +74,7 @@ Full micronutrient checklist on dashboard (summary → vitamins → minerals →
 weight; macros card removed). Catalog education, goals DRVs, and OFF mappings
 expanded — see `AI/expanded-micronutrients.md`.
 
-- Roadmap phases 5–6 (design doc §14).
+- Roadmap phase 6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.
 - Google `redirect_uri_mismatch`: register **frontend**
@@ -82,8 +82,9 @@ expanded — see `AI/expanded-micronutrients.md`.
   Railway app). Live NutriTrack example and checklist:
   `docs/google-oauth-setup.md`. Login page shows the exact URIs for the current origin.
 - Resolve open questions in design doc §15 before the relevant phases.
-- Harden barcode scanner fallbacks for browsers without `BarcodeDetector`.
 - Assign initial `MODERATOR`/`ADMIN` users for the submission queue.
+- Complete Play Store listing + signed AAB upload (`docs/android-play-store.md`);
+  register Android OAuth client SHA-1 for package `com.nutritrack.app`.
 
 ## Bugfix: weight Instant from (2026-07-22)
 
@@ -123,6 +124,17 @@ Implemented on `cursor/phase-4-mirror-search-submissions-f0d1`:
 - diary: `submissionId` on create entry
 - frontend: search, submit product, moderation queue
 - Docs: `AI/phase-4-mirror-search-submissions.md`, `docs/railway-phase4.md`
+
+## Phase 5 (2026-07-22)
+
+Implemented on `cursor/phase-5-android-7d17`:
+
+- Capacitor 8 Android shell (`com.nutritrack.app`) wrapping the React SPA
+- ML Kit barcode scan on native; web `BarcodeDetector` unchanged
+- Native Google Sign-In (server auth code) + optional `redirectUri` on auth callback
+- Keystore-backed secure token storage; gateway CORS includes `https://localhost`
+- Play Store checklist: `docs/android-play-store.md`
+- Notes: `AI/phase-5-android.md`
 
 ## Today Summary calorie ring + macro bars (2026-07-22)
 

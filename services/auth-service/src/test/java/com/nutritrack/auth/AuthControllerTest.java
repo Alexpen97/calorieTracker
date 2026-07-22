@@ -56,6 +56,25 @@ class AuthControllerTest {
   }
 
   @Test
+  void googleCallbackAcceptsNativeServerAuthCodeWithoutRedirectUri() throws Exception {
+    UUID userId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+    when(userProfileClient.upsert(anyString(), anyString(), nullable(String.class), nullable(String.class)))
+        .thenReturn(new UserProfileClient.UpsertedUser(userId, "dev-user@example.com", "USER"));
+
+    mockMvc
+        .perform(
+            post("/api/auth/google/callback")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"code":"dev"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isNotEmpty())
+        .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+  }
+
+  @Test
   void refreshRotatesTokens() throws Exception {
     UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
     when(userProfileClient.upsert(anyString(), anyString(), nullable(String.class), nullable(String.class)))

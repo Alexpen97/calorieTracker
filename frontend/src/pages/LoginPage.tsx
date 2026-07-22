@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPkcePair, isLoggedIn, saveTokens } from '../auth/tokenStorage'
 import {
@@ -5,7 +6,10 @@ import {
   getGoogleRedirectUri,
 } from '../auth/oauthRedirect'
 import { exchangeGoogleCode } from '../api/client'
-import { useEffect, useState } from 'react'
+import {
+  canUseNativeGoogleSignIn,
+  loginWithGoogleNative,
+} from '../platform/googleNativeAuth'
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
 const authMode = import.meta.env.VITE_AUTH_MODE ?? 'dev'
@@ -17,6 +21,7 @@ export default function LoginPage() {
   const [copied, setCopied] = useState(false)
   const javascriptOrigin = getGoogleJavascriptOrigin()
   const redirectUri = getGoogleRedirectUri()
+  const nativeGoogle = canUseNativeGoogleSignIn()
 
   useEffect(() => {
     if (isLoggedIn()) {
@@ -26,23 +31,39 @@ export default function LoginPage() {
 
   async function startGoogleLogin() {
     setError(null)
-    if (!googleClientId) {
-      setError('VITE_GOOGLE_CLIENT_ID is not configured.')
-      return
+    setBusy(true)
+    try {
+      if (!googleClientId) {
+        setError('VITE_GOOGLE_CLIENT_ID is not configured.')
+        return
+      }
+
+      if (nativeGoogle) {
+        const code = await loginWithGoogleNative(googleClientId)
+        const tokens = await exchangeGoogleCode({ code })
+        await saveTokens(tokens)
+        navigate('/onboarding')
+        return
+      }
+
+      const { verifier, challenge } = await createPkcePair()
+      sessionStorage.setItem('pkce_verifier', verifier)
+      const params = new URLSearchParams({
+        client_id: googleClientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid email profile',
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+        access_type: 'online',
+        prompt: 'select_account',
+      })
+      window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed')
+    } finally {
+      setBusy(false)
     }
-    const { verifier, challenge } = await createPkcePair()
-    sessionStorage.setItem('pkce_verifier', verifier)
-    const params = new URLSearchParams({
-      client_id: googleClientId,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile',
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
-      access_type: 'online',
-      prompt: 'select_account',
-    })
-    window.location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
   }
 
   async function devLogin() {
@@ -53,7 +74,7 @@ export default function LoginPage() {
         code: 'dev',
         redirectUri,
       })
-      saveTokens(tokens)
+      await saveTokens(tokens)
       navigate('/onboarding')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Dev login failed')
@@ -78,17 +99,22 @@ export default function LoginPage() {
         <h1>NutriTrack</h1>
         <p>See what you eat — calories, macros, and micronutrients in one calm place.</p>
         <div className="cta-row">
-          <button className="btn btn-primary" type="button" onClick={startGoogleLogin}>
-            Continue with Google
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={busy}
+            onClick={() => void startGoogleLogin()}
+          >
+            {busy ? 'Signing in…' : 'Continue with Google'}
           </button>
           {authMode === 'dev' && (
-            <button className="btn btn-secondary" type="button" disabled={busy} onClick={devLogin}>
+            <button className="btn btn-secondary" type="button" disabled={busy} onClick={() => void devLogin()}>
               {busy ? 'Signing in…' : 'Dev login'}
             </button>
           )}
         </div>
         {error && <p className="error">{error}</p>}
-        {googleClientId && (
+        {googleClientId && !nativeGoogle && (
           <section className="oauth-setup" aria-label="Google OAuth setup">
             <p>
               If Google shows <code>redirect_uri_mismatch</code>, register these exact values on
@@ -103,7 +129,7 @@ export default function LoginPage() {
               <dt>Authorized redirect URIs</dt>
               <dd>
                 <code>{redirectUri}</code>
-                <button className="btn btn-secondary btn-compact" type="button" onClick={copyRedirectUri}>
+                <button className="btn btn-secondary btn-compact" type="button" onClick={() => void copyRedirectUri()}>
                   {copied ? 'Copied' : 'Copy'}
                 </button>
               </dd>

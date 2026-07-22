@@ -18,8 +18,8 @@ export default function AuthCallbackPage() {
     const verifier = sessionStorage.getItem('pkce_verifier') ?? undefined
     const redirectUri = getGoogleRedirectUri()
     exchangeGoogleCode({ code, codeVerifier: verifier, redirectUri })
-      .then((tokens) => {
-        saveTokens(tokens)
+      .then(async (tokens) => {
+        await saveTokens(tokens)
         sessionStorage.removeItem('pkce_verifier')
         navigate('/onboarding', { replace: true })
       })

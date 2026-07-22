@@ -22,7 +22,7 @@ import reactor.core.publisher.Flux;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-  @Value("${nutritrack.cors.allowed-origins:http://localhost:5173,http://localhost}")
+  @Value("${nutritrack.cors.allowed-origins:http://localhost:5173,http://localhost,https://localhost}")
   private String allowedOrigins;
 
   @Value("${nutritrack.swagger-ui-enabled:true}")

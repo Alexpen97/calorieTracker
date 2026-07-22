@@ -123,8 +123,9 @@ export default function ProfilePage() {
   })
 
   function logout() {
-    clearTokens()
-    navigate('/', { replace: true })
+    void clearTokens().then(() => {
+      navigate('/', { replace: true })
+    })
   }
 
   function submitProfile(event: FormEvent) {

@@ -1,14 +1,22 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { clearTokens, isLoggedIn, saveTokens, getAccessToken } from '../auth/tokenStorage'
+import { beforeEach, describe, expect, it } from 'vitest'
+import {
+  clearTokens,
+  getAccessToken,
+  initTokenStorage,
+  isLoggedIn,
+  resetTokenStorageForTests,
+  saveTokens,
+  unloadTokenStorageForTests,
+} from '../auth/tokenStorage'
 
 describe('tokenStorage', () => {
   beforeEach(() => {
-    clearTokens()
+    resetTokenStorageForTests()
   })
 
-  it('persists and clears tokens', () => {
+  it('persists and clears tokens', async () => {
     expect(isLoggedIn()).toBe(false)
-    saveTokens({
+    await saveTokens({
       accessToken: 'access',
       refreshToken: 'refresh',
       tokenType: 'Bearer',
@@ -16,7 +24,12 @@ describe('tokenStorage', () => {
     })
     expect(isLoggedIn()).toBe(true)
     expect(getAccessToken()).toBe('access')
-    clearTokens()
+
+    unloadTokenStorageForTests()
+    await initTokenStorage()
+    expect(getAccessToken()).toBe('access')
+
+    await clearTokens()
     expect(isLoggedIn()).toBe(false)
   })
 })
