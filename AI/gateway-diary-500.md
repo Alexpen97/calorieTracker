@@ -69,7 +69,23 @@ Quick check while logged in:
 - Drop unused `recommendation-service` route until Phase 6 (blank
   `RECO_SERVICE_URL` previously broke startup).
 
+## If diary-service logs nothing
+
+The request never reached diary — search **gateway** logs for the `requestId`
+from the JSON error (e.g. `88650e34-109`), or for `Host is not specified` /
+`Proxying GET ... /api/diary`.
+
+After deploying the host-guard filter, a bad upstream returns **502** with:
+
+```json
+{"error":"Gateway upstream has no host","routeId":"diary-service","routeUri":"...","requestUrl":"..."}
+```
+
+Set `DIARY_SERVICE_URL` on gateway to the private host from diary OpenAPI
+`servers` (example from production: `http://calorietracker-8495.railway.internal:8080`),
+including `http://`, then redeploy gateway.
+
 ## Related
 
+- Diary-only 500s when Profile works: `AI/diary-only-500.md`
 - Full gateway env table: `docs/railway-deploy.md`
-- Phase 3 deploy checklist: `docs/railway-phase3.md`
