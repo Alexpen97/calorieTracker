@@ -1,5 +1,4 @@
 import type { DaySummary, DiaryEntry, WaterLog, WeightLog } from '../api/client'
-import { Link } from 'react-router-dom'
 import { groupEntriesByMeal, getMacroProgress } from '../diary/formatDay'
 import { buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { DashboardCard } from '../ui/Card'
@@ -15,7 +14,6 @@ type Props = {
   onPreviousDay: () => void
   onNextDay: () => void
   onDeleteEntry: (id: string) => void
-  onAddFoodHref?: string
 }
 
 export default function DiaryView({
@@ -27,7 +25,6 @@ export default function DiaryView({
   onPreviousDay,
   onNextDay,
   onDeleteEntry,
-  onAddFoodHref = '/lookup',
 }: Props) {
   const energy = getMacroProgress(summary.totals, 'energy_kcal')
   const protein = getMacroProgress(summary.totals, 'protein')
@@ -76,13 +73,6 @@ export default function DiaryView({
               },
             ]}
           />
-
-          <Link className="add-food-tile" to={onAddFoodHref}>
-            <span className="add-food-plus" aria-hidden>
-              +
-            </span>
-            <span>Add Food</span>
-          </Link>
         </div>
       </DashboardCard>
 

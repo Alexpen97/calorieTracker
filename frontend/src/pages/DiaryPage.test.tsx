@@ -62,6 +62,7 @@ describe('DiaryPage', () => {
     expect(screen.queryByRole('progressbar', { name: /Calories: \d+%/ })).not.toBeInTheDocument()
     expect(document.querySelector('.progress-ring')).not.toBeInTheDocument()
     expect(screen.getByTestId('diary-macro-bars')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /add food/i })).not.toBeInTheDocument()
   })
 
   it('shows the selected day between summary and meals and loads adjacent days', async () => {

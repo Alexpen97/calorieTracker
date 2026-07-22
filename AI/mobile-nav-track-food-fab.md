@@ -8,7 +8,7 @@ food tracking (`/lookup`).
 ## Changes
 
 - `AppNavigation` inserts a raised FAB between Diary and Analytics on mobile.
-- Link target is `/lookup` (same food-tracking entry point as diary "Add Food").
+- Link target is `/lookup` (primary food-tracking entry on mobile; diary summary no longer has Add Food).
 - Accessible name: `Track food`.
 - Desktop top nav is unchanged (still includes Lookup as a text link).
 - New `IconPlus` icon used by the FAB.
