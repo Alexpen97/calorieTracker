@@ -37,7 +37,11 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
             calorieLabel="Calories"
             caloriePercent={percent}
             calorieValue={formatNumber((energy?.target ?? 0) - (energy?.amount ?? 0))}
-            macros={macros.map((macro) => ({ label: macro.label, percent: macro.percent }))}
+            macros={macros.map((macro) => ({
+              label: macro.label,
+              percent: macro.percent,
+              amountLabel: macro.amountLabel,
+            }))}
           />
         </div>
       </DashboardCard>

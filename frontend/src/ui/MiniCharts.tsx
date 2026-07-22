@@ -1,4 +1,5 @@
 type Segment = { label: string; percent: number }
+type MacroSegment = Segment & { amountLabel: string }
 type ChartPoint = number
 
 function clampPercent(value: number): number {
@@ -58,14 +59,10 @@ export function NestedCalorieMacroRing({
   calorieLabel: string
   caloriePercent: number
   calorieValue: string
-  macros: Segment[]
+  macros: MacroSegment[]
 }) {
   const calorieBounded = clampPercent(caloriePercent)
   const calorieOffset = 100 * (1 - calorieBounded / 100)
-  const macroCount = Math.max(macros.length, 1)
-  const gap = 2.4
-  const segmentSize = 100 / macroCount
-  const usable = Math.max(segmentSize - gap, 0)
 
   return (
     <div className="nested-goal-ring">
@@ -79,48 +76,19 @@ export function NestedCalorieMacroRing({
         aria-valuetext={`${calorieBounded}%`}
       >
         <svg className="nested-goal-ring-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-          {macros.map((macro, index) => {
-            const bounded = clampPercent(macro.percent)
-            const filled = (usable * bounded) / 100
-            const offset = -(index * segmentSize)
-            const tone = MACRO_RING_TONES[index % MACRO_RING_TONES.length]
-            return (
-              <g key={macro.label}>
-                <circle
-                  className={`nested-macro-track nested-macro-track-${tone}`}
-                  data-testid="nested-macro-track"
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  pathLength={100}
-                  strokeDasharray={`${usable} ${100 - usable}`}
-                  strokeDashoffset={offset}
-                />
-                <circle
-                  className={`nested-macro-indicator nested-macro-indicator-${tone}`}
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  pathLength={100}
-                  strokeDasharray={`${filled} ${100 - filled}`}
-                  strokeDashoffset={offset}
-                />
-              </g>
-            )
-          })}
           <circle
             className="nested-calorie-track"
             data-testid="nested-calorie-track"
             cx="50"
             cy="50"
-            r="28"
+            r="36"
             pathLength={100}
           />
           <circle
             className="nested-calorie-indicator"
             cx="50"
             cy="50"
-            r="28"
+            r="36"
             pathLength={100}
             strokeDasharray={100}
             strokeDashoffset={calorieOffset}
@@ -139,16 +107,15 @@ export function NestedCalorieMacroRing({
             <li
               key={macro.label}
               className={`nested-macro-legend-item nested-macro-legend-${tone}`}
-              aria-label={`${macro.label}: ${bounded}%`}
+              aria-label={`${macro.label}: ${macro.amountLabel}`}
             >
-              <span className="nested-macro-swatch" aria-hidden />
               <span className="nested-macro-name">{macro.label}</span>
               <div className="nested-macro-bar" aria-hidden>
                 <div className="nested-macro-bar-track" data-testid="nested-macro-bar-track">
                   <div className="nested-macro-bar-fill" style={{ width: `${bounded}%` }} />
                 </div>
               </div>
-              <strong>{bounded}%</strong>
+              <span className="nested-macro-amount">{macro.amountLabel}</span>
             </li>
           )
         })}

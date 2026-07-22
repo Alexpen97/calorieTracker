@@ -24,16 +24,16 @@ describe('mini chart primitives', () => {
     expect(screen.getByText('43%')).toBeInTheDocument()
   })
 
-  it('renders nested calorie ring with macro name and percent labels', () => {
+  it('renders calorie ring with horizontal macro bars and amount labels', () => {
     render(
       <NestedCalorieMacroRing
         calorieLabel="Calories"
         caloriePercent={128}
         calorieValue="650"
         macros={[
-          { label: 'Protein', percent: 82 },
-          { label: 'Carbs', percent: 72 },
-          { label: 'Fat', percent: 69 },
+          { label: 'Protein', percent: 82, amountLabel: '82 / 100 g' },
+          { label: 'Carbs', percent: 72, amountLabel: '180 / 250 g' },
+          { label: 'Fat', percent: 69, amountLabel: '48 / 70 g' },
         ]}
       />,
     )
@@ -41,13 +41,14 @@ describe('mini chart primitives', () => {
     expect(screen.getByLabelText('Calories: 100%')).toBeInTheDocument()
     expect(screen.getByText('650')).toBeInTheDocument()
     expect(screen.getByText('Protein')).toBeInTheDocument()
-    expect(screen.getByText('82%')).toBeInTheDocument()
+    expect(screen.getByText('82 / 100 g')).toBeInTheDocument()
     expect(screen.getByText('Carbs')).toBeInTheDocument()
-    expect(screen.getByText('72%')).toBeInTheDocument()
+    expect(screen.getByText('180 / 250 g')).toBeInTheDocument()
     expect(screen.getByText('Fat')).toBeInTheDocument()
-    expect(screen.getByText('69%')).toBeInTheDocument()
+    expect(screen.getByText('48 / 70 g')).toBeInTheDocument()
+    expect(screen.queryByText('82%')).not.toBeInTheDocument()
     expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
-    expect(screen.getAllByTestId('nested-macro-track')).toHaveLength(3)
+    expect(screen.queryByTestId('nested-macro-track')).not.toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
   })
 
@@ -58,19 +59,19 @@ describe('mini chart primitives', () => {
         caloriePercent={0}
         calorieValue="0"
         macros={[
-          { label: 'Protein', percent: 0 },
-          { label: 'Carbs', percent: 0 },
-          { label: 'Fat', percent: 0 },
+          { label: 'Protein', percent: 0, amountLabel: '0 g' },
+          { label: 'Carbs', percent: 0, amountLabel: '0 g' },
+          { label: 'Fat', percent: 0, amountLabel: '0 g' },
         ]}
       />,
     )
 
     expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
-    expect(screen.getAllByTestId('nested-macro-track')).toHaveLength(3)
+    expect(screen.queryByTestId('nested-macro-track')).not.toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
-    expect(screen.getByLabelText('Protein: 0%')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 0%')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 0%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 0 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 0 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 0 g')).toBeInTheDocument()
   })
 
   it('renders sparkline, stacked, and grouped chart labels', () => {
