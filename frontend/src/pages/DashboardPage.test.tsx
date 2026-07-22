@@ -44,7 +44,8 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Macros' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Calories: 69%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 1,450 / 2,100')).toBeInTheDocument()
+    expect(screen.getByText('1,450 / 2,100')).toBeInTheDocument()
     expect(screen.getByLabelText('Protein: 82 / 100 g')).toBeInTheDocument()
     expect(screen.getByLabelText('Carbs: 180 / 250 g')).toBeInTheDocument()
     expect(screen.getByLabelText('Fat: 48 / 70 g')).toBeInTheDocument()

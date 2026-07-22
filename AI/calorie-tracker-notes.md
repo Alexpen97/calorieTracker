@@ -104,5 +104,6 @@ Implemented on `cursor/phase-4-mirror-search-submissions-f0d1`:
 ## Today Summary calorie ring + macro bars (2026-07-22)
 
 Dashboard Today Summary uses a calorie progress ring with three horizontal macro
-bars (name above, amount/goal below, no outer macro ring or percent labels).
+bars. Calorie center and each macro show `amount / goal` (no outer macro ring or
+percent labels). Ring stroke is tightened so center text clears the track.
 Notes: `AI/today-summary-nested-donut.md`.
