@@ -12,7 +12,7 @@ export default function AnalyticsPage() {
     queryFn: () => fetchDiarySummaryRange(from, to),
   })
   const weightQuery = useQuery({
-    queryKey: ['weight-history'],
+    queryKey: ['weight-history', from, to],
     queryFn: () => fetchWeightHistory({ from, to }),
   })
 

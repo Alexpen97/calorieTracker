@@ -67,6 +67,11 @@ Implemented on `cursor/user-onboarding-flow-80e1`:
 - Harden barcode scanner fallbacks for browsers without `BarcodeDetector`.
 - Assign initial `MODERATOR`/`ADMIN` users for the submission queue.
 
+## Bugfix: weight Instant from (2026-07-22)
+
+Analytics sent LocalDate `from`/`to` to Instant weight API; shared React Query
+key poisoned onboarding/dashboard. See `AI/weight-instant-from-param.md`.
+
 ## Phase 2 (2026-07-21)
 
 Implemented on `cursor/phase-2-food-lookup-84b9`:

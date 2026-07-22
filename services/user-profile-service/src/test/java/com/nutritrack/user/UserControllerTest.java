@@ -186,6 +186,26 @@ class UserControllerTest {
   }
 
   @Test
+  void getWeightFiltersByLocalDateRangeParams() throws Exception {
+    Jwt jwt = jwtForNewUser("range-weight-date");
+
+    postWeight(jwt, "69.0", "2026-07-20T10:00:00Z");
+    postWeight(jwt, "70.0", "2026-07-21T10:00:00Z");
+    postWeight(jwt, "71.0", "2026-07-22T10:00:00Z");
+
+    mockMvc
+        .perform(
+            get("/api/users/me/weight")
+                .queryParam("from", "2026-07-21")
+                .queryParam("to", "2026-07-22T23:59:59.999Z")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].weightKg").value(71.0))
+        .andExpect(jsonPath("$[1].weightKg").value(70.0));
+  }
+
+  @Test
   void postWeightRejectsNonPositiveWeight() throws Exception {
     Jwt jwt = jwtForNewUser("invalid-weight");
 
