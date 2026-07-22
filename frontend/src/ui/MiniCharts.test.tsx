@@ -7,6 +7,7 @@ import {
   ProgressRow,
   Sparkline,
   StackedBar,
+  WeightTrendChart,
 } from './MiniCharts'
 
 describe('mini chart primitives', () => {
@@ -100,5 +101,21 @@ describe('mini chart primitives', () => {
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
     expect(screen.getByText('Macro balance')).toBeInTheDocument()
     expect(screen.getByText('Iron')).toBeInTheDocument()
+  })
+
+  it('renders a timed weight chart with a marker per logged weigh-in', () => {
+    render(
+      <WeightTrendChart
+        label="Weight trend"
+        points={[
+          { weightKg: 72.3, t: 0.2 },
+          { weightKg: 71.8, t: 1 },
+        ]}
+      />,
+    )
+
+    expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
+    expect(screen.getAllByTestId('weight-trend-point')).toHaveLength(2)
+    expect(screen.getByTestId('weight-trend-path')).toBeInTheDocument()
   })
 })

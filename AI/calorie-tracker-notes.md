@@ -2,6 +2,9 @@
 
 ## Completed
 
+- 2026-07-22: Dashboard Weight Progress is a timed 30-day weigh-in graph;
+  dashboard `row-gap` +50% (`0.18rem` → `0.27rem`). Notes:
+  `AI/weight-30-day-graph.md`.
 - 2026-07-22: Documented Codebase Memory MCP usage — always-apply Cursor rule
   `.cursor/rules/codebase-memory.mdc` and notes in `AI/codebase-memory.md`.
   Indexed project id: `D-repos-calorieTracker`. Prefer Memory over Grep/Glob

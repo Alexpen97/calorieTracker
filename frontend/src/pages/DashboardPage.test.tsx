@@ -43,8 +43,7 @@ describe('DashboardPage', () => {
 
     renderWithClient(<DashboardPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Macros' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
     expect(screen.getByLabelText(/^Calories: 1.450 \/ 2.100$|^Calories: 1,450 \/ 2,100$/)).toBeInTheDocument()
     expect(screen.getByText(/^1.450 \/ 2.100$|^1,450 \/ 2,100$/)).toBeInTheDocument()
     expect(screen.getByLabelText('Protein: 82 / 100 g')).toBeInTheDocument()
@@ -59,7 +58,10 @@ describe('DashboardPage', () => {
     expect(screen.queryByText(/water/i)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Weight Progress' })).toBeInTheDocument()
+    expect(screen.getByText('Last 30 days')).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
+    expect(screen.getAllByTestId('weight-trend-point')).toHaveLength(2)
   })
 
   it('fills calorie and macro goals from fetchGoals when summary targets are null', async () => {
