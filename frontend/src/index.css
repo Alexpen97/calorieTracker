@@ -899,3 +899,39 @@ button {
   }
 }
 
+.mobile-page {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+}
+
+.mobile-hero {
+  padding: 0.5rem 0 0.25rem;
+}
+
+.mobile-hero h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--leaf-deep);
+}
+
+.mobile-hero p {
+  margin: 0.25rem 0 0;
+  color: #5d7166;
+}
+
+.summary-card-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.summary-metrics,
+.macro-pill-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
