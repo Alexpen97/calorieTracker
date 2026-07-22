@@ -1,0 +1,43 @@
+---
+description: Prefer Codebase Memory MCP over Grep/Glob for code discovery
+alwaysApply: true
+---
+
+# Codebase Memory MCP
+
+Use the **`user-codebase-memory-mcp`** server as the primary way to explore this repo. Prefer it over workspace `Grep`, `Glob`, and broad `Read` sweeps.
+
+## Project id
+
+- Indexed name: **`D-repos-calorieTracker`**
+- Always pass `project: "D-repos-calorieTracker"` to graph tools.
+- If a call returns `project not found`, read `available_projects` from the error and retry with the matching id (do not invent names).
+
+## Preferred order
+
+1. **Codebase Memory MCP** — discover symbols, call graphs, architecture, routes.
+2. **Read** — open a specific file/path once Memory (or the user) gave you one.
+3. **Grep / Glob** — only if Memory fails, is empty/stale, or you need a literal string Memory cannot rank (e.g. a config value, exact error message, or unindexed generated file).
+
+Do **not** start exploration with Grep/Glob “just to be safe.”
+
+## Tool map
+
+| Goal | Tool | Notes |
+|------|------|--------|
+| Find defs / implementations | `search_graph` | `query` for natural language; `name_pattern` / `qn_pattern` for regex; paginate with `offset` when `has_more` |
+| Text text (enriched) | `search_code` | Graph-ranked grep; use before raw Grep |
+| Callers / callees / impact | `trace_path` | `mode`: `calls`, `data_flow`, or `cross_service` |
+| Read a known symbol | `get_code_snippet` | Requires `qualified_name` from `search_graph` first |
+| Architecture / packages / routes | `get_architecture` | Scope with `path` when useful |
+| Multi-hop / aggregations | `query_graph` | Cypher; add `LIMIT` for broad queries |
+| Schema of labels/edges | `get_graph_schema` | Before complex Cypher |
+| Fresh or missing index | `index_repository` | `repo_path`: workspace root; prefer `mode: "fast"` unless you need semantic edges (`moderate`/`full`) |
+
+## Rules of use
+
+- Call Memory **before** Task/explore subagents or manual tree walks when locating code.
+- Reuse `qualified_name` values from results; do not guess paths from memory of other projects.
+- After large refactors or if results look wrong, re-index (`index_repository`), then search again.
+- Optional: `persistence: true` writes `.codebase-memory/graph.db.zst` for teammates — only when asked or documenting a shared bootstrap.
+- Never put secrets into Cypher strings or search queries beyond what already lives in the repo.

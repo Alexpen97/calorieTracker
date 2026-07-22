@@ -2,6 +2,10 @@
 
 ## Completed
 
+- 2026-07-22: Documented Codebase Memory MCP usage — always-apply Cursor rule
+  `.cursor/rules/codebase-memory.mdc` and notes in `AI/codebase-memory.md`.
+  Indexed project id: `D-repos-calorieTracker`. Prefer Memory over Grep/Glob
+  for code discovery.
 - 2026-07-21: Created the initial architecture/design document at
   `docs/calorie-tracker-architecture.md` (branch
   `cursor/calorie-tracker-architecture-4fd9`, PR #2).
