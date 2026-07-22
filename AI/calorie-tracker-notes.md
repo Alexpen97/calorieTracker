@@ -100,3 +100,9 @@ Implemented on `cursor/phase-4-mirror-search-submissions-f0d1`:
 - diary: `submissionId` on create entry
 - frontend: search, submit product, moderation queue
 - Docs: `AI/phase-4-mirror-search-submissions.md`, `docs/railway-phase4.md`
+
+## Today Summary nested donut (2026-07-22)
+
+Dashboard Today Summary now uses a nested calorie + macro donut (inner calorie
+goal ring, outer Protein/Carbs/Fat arcs with track backgrounds + name/% legend).
+Notes: `AI/today-summary-nested-donut.md`.
