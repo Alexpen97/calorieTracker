@@ -1035,15 +1035,21 @@ button {
   align-items: start;
 }
 
+.summary-layout-nutrients {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
 .nested-goal-ring {
   display: grid;
   gap: 0.85rem;
   justify-items: center;
+  width: min(100%, 18rem);
 }
 
 .nested-goal-ring-chart {
-  width: 9.5rem;
-  height: 9.5rem;
+  width: 10.5rem;
+  height: 10.5rem;
   display: grid;
   place-items: center;
   position: relative;
@@ -1522,6 +1528,10 @@ button {
   }
 
   .summary-layout-nested {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-layout-nutrients {
     grid-template-columns: 1fr;
   }
 

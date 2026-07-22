@@ -10,7 +10,8 @@ card with a nested donut:
   track background (full goal) and a fill based on that macro’s goal progress.
 - **Legend:** macro name + percent with color-matched swatches and progress bars
   that also show a full-goal track background.
-- Side stats (Goal / Consumed / Meals) unchanged.
+- Side stats (Goal / Consumed / Meals) and the View Diary action are removed —
+  Today Summary is nutrients-only (calorie + macro donut/legend).
 - Empty days still show all three macros at `0%` with visible goal tracks.
 
 ## Files

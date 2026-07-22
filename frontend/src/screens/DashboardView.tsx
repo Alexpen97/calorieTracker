@@ -1,6 +1,5 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
 import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
-import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { DashboardCard, MetricPill } from '../ui/Card'
 import { NestedCalorieMacroRing, ProgressRow, Sparkline } from '../ui/MiniCharts'
@@ -9,11 +8,10 @@ import { IconFlame, IconLeaf, IconPie, IconScale } from '../ui/Icons'
 type Props = {
   me: Pick<UserProfile, 'displayName' | 'avatarUrl'> | null
   summary: DaySummary
-  mealCount: number
   weightHistory: WeightLog[]
 }
 
-export default function DashboardView({ me, summary, mealCount, weightHistory }: Props) {
+export default function DashboardView({ me, summary, weightHistory }: Props) {
   const name = me?.displayName?.trim() || 'there'
   const macros = buildMacroSummaries(summary.totals)
   const vitamins = buildMicronutrientRows(summary.totals, 'vitamin')
@@ -33,23 +31,14 @@ export default function DashboardView({ me, summary, mealCount, weightHistory }:
         </div>
       </header>
 
-      <DashboardCard
-        icon={<IconFlame />}
-        title="Today Summary"
-        action={<Link className="card-action" to="/diary">View Diary</Link>}
-      >
-        <div className="summary-layout summary-layout-nested">
+      <DashboardCard icon={<IconFlame />} title="Today Summary">
+        <div className="summary-layout summary-layout-nutrients">
           <NestedCalorieMacroRing
             calorieLabel="Calories"
             caloriePercent={percent}
             calorieValue={formatNumber((energy?.target ?? 0) - (energy?.amount ?? 0))}
             macros={macros.map((macro) => ({ label: macro.label, percent: macro.percent }))}
           />
-          <div className="summary-stats">
-            <StatRow label="Goal" value={formatNumber(energy?.target ?? 0)} icon={<IconLeaf />} />
-            <StatRow label="Consumed" value={formatNumber(energy?.amount ?? 0)} icon={<IconPie />} />
-            <StatRow label="Meals" value={String(mealCount)} icon={<IconScale />} />
-          </div>
         </div>
       </DashboardCard>
 
@@ -99,18 +88,6 @@ export default function DashboardView({ me, summary, mealCount, weightHistory }:
   )
 }
 
-function StatRow({ label, value, icon }: { label: string; value: string; icon: ReactNode }) {
-  return (
-    <div className="stat-row">
-      <span className="stat-icon" aria-hidden>{icon}</span>
-      <div className="stat-text">
-        <strong>{value}</strong>
-        <span>{label}</span>
-      </div>
-    </div>
-  )
-}
-
 function latestWeight(weights: WeightLog[]): string {
   if (weights.length === 0) return '—'
   const latest = [...weights].sort((a, b) => new Date(b.measuredAt).getTime() - new Date(a.measuredAt).getTime())[0]
@@ -120,4 +97,3 @@ function latestWeight(weights: WeightLog[]): string {
 function formatNumber(value: number): string {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
 }
-
