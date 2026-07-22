@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { IconBars, IconBook, IconHome, IconUser } from '../ui/Icons'
+import { IconBars, IconBook, IconHome, IconPlus, IconUser } from '../ui/Icons'
 
 export default function AppNavigation({
   loggedIn,
@@ -35,6 +35,9 @@ export default function AppNavigation({
             <IconBook className="tab-icon" />
             <span>Diary</span>
           </NavLink>
+          <Link to="/lookup" className="bottom-nav-fab" aria-label="Track food">
+            <IconPlus className="bottom-nav-fab-icon" />
+          </Link>
           <NavLink to="/analytics" className="tab-link">
             <IconBars className="tab-icon" />
             <span>Analytics</span>
