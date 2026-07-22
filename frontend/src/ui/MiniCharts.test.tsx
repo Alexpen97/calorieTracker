@@ -157,10 +157,12 @@ describe('mini chart primitives', () => {
       />,
     )
 
-    const first = screen.getByTitle(/^72[,.]3 kg/)
-    const second = screen.getByTitle(/^71[,.]8 kg/)
+    const first = screen.getByLabelText(/^72[,.]3 kg/)
+    const second = screen.getByLabelText(/^71[,.]8 kg/)
     expect(first).toBeInTheDocument()
     expect(second).toBeInTheDocument()
+    expect(first.querySelector('title')).toHaveTextContent(/^72[,.]3 kg/)
+    expect(second.querySelector('title')).toHaveTextContent(/^71[,.]8 kg/)
 
     fireEvent.mouseEnter(first)
     expect(screen.getByTestId('weight-trend-tooltip')).toHaveTextContent(/^72[,.]3 kg/)
