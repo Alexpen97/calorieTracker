@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import {
   GroupedBars,
@@ -141,6 +141,28 @@ describe('mini chart primitives', () => {
     expect(screen.getByText(/^71[,.]8$/)).toBeInTheDocument()
     const markers = screen.getAllByTestId('weight-trend-point')
     expect(markers).toHaveLength(2)
-    expect(Number(markers[0].getAttribute('r'))).toBeGreaterThanOrEqual(2.6)
+    const radius = Number(markers[0].getAttribute('r'))
+    expect(radius).toBeGreaterThan(0)
+    expect(radius).toBeLessThanOrEqual(2.5)
+  })
+
+  it('shows the weight on each point for hover tooltips', () => {
+    render(
+      <WeightTrendChart
+        label="Weight trend"
+        points={[
+          { weightKg: 72.3, t: 0.2, measuredAt: '2026-07-20T08:00:00Z' },
+          { weightKg: 71.8, t: 1, measuredAt: '2026-07-22T08:00:00Z' },
+        ]}
+      />,
+    )
+
+    const first = screen.getByTitle(/^72[,.]3 kg/)
+    const second = screen.getByTitle(/^71[,.]8 kg/)
+    expect(first).toBeInTheDocument()
+    expect(second).toBeInTheDocument()
+
+    fireEvent.mouseEnter(first)
+    expect(screen.getByTestId('weight-trend-tooltip')).toHaveTextContent(/^72[,.]3 kg/)
   })
 })

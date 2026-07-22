@@ -1,7 +1,9 @@
+import { useState } from 'react'
+
 type Segment = { label: string; percent: number }
 type MacroSegment = Segment & { amountLabel: string }
 type ChartPoint = number
-type TimedWeightPoint = { weightKg: number; t: number }
+type TimedWeightPoint = { weightKg: number; t: number; measuredAt?: string }
 
 function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0
@@ -191,8 +193,15 @@ export function WeightTrendChart({
   xLabels?: string[]
 }) {
   const plotted = timedWeightLayout(points)
+  const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null)
+
   return (
-    <svg className="sparkline weight-trend-chart" viewBox="0 0 100 48" role="img" aria-label={label}>
+    <svg
+      className="weight-trend-chart"
+      viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
+      role="img"
+      aria-label={label}
+    >
       <g data-testid="weight-trend-grid" className="weight-trend-grid" aria-hidden>
         {plotted.yTicks.map((tick) => (
           <line
@@ -223,8 +232,8 @@ export function WeightTrendChart({
           key={`y-${tick.value}`}
           className="weight-trend-axis-label"
           data-testid="weight-trend-y-tick"
-          x={PLOT.left - 1.5}
-          y={tick.y + 1.2}
+          x={PLOT.left - 4}
+          y={tick.y + 3}
           textAnchor="end"
         >
           {formatKgTick(tick.value)}
@@ -240,7 +249,7 @@ export function WeightTrendChart({
             className="weight-trend-axis-label"
             data-testid="weight-trend-x-tick"
             x={x}
-            y={PLOT.bottom + 6}
+            y={PLOT.bottom + 16}
             textAnchor={anchor}
           >
             {tickLabel}
@@ -251,15 +260,42 @@ export function WeightTrendChart({
         <path className="weight-trend-line" data-testid="weight-trend-path" d={plotted.path} />
       ) : null}
       {plotted.markers.map((marker, index) => (
-        <circle
-          key={`${marker.x}-${marker.y}-${index}`}
-          className="weight-trend-point"
-          data-testid="weight-trend-point"
-          cx={marker.x}
-          cy={marker.y}
-          r={2.8}
-        />
+        <g key={`${marker.x}-${marker.y}-${index}`}>
+          <circle
+            className="weight-trend-hit"
+            cx={marker.x}
+            cy={marker.y}
+            r={10}
+            title={marker.title}
+            onMouseEnter={() => setHover({ x: marker.x, y: marker.y, text: marker.label })}
+            onMouseLeave={() => setHover(null)}
+            onFocus={() => setHover({ x: marker.x, y: marker.y, text: marker.label })}
+            onBlur={() => setHover(null)}
+            tabIndex={0}
+          />
+          <circle
+            className="weight-trend-point"
+            data-testid="weight-trend-point"
+            cx={marker.x}
+            cy={marker.y}
+            r={2}
+            pointerEvents="none"
+          />
+        </g>
       ))}
+      {hover ? (
+        <g
+          className="weight-trend-tooltip"
+          data-testid="weight-trend-tooltip"
+          transform={`translate(${tooltipAnchor(hover.x)}, ${Math.max(18, hover.y - 14)})`}
+          pointerEvents="none"
+        >
+          <rect className="weight-trend-tooltip-bg" x={-26} y={-14} width={52} height={18} rx={4} />
+          <text className="weight-trend-tooltip-text" textAnchor="middle" y={-1}>
+            {hover.text}
+          </text>
+        </g>
+      ) : null}
     </svg>
   )
 }
@@ -311,18 +347,20 @@ function sparklinePath(points: ChartPoint[]): string {
     .join(' ')
 }
 
+const VIEW = { w: 360, h: 140 } as const
+
 const PLOT = {
-  left: 14,
-  right: 98,
-  top: 4,
-  bottom: 34,
-  width: 84,
-  height: 30,
+  left: 40,
+  right: 352,
+  top: 14,
+  bottom: 112,
+  width: 312,
+  height: 98,
 } as const
 
 function timedWeightLayout(points: TimedWeightPoint[]): {
   path: string
-  markers: Array<{ x: number; y: number }>
+  markers: Array<{ x: number; y: number; label: string; title: string }>
   yTicks: Array<{ value: number; y: number }>
 } {
   if (points.length === 0) {
@@ -339,10 +377,15 @@ function timedWeightLayout(points: TimedWeightPoint[]): {
   const min = rawMin - pad
   const max = rawMax + pad
   const spread = max - min || 1
-  const markers = points.map((point) => ({
-    x: PLOT.left + Math.max(0, Math.min(1, point.t)) * PLOT.width,
-    y: PLOT.bottom - ((point.weightKg - min) / spread) * PLOT.height,
-  }))
+  const markers = points.map((point) => {
+    const label = `${formatKgTick(point.weightKg)} kg`
+    return {
+      x: PLOT.left + Math.max(0, Math.min(1, point.t)) * PLOT.width,
+      y: PLOT.bottom - ((point.weightKg - min) / spread) * PLOT.height,
+      label,
+      title: formatPointTitle(point, label),
+    }
+  })
   const path = markers
     .map((marker, index) => `${index === 0 ? 'M' : 'L'} ${marker.x.toFixed(2)} ${marker.y.toFixed(2)}`)
     .join(' ')
@@ -353,6 +396,18 @@ function timedWeightLayout(points: TimedWeightPoint[]): {
     y: PLOT.bottom - ((value - min) / spread) * PLOT.height,
   }))
   return { path, markers, yTicks }
+}
+
+function formatPointTitle(point: TimedWeightPoint, label: string): string {
+  if (!point.measuredAt) return label
+  const date = new Date(point.measuredAt)
+  if (Number.isNaN(date.getTime())) return label
+  const day = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date)
+  return `${label} · ${day}`
+}
+
+function tooltipAnchor(x: number): number {
+  return Math.max(PLOT.left + 28, Math.min(PLOT.right - 28, x))
 }
 
 function formatKgTick(value: number): string {

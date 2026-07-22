@@ -7,7 +7,7 @@
 2. **Weight Progress card** — shows a timed 30-day chart of logged weigh-ins
    instead of a 14-entry sequential sparkline labeled “Last 2 weeks”.
 3. **Chart fills the card** — meta row (kg + “Last 30 days”) on top; chart is
-   full-width underneath with height `clamp(8.5rem, 32vw, 12rem)`.
+   full-width underneath with viewBox `360×140` and matching CSS aspect-ratio.
 
 ## Behavior
 

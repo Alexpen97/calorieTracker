@@ -8,19 +8,17 @@ and clearer markers — without adding a chart library.
 
 ## Delivered (2026-07-22)
 
-- `WeightTrendChart` plot padding, Y kg ticks (min / mid / max with padding),
-  X date ticks via `xLabels`, horizontal + vertical gridlines, larger markers
-  (`r=2.8`), taller viewBox (`0 0 100 48`).
-- `buildWeightTrendAxisLabels({ days, clock })` → `[start, mid, end]` short
-  dates for the same 30-day window as `buildWeightTrendSeries`.
-- Dashboard wires `xLabels={buildWeightTrendAxisLabels()}`.
-- Layout: kg + “Last 30 days” on a meta row; chart full-width below with
-  height `clamp(8.5rem, 32vw, 12rem)`.
-- CSS: `.weight-trend-line`, gridline, axis-label styles.
+- `WeightTrendChart` with viewBox `360×140`, Y kg ticks, X date ticks,
+  gridlines, thin line (`stroke-width: 1.75`), markers `r=2`.
+- CSS `aspect-ratio: 360 / 140` so the chart fills card width.
+- Hover: larger invisible hit targets; floating label shows weight; native
+  `title` also includes the weigh-in date when `measuredAt` is present.
+- `buildWeightTrendAxisLabels({ days, clock })` → `[start, mid, end]`.
+- Dashboard wires series + axis labels from `buildWeightTrendSeries`.
 - Analytics / Diary sparklines unchanged (out of scope).
 
 ## Tests
 
-- `MiniCharts.test.tsx` — grid, y/x ticks, marker radius
+- `MiniCharts.test.tsx` — grid, y/x ticks, marker radius, hover tooltip
 - `nutritionDashboard.test.ts` — axis label window
-- `DashboardPage.test.tsx` — still finds Weight Progress + markers
+- `DashboardPage.test.tsx` — Weight Progress + markers

@@ -848,32 +848,35 @@ button {
 .weight-trend-chart {
   display: block;
   width: 100%;
-  height: clamp(8.5rem, 32vw, 12rem);
+  height: auto;
+  aspect-ratio: 360 / 140;
   overflow: visible;
+  fill: none;
+  stroke: none;
 }
 
 .weight-trend-chart .weight-trend-line {
   fill: none;
   stroke: var(--leaf);
-  stroke-width: 2.4;
+  stroke-width: 1.75;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .weight-trend-chart .weight-trend-gridline {
   fill: none;
-  stroke: rgba(31, 74, 55, 0.12);
-  stroke-width: 0.6;
+  stroke: rgba(31, 74, 55, 0.14);
+  stroke-width: 0.75;
 }
 
 .weight-trend-chart .weight-trend-gridline-vertical {
-  stroke: rgba(31, 74, 55, 0.08);
+  stroke: rgba(31, 74, 55, 0.1);
 }
 
 .weight-trend-chart .weight-trend-axis-label {
   fill: #5d7166;
   stroke: none;
-  font-size: 4.2px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -881,6 +884,27 @@ button {
   fill: var(--leaf);
   stroke: #fff;
   stroke-width: 1;
+}
+
+.weight-trend-chart .weight-trend-hit {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.weight-trend-chart .weight-trend-tooltip-bg {
+  fill: #0f2f22;
+  stroke: none;
+  opacity: 0.92;
+}
+
+.weight-trend-chart .weight-trend-tooltip-text {
+  fill: #f7fff9;
+  stroke: none;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .progress-row {
