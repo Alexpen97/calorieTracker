@@ -266,13 +266,15 @@ export function WeightTrendChart({
             cx={marker.x}
             cy={marker.y}
             r={10}
-            title={marker.title}
+            aria-label={marker.title}
             onMouseEnter={() => setHover({ x: marker.x, y: marker.y, text: marker.label })}
             onMouseLeave={() => setHover(null)}
             onFocus={() => setHover({ x: marker.x, y: marker.y, text: marker.label })}
             onBlur={() => setHover(null)}
             tabIndex={0}
-          />
+          >
+            <title>{marker.title}</title>
+          </circle>
           <circle
             className="weight-trend-point"
             data-testid="weight-trend-point"
