@@ -1244,10 +1244,17 @@ button {
   grid-column: 1 / -1;
 }
 
+.dashboard-micro-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+}
+
 .micro-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.55rem 0.6rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem 0.45rem;
   margin-top: 0.75rem;
 }
 
@@ -1258,7 +1265,7 @@ button {
 }
 
 .micro-cell > span {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   line-height: 1.15;
   color: #5d7166;
   white-space: nowrap;

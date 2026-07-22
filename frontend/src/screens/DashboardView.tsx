@@ -50,7 +50,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </DashboardCard>
 
-      <div className="grid-two dashboard-card-span">
+      <div className="dashboard-micro-pair dashboard-card-span">
         <DashboardCard
           icon={<IconLeaf />}
           title="Vitamins"
