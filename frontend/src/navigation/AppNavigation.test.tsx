@@ -13,6 +13,7 @@ describe('AppNavigation', () => {
 
     expect(screen.getAllByRole('link', { name: 'Dashboard' })[0]).toHaveAttribute('href', '/today')
     expect(screen.getAllByRole('link', { name: 'Diary' })[0]).toHaveAttribute('href', '/diary')
+    expect(screen.getByRole('link', { name: 'Track food' })).toHaveAttribute('href', '/lookup')
     expect(screen.getAllByRole('link', { name: 'Analytics' })[0]).toHaveAttribute(
       'href',
       '/analytics',
