@@ -51,10 +51,7 @@ spring:
                 - Path=/api-docs/diary/**
               filters:
                 - RewritePath=/api-docs/diary(?<segment>/?.*), /v3/api-docs$\{segment}
-            - id: recommendation-service
-              uri: ${RECO_SERVICE_URL:http://localhost:8085}
-              predicates:
-                - Path=/api/recommendations/**
+            # recommendation-service is Phase 6 — omit until RECO_SERVICE_URL is required
 
 server:
   port: ${PORT:8080}

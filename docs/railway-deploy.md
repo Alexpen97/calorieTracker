@@ -97,8 +97,8 @@ See `infra/redis/README.md`.
 | `AUTH_SERVICE_URL` | `http://auth-service.railway.internal:8080` |
 | `USER_SERVICE_URL` | `http://user-profile-service.railway.internal:8080` |
 | `FOOD_SERVICE_URL` | `http://food-catalog-service.railway.internal:8080` |
-| `DIARY_SERVICE_URL` | `http://diary-service.railway.internal:8080` |
-| `JWKS_URI` | `http://auth-service.railway.internal:8080/.well-known/jwks.json` |
+| `DIARY_SERVICE_URL` | `http://diary-service.railway.internal:8080` (**required** — must include `http://`; bare `host:port` breaks routing) |
+| `JWKS_URI` | `http://auth-service.railway.internal:8080/.well-known/jwks.json` (**required** — empty/broken host → authenticated `/api/**` 500 `Host is not specified`) |
 | `CORS_ALLOWED_ORIGINS` | `https://<frontend-domain>` |
 | `SWAGGER_UI_ENABLED` | `true` |
 
