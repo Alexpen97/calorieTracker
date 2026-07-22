@@ -295,6 +295,71 @@ class UserControllerTest {
         .andExpect(jsonPath("$.suggested[*].nutrientCode", not(hasItem("water_ml"))));
   }
 
+  @Test
+  void onboardingSavesProfileWeightAndAppliesComputedGoals() throws Exception {
+    Jwt jwt = jwtForNewUser("onboard-complete");
+
+    mockMvc
+        .perform(
+            post("/api/users/me/onboarding")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "sex":"MALE",
+                      "birthDate":"1996-07-21",
+                      "heightCm":180,
+                      "weightKg":80,
+                      "activityLevel":"MODERATE",
+                      "objective":"LOSE"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.needsProfile").value(false))
+        .andExpect(jsonPath("$.profile.sex").value("MALE"))
+        .andExpect(jsonPath("$.profile.heightCm").value(180))
+        .andExpect(jsonPath("$.profile.objective").value("LOSE"))
+        .andExpect(jsonPath("$.profile.activityLevel").value("MODERATE"))
+        .andExpect(jsonPath("$.weight.weightKg").value(80))
+        .andExpect(jsonPath("$.goals[*].nutrientCode", hasItem("energy_kcal")))
+        .andExpect(jsonPath("$.goals[*].nutrientCode", hasItem("protein")))
+        .andExpect(jsonPath("$.goals[*].nutrientCode", hasItem("water_ml")))
+        .andExpect(jsonPath("$.goals[*].origin", hasItem("COMPUTED")));
+
+    mockMvc
+        .perform(get("/api/users/me").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.objective").value("LOSE"))
+        .andExpect(jsonPath("$.heightCm").value(180));
+
+    mockMvc
+        .perform(get("/api/users/me/weight").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].weightKg").value(80));
+
+    mockMvc
+        .perform(get("/api/users/me/goals").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[*].nutrientCode", hasItem("energy_kcal")));
+  }
+
+  @Test
+  void onboardingRejectsMissingRequiredFields() throws Exception {
+    Jwt jwt = jwtForNewUser("onboard-invalid");
+
+    mockMvc
+        .perform(
+            post("/api/users/me/onboarding")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"heightCm":180,"weightKg":80,"objective":"LOSE"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   private Jwt jwtForNewUser(String prefix) throws Exception {
     String unique = prefix + "-" + java.util.UUID.randomUUID();
     MvcResult upsert =

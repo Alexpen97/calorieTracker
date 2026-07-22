@@ -62,6 +62,22 @@ export type RecalculateGoalsResult = {
   current: Goal[]
 }
 
+export type OnboardingInput = {
+  sex: Sex
+  birthDate: string
+  heightCm: number
+  weightKg: number
+  activityLevel: ActivityLevel
+  objective: Objective
+}
+
+export type OnboardingResult = {
+  profile: UserProfile
+  weight: WeightLog
+  needsProfile: boolean
+  goals: Goal[]
+}
+
 export type ProductNutrient = {
   code: string
   amountPer100g: number
@@ -314,6 +330,15 @@ export async function recalculateGoals(apply: boolean): Promise<RecalculateGoals
     { method: 'POST' },
   )
   return parseJson<RecalculateGoalsResult>(response)
+}
+
+export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/onboarding`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<OnboardingResult>(response)
 }
 
 export async function fetchProductByBarcode(ean: string): Promise<Product> {
