@@ -3,6 +3,7 @@ import {
   buildMacroSummaries,
   buildMicronutrientRows,
   buildWeightTrend,
+  buildWeightTrendSeries,
   dateDaysAgo,
 } from './nutritionDashboard'
 import type { NutrientTotalForDisplay } from './formatDay'
@@ -85,13 +86,32 @@ describe('nutrition dashboard helpers', () => {
     })
   })
 
-  it('builds oldest-to-newest weight trend points', () => {
+  it('builds oldest-to-newest weight trend points for the last 30 days', () => {
+    const clock = new Date(2026, 6, 22)
     const weights: WeightLog[] = [
+      { id: 'old', weightKg: 80, measuredAt: '2026-06-01T08:00:00Z' },
       { id: '2', weightKg: 71.8, measuredAt: '2026-07-22T08:00:00Z' },
       { id: '1', weightKg: 72.3, measuredAt: '2026-07-20T08:00:00Z' },
     ]
 
-    expect(buildWeightTrend(weights)).toEqual([72.3, 71.8])
+    expect(buildWeightTrend(weights, { clock })).toEqual([72.3, 71.8])
+  })
+
+  it('places weight trend points on a 30-day timeline by measuredAt', () => {
+    const clock = new Date(2026, 6, 22, 12, 0, 0)
+    const weights: WeightLog[] = [
+      { id: 'old', weightKg: 80, measuredAt: '2026-06-01T08:00:00Z' },
+      { id: 'mid', weightKg: 72.3, measuredAt: '2026-07-07T08:00:00Z' },
+      { id: 'latest', weightKg: 71.8, measuredAt: '2026-07-22T08:00:00Z' },
+    ]
+
+    const series = buildWeightTrendSeries(weights, { days: 30, clock })
+    expect(series).toHaveLength(2)
+    expect(series[0]).toMatchObject({ weightKg: 72.3 })
+    expect(series[1]).toMatchObject({ weightKg: 71.8 })
+    expect(series[0].t).toBeGreaterThan(0)
+    expect(series[0].t).toBeLessThan(series[1].t)
+    expect(series[1].t).toBeGreaterThan(0.9)
   })
 
   it('formats dates relative to a provided clock', () => {

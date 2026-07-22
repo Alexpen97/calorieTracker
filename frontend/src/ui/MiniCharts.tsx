@@ -1,6 +1,7 @@
 type Segment = { label: string; percent: number }
 type MacroSegment = Segment & { amountLabel: string }
 type ChartPoint = number
+type TimedWeightPoint = { weightKg: number; t: number }
 
 function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0
@@ -180,6 +181,31 @@ export function Sparkline({ label, points }: { label: string; points: ChartPoint
   )
 }
 
+export function WeightTrendChart({
+  label,
+  points,
+}: {
+  label: string
+  points: TimedWeightPoint[]
+}) {
+  const plotted = timedWeightLayout(points)
+  return (
+    <svg className="sparkline weight-trend-chart" viewBox="0 0 100 36" role="img" aria-label={label}>
+      {plotted.path ? <path data-testid="weight-trend-path" d={plotted.path} /> : null}
+      {plotted.markers.map((marker, index) => (
+        <circle
+          key={`${marker.x}-${marker.y}-${index}`}
+          className="weight-trend-point"
+          data-testid="weight-trend-point"
+          cx={marker.x}
+          cy={marker.y}
+          r={2.2}
+        />
+      ))}
+    </svg>
+  )
+}
+
 export function StackedBar({ label, segments }: { label: string; segments: Segment[] }) {
   return (
     <div className="stacked-bar">
@@ -225,4 +251,23 @@ function sparklinePath(points: ChartPoint[]): string {
       return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
     })
     .join(' ')
+}
+
+function timedWeightLayout(points: TimedWeightPoint[]): {
+  path: string
+  markers: Array<{ x: number; y: number }>
+} {
+  if (points.length === 0) return { path: '', markers: [] }
+  const weights = points.map((point) => point.weightKg)
+  const min = Math.min(...weights)
+  const max = Math.max(...weights)
+  const spread = max - min || 1
+  const markers = points.map((point) => ({
+    x: Math.max(0, Math.min(100, point.t * 100)),
+    y: 32 - ((point.weightKg - min) / spread) * 28,
+  }))
+  const path = markers
+    .map((marker, index) => `${index === 0 ? 'M' : 'L'} ${marker.x.toFixed(2)} ${marker.y.toFixed(2)}`)
+    .join(' ')
+  return { path, markers }
 }
