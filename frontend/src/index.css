@@ -1439,30 +1439,106 @@ button {
   margin-top: 0.85rem;
 }
 
-.diary-ring-grid {
+.stacked-food-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
   gap: 0.75rem;
-  align-items: start;
 }
 
-.diary-ring-grid > .progress-ring {
-  width: 8.2rem;
-  height: 8.2rem;
-  justify-self: start;
+.stacked-food-bar {
+  display: grid;
+  gap: 0.35rem;
 }
 
-.diary-ring-mini .progress-ring {
-  width: 5.25rem;
-  height: 5.25rem;
-  margin: 0 auto;
+.stacked-food-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
 }
 
-.ring-caption {
-  margin: 0.35rem 0 0;
-  text-align: center;
+.stacked-food-bar-name {
   color: #5d7166;
-  font-size: 0.85rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.stacked-food-bar-amount {
+  color: #0f2f22;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.stacked-food-bar-track {
+  height: 0.7rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(31, 74, 55, 0.12);
+}
+
+.stacked-food-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  transition: width 250ms ease;
+}
+
+.stacked-food-bar-calories {
+  color: #2f6b9a;
+}
+
+.stacked-food-bar-calories .stacked-food-bar-track {
+  background: rgba(47, 107, 154, 0.14);
+}
+
+.stacked-food-bar-protein {
+  color: var(--leaf);
+}
+
+.stacked-food-bar-protein .stacked-food-bar-track {
+  background: rgba(47, 107, 79, 0.16);
+}
+
+.stacked-food-bar-carbs {
+  color: #b5892f;
+}
+
+.stacked-food-bar-carbs .stacked-food-bar-track {
+  background: rgba(226, 176, 74, 0.22);
+}
+
+.stacked-food-bar-fat {
+  color: #8d79b8;
+}
+
+.stacked-food-bar-fat .stacked-food-bar-track {
+  background: rgba(141, 121, 184, 0.18);
+}
+
+.diary-day-nav {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.35rem 0.15rem;
+}
+
+.diary-day-nav-label {
+  margin: 0;
+  text-align: center;
+  font-weight: 800;
+  color: #0f2f22;
+  font-size: 1.02rem;
+}
+
+.diary-day-nav-btn {
+  min-width: 2.4rem;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .add-food-tile {
@@ -1612,15 +1688,6 @@ button {
 
   .summary-layout-nutrients {
     grid-template-columns: 1fr;
-  }
-
-  .diary-ring-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .diary-ring-grid > .progress-ring {
-    width: 7.4rem;
-    height: 7.4rem;
   }
 }
 

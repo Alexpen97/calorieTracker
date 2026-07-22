@@ -302,6 +302,45 @@ export function WeightTrendChart({
   )
 }
 
+const FOOD_BAR_TONES = ['calories', 'protein', 'carbs', 'fat'] as const
+
+export function StackedFoodBars({
+  rows,
+}: {
+  rows: Array<{ label: string; percent: number; amountLabel: string }>
+}) {
+  return (
+    <ul className="stacked-food-bars" data-testid="diary-macro-bars">
+      {rows.map((row, index) => {
+        const bounded = clampPercent(row.percent)
+        const tone = FOOD_BAR_TONES[index % FOOD_BAR_TONES.length]
+        return (
+          <li
+            key={row.label}
+            className={`stacked-food-bar stacked-food-bar-${tone}`}
+            aria-label={`${row.label}: ${row.amountLabel}`}
+          >
+            <div className="stacked-food-bar-meta">
+              <span className="stacked-food-bar-name">{row.label}</span>
+              <span className="stacked-food-bar-amount">{row.amountLabel}</span>
+            </div>
+            <div
+              className="stacked-food-bar-track"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={bounded}
+              aria-valuetext={row.amountLabel}
+            >
+              <div className="stacked-food-bar-fill" style={{ width: `${bounded}%` }} />
+            </div>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 export function StackedBar({ label, segments }: { label: string; segments: Segment[] }) {
   return (
     <div className="stacked-bar">

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatDiaryDayLabel,
   formatLocalDate,
   getMacroProgress,
   groupEntriesByMeal,
+  shiftLocalDate,
   waterProgress,
   type DiaryEntryForDisplay,
   type NutrientTotalForDisplay,
@@ -11,6 +13,20 @@ import {
 describe('diary day formatting helpers', () => {
   it('formats a Date as a local YYYY-MM-DD value', () => {
     expect(formatLocalDate(new Date(2026, 6, 21, 23, 30))).toBe('2026-07-21')
+  })
+
+  it('shifts a local YYYY-MM-DD date by whole days', () => {
+    expect(shiftLocalDate('2026-07-22', -1)).toBe('2026-07-21')
+    expect(shiftLocalDate('2026-07-22', 1)).toBe('2026-07-23')
+    expect(shiftLocalDate('2026-07-01', -1)).toBe('2026-06-30')
+  })
+
+  it('labels today, yesterday, tomorrow, and other days', () => {
+    expect(formatDiaryDayLabel('2026-07-22', '2026-07-22')).toMatch(/^Today,/)
+    expect(formatDiaryDayLabel('2026-07-21', '2026-07-22')).toMatch(/^Yesterday,/)
+    expect(formatDiaryDayLabel('2026-07-23', '2026-07-22')).toMatch(/^Tomorrow,/)
+    expect(formatDiaryDayLabel('2026-07-20', '2026-07-22')).toMatch(/Jul/)
+    expect(formatDiaryDayLabel('2026-07-20', '2026-07-22')).not.toMatch(/Today|Yesterday|Tomorrow/)
   })
 
   it('groups entries by the fixed meal order', () => {

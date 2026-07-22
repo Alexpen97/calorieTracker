@@ -3,25 +3,29 @@ import { Link } from 'react-router-dom'
 import { groupEntriesByMeal, getMacroProgress } from '../diary/formatDay'
 import { buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { DashboardCard } from '../ui/Card'
-import { ProgressRing, ProgressRow, Sparkline } from '../ui/MiniCharts'
+import { ProgressRow, Sparkline, StackedFoodBars } from '../ui/MiniCharts'
 import { IconBook, IconFlame, IconPie, IconScale } from '../ui/Icons'
 
 type Props = {
-  dateLabel: string
+  selectedDateLabel: string
   summary: DaySummary
   entries: DiaryEntry[]
   waterLogs: WaterLog[]
   weightHistory: WeightLog[]
+  onPreviousDay: () => void
+  onNextDay: () => void
   onDeleteEntry: (id: string) => void
   onAddFoodHref?: string
 }
 
 export default function DiaryView({
-  dateLabel,
+  selectedDateLabel,
   summary,
   entries,
   waterLogs,
   weightHistory,
+  onPreviousDay,
+  onNextDay,
   onDeleteEntry,
   onAddFoodHref = '/lookup',
 }: Props) {
@@ -39,7 +43,6 @@ export default function DiaryView({
       <header className="diary-header">
         <div>
           <h1>Food Diary</h1>
-          <p className="diary-date">{dateLabel}</p>
         </div>
         <div className="diary-streak" aria-label="Logs today">
           <IconFlame className="tab-icon" />
@@ -47,27 +50,32 @@ export default function DiaryView({
         </div>
       </header>
 
-      <DashboardCard icon={<IconPie />} title="Today" eyebrow="Summary">
+      <DashboardCard icon={<IconPie />} title="Food Summary" eyebrow="Eaten">
         <div className="diary-summary">
-          <div className="diary-ring-grid">
-            <ProgressRing
-              label="Calories"
-              percent={energy?.percent ?? 0}
-              value={formatNumber(energy?.amount ?? 0)}
-            />
-            <div className="diary-ring-mini">
-              <ProgressRing label="Protein" percent={protein?.percent ?? 0} value={formatNumber(protein?.amount ?? 0)} />
-              <p className="ring-caption">/ {formatNumber(protein?.target ?? 0)}g</p>
-            </div>
-            <div className="diary-ring-mini">
-              <ProgressRing label="Carbs" percent={carbs?.percent ?? 0} value={formatNumber(carbs?.amount ?? 0)} />
-              <p className="ring-caption">/ {formatNumber(carbs?.target ?? 0)}g</p>
-            </div>
-            <div className="diary-ring-mini">
-              <ProgressRing label="Fat" percent={fat?.percent ?? 0} value={formatNumber(fat?.amount ?? 0)} />
-              <p className="ring-caption">/ {formatNumber(fat?.target ?? 0)}g</p>
-            </div>
-          </div>
+          <StackedFoodBars
+            rows={[
+              {
+                label: 'Calories',
+                percent: energy?.percent ?? 0,
+                amountLabel: amountGoalLabel(energy?.amount ?? 0, energy?.target ?? null, ''),
+              },
+              {
+                label: 'Protein',
+                percent: protein?.percent ?? 0,
+                amountLabel: amountGoalLabel(protein?.amount ?? 0, protein?.target ?? null, 'g'),
+              },
+              {
+                label: 'Carbs',
+                percent: carbs?.percent ?? 0,
+                amountLabel: amountGoalLabel(carbs?.amount ?? 0, carbs?.target ?? null, 'g'),
+              },
+              {
+                label: 'Fat',
+                percent: fat?.percent ?? 0,
+                amountLabel: amountGoalLabel(fat?.amount ?? 0, fat?.target ?? null, 'g'),
+              },
+            ]}
+          />
 
           <Link className="add-food-tile" to={onAddFoodHref}>
             <span className="add-food-plus" aria-hidden>
@@ -77,6 +85,26 @@ export default function DiaryView({
           </Link>
         </div>
       </DashboardCard>
+
+      <div className="diary-day-nav" data-testid="diary-day-nav">
+        <button
+          className="btn btn-secondary btn-small diary-day-nav-btn"
+          type="button"
+          aria-label="Previous day"
+          onClick={onPreviousDay}
+        >
+          ‹
+        </button>
+        <p className="diary-day-nav-label">{selectedDateLabel}</p>
+        <button
+          className="btn btn-secondary btn-small diary-day-nav-btn"
+          type="button"
+          aria-label="Next day"
+          onClick={onNextDay}
+        >
+          ›
+        </button>
+      </div>
 
       <DashboardCard icon={<IconBook />} title="Meals" eyebrow="Timeline">
         <div className="meal-timeline">
@@ -140,6 +168,13 @@ export default function DiaryView({
   )
 }
 
+function amountGoalLabel(amount: number, target: number | null, unit: string): string {
+  const amountText = formatNumber(amount)
+  const unitSuffix = unit ? ` ${unit}` : ''
+  if (target == null) return `${amountText}${unitSuffix}`.trim()
+  return `${amountText} / ${formatNumber(target)}${unitSuffix}`
+}
+
 function mealLabel(mealType: string) {
   switch (mealType) {
     case 'BREAKFAST':
@@ -182,4 +217,3 @@ function latestWeight(weights: WeightLog[]): string {
 function formatNumber(value: number): string {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
 }
-
