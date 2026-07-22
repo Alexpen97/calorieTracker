@@ -47,6 +47,33 @@ export function formatLocalDate(date = new Date()): string {
   return `${year}-${month}-${day}`
 }
 
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+export function shiftLocalDate(dateStr: string, days: number): string {
+  const date = parseLocalDate(dateStr)
+  date.setDate(date.getDate() + days)
+  return formatLocalDate(date)
+}
+
+export function formatDiaryDayLabel(dateStr: string, today = formatLocalDate()): string {
+  const day = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(parseLocalDate(dateStr))
+
+  if (dateStr === today) return `Today, ${day}`
+  if (dateStr === shiftLocalDate(today, -1)) return `Yesterday, ${day}`
+  if (dateStr === shiftLocalDate(today, 1)) return `Tomorrow, ${day}`
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(parseLocalDate(dateStr))
+}
+
 export function groupEntriesByMeal<T extends DiaryEntryForDisplay>(entries: T[]): MealGroup<T>[] {
   return mealOrder.map((mealType) => ({
     mealType,

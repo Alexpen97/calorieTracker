@@ -7,6 +7,7 @@ import {
   ProgressRow,
   Sparkline,
   StackedBar,
+  StackedFoodBars,
   WeightTrendChart,
 } from './MiniCharts'
 
@@ -51,6 +52,25 @@ describe('mini chart primitives', () => {
     expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
     expect(screen.queryByTestId('nested-macro-track')).not.toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
+  })
+
+  it('renders stacked food bars with amount labels and no rings', () => {
+    render(
+      <StackedFoodBars
+        rows={[
+          { label: 'Calories', percent: 43, amountLabel: '900 / 2,100' },
+          { label: 'Protein', percent: 45, amountLabel: '45 / 100 g' },
+          { label: 'Carbs', percent: 32, amountLabel: '80 / 250 g' },
+          { label: 'Fat', percent: 43, amountLabel: '30 / 70 g' },
+        ]}
+      />,
+    )
+
+    expect(screen.getByTestId('diary-macro-bars')).toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 900 / 2,100')).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 45 / 100 g')).toBeInTheDocument()
+    expect(screen.getByText('900 / 2,100')).toBeInTheDocument()
+    expect(document.querySelector('.progress-ring')).not.toBeInTheDocument()
   })
 
   it('keeps full goal backgrounds when macros are at zero', () => {

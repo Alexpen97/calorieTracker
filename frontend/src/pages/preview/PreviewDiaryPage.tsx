@@ -71,11 +71,13 @@ export default function PreviewDiaryPage() {
 
   return (
     <DiaryView
-      dateLabel="Today, May 24"
+      selectedDateLabel="Today, May 24"
       summary={summary}
       entries={entries}
       waterLogs={waterLogs}
       weightHistory={weights}
+      onPreviousDay={() => {}}
+      onNextDay={() => {}}
       onDeleteEntry={() => {}}
     />
   )
