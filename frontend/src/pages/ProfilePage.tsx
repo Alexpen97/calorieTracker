@@ -184,7 +184,7 @@ export default function ProfilePage() {
   const goals = goalsQuery.data ?? []
 
   return (
-    <main className="panel profile-panel">
+    <main className="mobile-page profile-panel">
       <div className="diary-header">
         <div>
           <p className="sheet-kicker">Account</p>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
         </p>
       ))}
 
-      <section className="diary-card">
+      <section className="dashboard-card">
         <h3>Profile details</h3>
         {meQuery.data && (
           <dl className="meta compact-meta">
@@ -292,7 +292,7 @@ export default function ProfilePage() {
         {profileMessage && <p className="product-meta">{profileMessage}</p>}
       </section>
 
-      <section className="diary-card">
+      <section className="dashboard-card">
         <h3>Weight</h3>
         <form className="water-form" onSubmit={submitWeight}>
           <label htmlFor="profile-weight">Log weight</label>
@@ -325,7 +325,7 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <section className="diary-card">
+      <section className="dashboard-card">
         <div className="progress-heading">
           <div>
             <h3>Daily goals</h3>

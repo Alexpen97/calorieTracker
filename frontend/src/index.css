@@ -962,3 +962,29 @@ button {
   margin-top: 1rem;
 }
 
+@media (min-width: 760px) {
+  .mobile-page {
+    padding: 0 1.5rem 2rem;
+  }
+
+  .dashboard-page,
+  .analytics-page {
+    width: min(1100px, 100%);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .dashboard-page .mobile-hero,
+  .analytics-page .mobile-hero,
+  .dashboard-page .dashboard-card:first-of-type,
+  .analytics-page .dashboard-card:first-of-type {
+    grid-column: 1 / -1;
+  }
+
+  .diary-page,
+  .profile-panel {
+    width: min(860px, 100%);
+  }
+}
+
