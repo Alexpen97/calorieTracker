@@ -1,48 +1,52 @@
 ---
-description: Use project Context7 API key for library docs (bypass public MCP quota)
+description: Mandatory Context7 docs lookup before writing library/framework code
 alwaysApply: true
 ---
 
-# Context7 (project API key)
+# Context7 — read docs before writing code
 
-This repo authenticates Context7 with a **project API key**. The built-in/public Context7 MCP in Cursor Cloud is often locked to a shared key and will fail with `Monthly quota exceeded`. Prefer the project-authenticated path below.
+**Hard rule:** Before writing or changing code that uses an external library, framework, SDK, API, CLI, or cloud service, fetch current docs via Context7. Do **not** invent APIs from training data.
 
-## Configuration
+This applies even for familiar stacks (React, Spring, Vitest, Tailwind, etc.). Skip only for pure project-local logic with no third-party API surface.
 
-- Project MCP: `.cursor/mcp.json` sends header `CONTEXT7_API_KEY` to `https://mcp.context7.com/mcp`
-- Env override (optional): `CONTEXT7_API_KEY` — if set, prefer it over the value in mcp.json
-- Helper CLI: `scripts/context7.sh` (reads key from env or `.cursor/mcp.json`)
+## Mandatory workflow (every time)
 
-## When to use Context7
+1. **Resolve** — `resolve-library-id` with `libraryName` + the full task as `query`.
+2. **Select** — Prefer official docs, high reputation, version-specific IDs when a version is known.
+3. **Query** — `query-docs` with that `libraryId` and a focused question (one concept per call).
+4. **Code** — Implement from the fetched docs. If docs contradict memory, docs win.
+5. **Cap** — ≤3 resolve and ≤3 query calls per question; then use the best match.
 
-Whenever the task involves an external library, framework, SDK, API, CLI, or cloud service docs (setup, APIs, examples, version-specific behavior, migrations). Do **not** invent APIs from training data when Context7 can answer.
+## Which MCP to use
 
-## Preferred order
+Prefer authenticated Context7 (project key). In this workspace, try in order:
 
-1. **Project MCP server named `context7`** from `.cursor/mcp.json` (authenticated). If both a public `Context7` and project `context7` exist, prefer the project one.
-2. **If MCP returns quota / auth / rate-limit errors**, do **not** stop. Immediately fall back to the helper or REST API with the project key:
-   - Resolve: `scripts/context7.sh search "<library>" "<question>"`
-   - Docs: `scripts/context7.sh docs "<libraryId>" "<question>"`
-3. Only after Context7 fails for a real reason (not found / no docs), say so and then use other sources.
+1. Project server from `.cursor/mcp.json` named `context7` (header `CONTEXT7_API_KEY`)
+2. `user-context7` if it is the authenticated/ready server in the session
+3. Avoid relying on the public/plugin Context7 alone when it returns quota/auth errors
 
-## REST fallback (same endpoints the MCP uses)
+Env override: `CONTEXT7_API_KEY` if set.
 
-Auth: `Authorization: Bearer $CONTEXT7_API_KEY` (or the key from `.cursor/mcp.json`).
+## Fallback when MCP fails (quota / auth / rate-limit)
+
+Do **not** stop. Use the project key via helper or REST:
+
+- `scripts/context7.sh search "<library>" "<question>"`
+- `scripts/context7.sh docs "<libraryId>" "<question>"`
 
 ```bash
-# Resolve library ID
 curl -sS "https://context7.com/api/v2/libs/search?libraryName=LIBRARY&query=QUESTION" \
   -H "Authorization: Bearer $CONTEXT7_API_KEY"
-
-# Fetch docs (libraryId URL-encoded, e.g. %2Fvercel%2Fnext.js)
 curl -sS "https://context7.com/api/v2/context?libraryId=%2Fowner%2Frepo&query=QUESTION&type=txt" \
   -H "Authorization: Bearer $CONTEXT7_API_KEY"
 ```
 
-## Rules of use
+Only after Context7 truly has no docs, say so, then use other sources.
 
-- Call resolve/search before query/docs unless the user already gave a `/org/project` library ID.
-- Pass the full user question as `query` for better ranking.
-- Prefer official libraries and version-specific IDs when the user names a version.
-- Never put secrets, passwords, or proprietary code into Context7 queries.
-- Do not commit a different Context7 key without updating this rule and `AI/context7.md`.
+## Do / Don't
+
+- ✅ Resolve before query (unless user already gave `/org/project` or `/org/project/version`)
+- ✅ Pass the full coding task as `query` for ranking
+- ✅ Prefer official + version-pinned IDs
+- ❌ Secrets, passwords, or proprietary code in Context7 queries
+- ❌ Commit a different Context7 key without updating this rule and `AI/context7.md`
