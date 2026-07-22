@@ -1,0 +1,118 @@
+import type { DaySummary, UserProfile, WeightLog } from '../api/client'
+import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
+import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { DashboardCard, MetricPill } from '../ui/Card'
+import { ProgressRing, ProgressRow, Sparkline } from '../ui/MiniCharts'
+import { IconFlame, IconLeaf, IconPie, IconScale } from '../ui/Icons'
+
+type Props = {
+  me: Pick<UserProfile, 'displayName' | 'avatarUrl'> | null
+  summary: DaySummary
+  mealCount: number
+  weightHistory: WeightLog[]
+}
+
+export default function DashboardView({ me, summary, mealCount, weightHistory }: Props) {
+  const name = me?.displayName?.trim() || 'there'
+  const macros = buildMacroSummaries(summary.totals)
+  const vitamins = buildMicronutrientRows(summary.totals, 'vitamin')
+  const minerals = buildMicronutrientRows(summary.totals, 'mineral')
+  const energy = summary.totals.find((item) => item.code === 'energy_kcal')
+  const percent = energy?.target ? Math.min(100, Math.round((energy.amount / energy.target) * 100)) : 0
+
+  return (
+    <main className="mobile-page dashboard-page mockup-dashboard">
+      <header className="screen-header">
+        <div>
+          <h1>Good morning, {name}!</h1>
+          <p>Let’s make today count</p>
+        </div>
+        <div className="avatar" aria-label="Profile">
+          {me?.avatarUrl ? <img src={me.avatarUrl} alt="" /> : <span aria-hidden>🙂</span>}
+        </div>
+      </header>
+
+      <DashboardCard
+        icon={<IconFlame />}
+        title="Today Summary"
+        action={<Link className="card-action" to="/diary">View Diary</Link>}
+      >
+        <div className="summary-layout">
+          <ProgressRing label="Calories" percent={percent} value={formatNumber((energy?.target ?? 0) - (energy?.amount ?? 0))} />
+          <div className="summary-stats">
+            <StatRow label="Goal" value={formatNumber(energy?.target ?? 0)} icon={<IconLeaf />} />
+            <StatRow label="Consumed" value={formatNumber(energy?.amount ?? 0)} icon={<IconPie />} />
+            <StatRow label="Meals" value={String(mealCount)} icon={<IconScale />} />
+          </div>
+        </div>
+      </DashboardCard>
+
+      <DashboardCard icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
+        <div className="weight-layout">
+          <div>
+            <p className="weight-value">{latestWeight(weightHistory)}</p>
+            <p className="weight-sub">Last 2 weeks</p>
+          </div>
+          <div className="weight-chart">
+            <Sparkline label="Weight trend" points={buildWeightTrend(weightHistory)} />
+          </div>
+        </div>
+      </DashboardCard>
+
+      <div className="grid-two">
+        <DashboardCard icon={<IconPie />} title="Macros" action={<Link className="card-action" to="/analytics">Details</Link>}>
+          <div className="macro-ring-row">
+            {macros.map((macro) => (
+              <MetricPill key={macro.code} label={macro.label} value={macro.amountLabel} tone="green" />
+            ))}
+          </div>
+        </DashboardCard>
+        <DashboardCard icon={<IconLeaf />} title="Vitamins" action={<Link className="card-action" to="/analytics">Details</Link>}>
+          <div className="compact-rows">
+            {vitamins.map((row) => (
+              <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
+            ))}
+          </div>
+        </DashboardCard>
+      </div>
+
+      <DashboardCard icon={<IconLeaf />} title="Minerals" action={<Link className="card-action" to="/analytics">Details</Link>}>
+        <div className="minerals-row">
+          {minerals.map((row) => (
+            <div key={row.code} className="mineral-mini">
+              <span>{row.label}</span>
+              <div className="mini-track" aria-hidden>
+                <div className="mini-fill" style={{ width: `${row.percent}%` }} />
+              </div>
+              <strong>{row.percent}%</strong>
+            </div>
+          ))}
+        </div>
+      </DashboardCard>
+    </main>
+  )
+}
+
+function StatRow({ label, value, icon }: { label: string; value: string; icon: ReactNode }) {
+  return (
+    <div className="stat-row">
+      <span className="stat-icon" aria-hidden>{icon}</span>
+      <div className="stat-text">
+        <strong>{value}</strong>
+        <span>{label}</span>
+      </div>
+    </div>
+  )
+}
+
+function latestWeight(weights: WeightLog[]): string {
+  if (weights.length === 0) return '—'
+  const latest = [...weights].sort((a, b) => new Date(b.measuredAt).getTime() - new Date(a.measuredAt).getTime())[0]
+  return `${formatNumber(latest.weightKg)} kg`
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
+}
+

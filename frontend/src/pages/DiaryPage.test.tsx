@@ -42,8 +42,8 @@ describe('DiaryPage', () => {
     expect(await screen.findByText('Morning oats')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Food Diary' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Breakfast' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Vitamin Checklist' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mineral Checklist' })).toBeInTheDocument()
   })
 })
 

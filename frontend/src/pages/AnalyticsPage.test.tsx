@@ -33,7 +33,7 @@ describe('AnalyticsPage', () => {
     expect(await screen.findByText('Low')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Weight trend' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
-    expect(screen.getByText('Macro balance')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getAllByText(/Vitamin D/i).length).toBeGreaterThan(0)
