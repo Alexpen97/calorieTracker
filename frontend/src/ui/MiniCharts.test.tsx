@@ -1,6 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { GroupedBars, ProgressRing, ProgressRow, Sparkline, StackedBar } from './MiniCharts'
+import {
+  GroupedBars,
+  NestedCalorieMacroRing,
+  ProgressRing,
+  ProgressRow,
+  Sparkline,
+  StackedBar,
+} from './MiniCharts'
 
 describe('mini chart primitives', () => {
   it('bounds progress values and exposes readable labels', () => {
@@ -15,6 +22,32 @@ describe('mini chart primitives', () => {
     expect(screen.getByText('1,920')).toBeInTheDocument()
     expect(screen.getByText('Vitamin D')).toBeInTheDocument()
     expect(screen.getByText('43%')).toBeInTheDocument()
+  })
+
+  it('renders nested calorie ring with macro name and percent labels', () => {
+    render(
+      <NestedCalorieMacroRing
+        calorieLabel="Calories"
+        caloriePercent={128}
+        calorieValue="650"
+        macros={[
+          { label: 'Protein', percent: 82 },
+          { label: 'Carbs', percent: 72 },
+          { label: 'Fat', percent: 69 },
+        ]}
+      />,
+    )
+
+    expect(screen.getByLabelText('Calories: 100%')).toBeInTheDocument()
+    expect(screen.getByText('650')).toBeInTheDocument()
+    expect(screen.getByText('Protein')).toBeInTheDocument()
+    expect(screen.getByText('82%')).toBeInTheDocument()
+    expect(screen.getByText('Carbs')).toBeInTheDocument()
+    expect(screen.getByText('72%')).toBeInTheDocument()
+    expect(screen.getByText('Fat')).toBeInTheDocument()
+    expect(screen.getByText('69%')).toBeInTheDocument()
+    expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
+    expect(screen.getAllByTestId('nested-macro-track')).toHaveLength(3)
   })
 
   it('renders sparkline, stacked, and grouped chart labels', () => {

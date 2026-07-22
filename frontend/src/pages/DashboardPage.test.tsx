@@ -46,6 +46,10 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Macros' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 69%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 82%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 72%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 69%')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
