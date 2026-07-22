@@ -87,7 +87,7 @@ export function NestedCalorieMacroRing({
             return (
               <g key={macro.label}>
                 <circle
-                  className="nested-macro-track"
+                  className={`nested-macro-track nested-macro-track-${tone}`}
                   data-testid="nested-macro-track"
                   cx="50"
                   cy="50"
@@ -143,6 +143,11 @@ export function NestedCalorieMacroRing({
             >
               <span className="nested-macro-swatch" aria-hidden />
               <span className="nested-macro-name">{macro.label}</span>
+              <div className="nested-macro-bar" aria-hidden>
+                <div className="nested-macro-bar-track" data-testid="nested-macro-bar-track">
+                  <div className="nested-macro-bar-fill" style={{ width: `${bounded}%` }} />
+                </div>
+              </div>
               <strong>{bounded}%</strong>
             </li>
           )

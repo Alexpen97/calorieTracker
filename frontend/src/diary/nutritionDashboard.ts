@@ -31,9 +31,25 @@ const mineralCodes = new Map([
 ])
 
 export function buildMacroSummaries(totals: NutrientTotalForDisplay[]): NutritionProgressRow[] {
-  return macroDisplay
-    .map(([code, label]) => progressRow(totals, code, label))
-    .filter((row): row is NutritionProgressRow => row !== null)
+  return macroDisplay.map(([code, label]) => {
+    const total = totals.find((item) => item.code === code)
+    if (!total) {
+      return {
+        code,
+        label,
+        percent: 0,
+        amountLabel: '0 g',
+      }
+    }
+    return {
+      code,
+      label,
+      percent: total.target ? Math.min(100, Math.round((total.amount / total.target) * 100)) : 0,
+      amountLabel: total.target
+        ? `${formatNumber(total.amount)} / ${formatNumber(total.target)} ${total.unit}`
+        : `${formatNumber(total.amount)} ${total.unit}`,
+    }
+  })
 }
 
 export function buildMicronutrientRows(

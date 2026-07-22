@@ -48,6 +48,29 @@ describe('mini chart primitives', () => {
     expect(screen.getByText('69%')).toBeInTheDocument()
     expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-track')).toHaveLength(3)
+    expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
+  })
+
+  it('keeps full goal backgrounds when macros are at zero', () => {
+    render(
+      <NestedCalorieMacroRing
+        calorieLabel="Calories"
+        caloriePercent={0}
+        calorieValue="0"
+        macros={[
+          { label: 'Protein', percent: 0 },
+          { label: 'Carbs', percent: 0 },
+          { label: 'Fat', percent: 0 },
+        ]}
+      />,
+    )
+
+    expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
+    expect(screen.getAllByTestId('nested-macro-track')).toHaveLength(3)
+    expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
+    expect(screen.getByLabelText('Protein: 0%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 0%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 0%')).toBeInTheDocument()
   })
 
   it('renders sparkline, stacked, and grouped chart labels', () => {
