@@ -1062,13 +1062,25 @@ button {
 }
 
 .nested-calorie-track {
-  stroke: rgba(20, 20, 20, 0.08);
+  stroke: rgba(31, 74, 55, 0.16);
   stroke-width: 8;
 }
 
 .nested-macro-track {
-  stroke: rgba(20, 20, 20, 0.08);
+  stroke: rgba(20, 20, 20, 0.1);
   stroke-width: 9;
+}
+
+.nested-macro-track-protein {
+  stroke: rgba(47, 107, 79, 0.2);
+}
+
+.nested-macro-track-carbs {
+  stroke: rgba(226, 176, 74, 0.28);
+}
+
+.nested-macro-track-fat {
+  stroke: rgba(141, 121, 184, 0.24);
 }
 
 .nested-calorie-indicator,
@@ -1127,13 +1139,13 @@ button {
   padding: 0;
   width: 100%;
   display: grid;
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
 .nested-macro-legend-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.5rem;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 0.45rem;
   align-items: center;
   font-size: 0.88rem;
   color: #5d7166;
@@ -1146,25 +1158,58 @@ button {
   background: currentColor;
 }
 
+.nested-macro-bar {
+  min-width: 0;
+}
+
+.nested-macro-bar-track {
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(31, 74, 55, 0.12);
+}
+
+.nested-macro-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  transition: width 250ms ease;
+}
+
 .nested-macro-legend-protein {
   color: var(--leaf);
+}
+
+.nested-macro-legend-protein .nested-macro-bar-track {
+  background: rgba(47, 107, 79, 0.16);
 }
 
 .nested-macro-legend-carbs {
   color: #b5892f;
 }
 
+.nested-macro-legend-carbs .nested-macro-bar-track {
+  background: rgba(226, 176, 74, 0.22);
+}
+
 .nested-macro-legend-fat {
   color: #8d79b8;
 }
 
+.nested-macro-legend-fat .nested-macro-bar-track {
+  background: rgba(141, 121, 184, 0.18);
+}
+
 .nested-macro-name {
   color: #5d7166;
+  min-width: 3.4rem;
 }
 
 .nested-macro-legend-item strong {
   color: #0f2f22;
   font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  text-align: right;
 }
 
 .summary-stats {

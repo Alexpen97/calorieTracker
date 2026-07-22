@@ -26,6 +26,14 @@ describe('nutrition dashboard helpers', () => {
     })
   })
 
+  it('always returns protein, carbs, and fat rows even when totals are empty', () => {
+    expect(buildMacroSummaries([])).toEqual([
+      { code: 'protein', label: 'Protein', percent: 0, amountLabel: '0 g' },
+      { code: 'carbohydrates', label: 'Carbs', percent: 0, amountLabel: '0 g' },
+      { code: 'fat', label: 'Fat', percent: 0, amountLabel: '0 g' },
+    ])
+  })
+
   it('builds vitamin and mineral progress rows', () => {
     expect(buildMicronutrientRows(totals, 'vitamin')).toEqual([
       { code: 'vitamin_d', label: 'Vitamin D', percent: 40, amountLabel: '6 / 15 ug' },

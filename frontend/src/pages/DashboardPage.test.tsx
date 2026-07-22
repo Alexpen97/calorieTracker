@@ -50,6 +50,7 @@ describe('DashboardPage', () => {
     expect(screen.getByLabelText('Protein: 82%')).toBeInTheDocument()
     expect(screen.getByLabelText('Carbs: 72%')).toBeInTheDocument()
     expect(screen.getByLabelText('Fat: 69%')).toBeInTheDocument()
+    expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
