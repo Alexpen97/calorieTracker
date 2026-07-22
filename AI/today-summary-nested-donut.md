@@ -14,6 +14,9 @@ bars (Protein / Carbs / Fat):
   Today Summary is nutrients-only.
 - Empty days still show all three macros at `0` progress with visible goal tracks;
   amount labels include the goal when a target is present.
+- Diary summary now always includes goal nutrients at amount `0` on empty days
+  (see `AI/empty-day-summary-goals.md`), so calories render as `0 / goal` and
+  macros as `0 / goal g` even before any food is logged.
 
 ## Files
 

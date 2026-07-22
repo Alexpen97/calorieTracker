@@ -307,6 +307,40 @@ class DiaryControllerTest {
   }
 
   @Test
+  void emptyDaySummaryStillIncludesGoalNutrientsAtZero() throws Exception {
+    Jwt jwt = jwtForUser("00000000-0000-0000-0000-000000000851");
+    when(userGoalsClient.getGoals(eq("Bearer caller-token")))
+        .thenReturn(
+            List.of(
+                goal("energy_kcal", "2200.00", "kcal"),
+                goal("protein", "100.00", "g"),
+                goal("carbohydrates", "250.00", "g"),
+                goal("fat", "70.00", "g"),
+                goal("water_ml", "2600.00", "ml")));
+    when(jwtDecoder.decode("caller-token")).thenReturn(jwt);
+
+    mockMvc
+        .perform(
+            get("/api/diary/summary")
+                .header("Authorization", "Bearer caller-token")
+                .queryParam("date", "2026-07-21"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.date").value("2026-07-21"))
+        .andExpect(jsonPath("$.totals.length()").value(4))
+        .andExpect(jsonPath("$.totals[?(@.code == 'energy_kcal')].amount").value(0))
+        .andExpect(jsonPath("$.totals[?(@.code == 'energy_kcal')].unit").value("kcal"))
+        .andExpect(jsonPath("$.totals[?(@.code == 'energy_kcal')].target").value(2200.00))
+        .andExpect(jsonPath("$.totals[?(@.code == 'protein')].amount").value(0))
+        .andExpect(jsonPath("$.totals[?(@.code == 'protein')].target").value(100.00))
+        .andExpect(jsonPath("$.totals[?(@.code == 'carbohydrates')].amount").value(0))
+        .andExpect(jsonPath("$.totals[?(@.code == 'carbohydrates')].target").value(250.00))
+        .andExpect(jsonPath("$.totals[?(@.code == 'fat')].amount").value(0))
+        .andExpect(jsonPath("$.totals[?(@.code == 'fat')].target").value(70.00))
+        .andExpect(jsonPath("$.water.amountMl").value(0))
+        .andExpect(jsonPath("$.water.targetMl").value(2600.00));
+  }
+
+  @Test
   void summaryReturnsNullTargetsWhenGoalsServiceFails() throws Exception {
     UUID productId = UUID.randomUUID();
     Jwt jwt = jwtForUser("00000000-0000-0000-0000-000000000901");
@@ -357,11 +391,15 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$[0].water.amountMl").value(0))
         .andExpect(jsonPath("$[0].water.targetMl").value(2600.00))
         .andExpect(jsonPath("$[1].date").value("2026-07-22"))
-        .andExpect(jsonPath("$[1].totals.length()").value(0))
+        .andExpect(jsonPath("$[1].totals.length()").value(1))
+        .andExpect(jsonPath("$[1].totals[?(@.code == 'energy_kcal')].amount").value(0))
+        .andExpect(jsonPath("$[1].totals[?(@.code == 'energy_kcal')].target").value(2200.00))
         .andExpect(jsonPath("$[1].water.amountMl").value(0))
         .andExpect(jsonPath("$[1].water.targetMl").value(2600.00))
         .andExpect(jsonPath("$[2].date").value("2026-07-23"))
-        .andExpect(jsonPath("$[2].totals.length()").value(0))
+        .andExpect(jsonPath("$[2].totals.length()").value(1))
+        .andExpect(jsonPath("$[2].totals[?(@.code == 'energy_kcal')].amount").value(0))
+        .andExpect(jsonPath("$[2].totals[?(@.code == 'energy_kcal')].target").value(2200.00))
         .andExpect(jsonPath("$[2].water.amountMl").value(300.00))
         .andExpect(jsonPath("$[2].water.targetMl").value(2600.00));
   }

@@ -100,9 +100,17 @@ public class SummaryService {
             .add(amount);
       }
     }
+    for (Map.Entry<String, GoalNutrient> goal : targets.nutrients().entrySet()) {
+      totals.computeIfAbsent(
+          goal.getKey(), code -> new MutableNutrientTotal(code, goal.getValue().unit()));
+    }
     List<NutrientTotal> nutrientTotals =
         totals.values().stream()
-            .map(total -> total.toResponse(targets.nutrientTargets().get(total.code)))
+            .map(
+                total -> {
+                  GoalNutrient goal = targets.nutrients().get(total.code);
+                  return total.toResponse(goal == null ? null : goal.target());
+                })
             .sorted(Comparator.comparing(NutrientTotal::code))
             .toList();
     BigDecimal waterAmount =
@@ -114,16 +122,16 @@ public class SummaryService {
   private GoalTargets loadTargets(String bearerToken) {
     try {
       List<UserGoalResponse> goals = userGoalsClient.getGoals(bearerToken);
-      Map<String, BigDecimal> nutrientTargets = new HashMap<>();
+      Map<String, GoalNutrient> nutrients = new HashMap<>();
       BigDecimal waterTarget = null;
       for (UserGoalResponse goal : goals) {
         if (WATER_NUTRIENT_CODE.equals(goal.nutrientCode())) {
           waterTarget = goal.dailyTarget();
         } else {
-          nutrientTargets.put(goal.nutrientCode(), goal.dailyTarget());
+          nutrients.put(goal.nutrientCode(), new GoalNutrient(goal.dailyTarget(), goal.unit()));
         }
       }
-      return new GoalTargets(Map.copyOf(nutrientTargets), waterTarget);
+      return new GoalTargets(Map.copyOf(nutrients), waterTarget);
     } catch (RuntimeException ex) {
       return new GoalTargets(Map.of(), null);
     }
@@ -135,7 +143,9 @@ public class SummaryService {
 
   public record WaterSummary(BigDecimal amountMl, BigDecimal targetMl) {}
 
-  private record GoalTargets(Map<String, BigDecimal> nutrientTargets, BigDecimal waterTargetMl) {}
+  private record GoalNutrient(BigDecimal target, String unit) {}
+
+  private record GoalTargets(Map<String, GoalNutrient> nutrients, BigDecimal waterTargetMl) {}
 
   private static class MutableNutrientTotal {
     private final String code;

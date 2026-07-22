@@ -34,6 +34,19 @@ describe('nutrition dashboard helpers', () => {
     ])
   })
 
+  it('shows zero consumed against goals when macros are present at amount 0', () => {
+    const emptyWithGoals: NutrientTotalForDisplay[] = [
+      { code: 'protein', amount: 0, unit: 'g', target: 100 },
+      { code: 'carbohydrates', amount: 0, unit: 'g', target: 250 },
+      { code: 'fat', amount: 0, unit: 'g', target: 70 },
+    ]
+    expect(buildMacroSummaries(emptyWithGoals)).toEqual([
+      { code: 'protein', label: 'Protein', percent: 0, amountLabel: '0 / 100 g' },
+      { code: 'carbohydrates', label: 'Carbs', percent: 0, amountLabel: '0 / 250 g' },
+      { code: 'fat', label: 'Fat', percent: 0, amountLabel: '0 / 70 g' },
+    ])
+  })
+
   it('builds vitamin and mineral progress rows', () => {
     expect(buildMicronutrientRows(totals, 'vitamin')).toEqual([
       { code: 'vitamin_d', label: 'Vitamin D', percent: 40, amountLabel: '6 / 15 ug' },

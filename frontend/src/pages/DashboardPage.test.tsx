@@ -44,8 +44,8 @@ describe('DashboardPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Macros' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Calories: 1,450 / 2,100')).toBeInTheDocument()
-    expect(screen.getByText('1,450 / 2,100')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Calories: 1.450 \/ 2.100$|^Calories: 1,450 \/ 2,100$/)).toBeInTheDocument()
+    expect(screen.getByText(/^1.450 \/ 2.100$|^1,450 \/ 2,100$/)).toBeInTheDocument()
     expect(screen.getByLabelText('Protein: 82 / 100 g')).toBeInTheDocument()
     expect(screen.getByLabelText('Carbs: 180 / 250 g')).toBeInTheDocument()
     expect(screen.getByLabelText('Fat: 48 / 70 g')).toBeInTheDocument()
@@ -59,6 +59,39 @@ describe('DashboardPage', () => {
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
+  })
+
+  it('shows calorie and macro goals on an empty day', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue({
+      id: 'u1',
+      email: 'alex@example.com',
+      displayName: 'Alex',
+      avatarUrl: null,
+      role: 'USER',
+      sex: null,
+      birthDate: null,
+      heightCm: null,
+      activityLevel: null,
+      objective: 'MAINTAIN',
+    })
+    vi.spyOn(client, 'fetchDiarySummary').mockResolvedValue({
+      date: '2026-07-22',
+      totals: [
+        { code: 'energy_kcal', amount: 0, unit: 'kcal', target: 2100 },
+        { code: 'protein', amount: 0, unit: 'g', target: 100 },
+        { code: 'carbohydrates', amount: 0, unit: 'g', target: 250 },
+        { code: 'fat', amount: 0, unit: 'g', target: 70 },
+      ],
+      water: { amountMl: 0, targetMl: 2500 },
+    })
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([])
+
+    renderWithClient(<DashboardPage />)
+
+    expect(await screen.findByLabelText(/^Calories: 0 \/ 2.100$|^Calories: 0 \/ 2,100$/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 0 / 100 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 0 / 250 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 0 / 70 g')).toBeInTheDocument()
   })
 })
 
