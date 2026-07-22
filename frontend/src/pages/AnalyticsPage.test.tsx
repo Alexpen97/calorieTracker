@@ -23,7 +23,7 @@ describe('AnalyticsPage', () => {
         water: { amountMl: 1800, targetMl: 2500 },
       },
     ])
-    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([
+    const weightSpy = vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([
       { id: 'w1', weightKg: 72.3, measuredAt: '2026-07-16T08:00:00Z' },
       { id: 'w2', weightKg: 71.9, measuredAt: '2026-07-22T08:00:00Z' },
     ])
@@ -31,6 +31,10 @@ describe('AnalyticsPage', () => {
     renderWithClient(<AnalyticsPage />)
 
     expect(await screen.findByText('Low')).toBeInTheDocument()
+    expect(weightSpy).toHaveBeenCalledWith({
+      from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    })
     expect(screen.getByRole('heading', { name: 'Weight trend' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()

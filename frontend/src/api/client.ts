@@ -297,16 +297,24 @@ export async function logWeight(input: { weightKg: number; measuredAt?: string }
 export async function fetchWeightHistory(input: { from?: string; to?: string } = {}): Promise<WeightLog[]> {
   const params = new URLSearchParams()
   if (input.from) {
-    params.set('from', input.from)
+    params.set('from', toInstantQueryParam(input.from, 'start'))
   }
   if (input.to) {
-    params.set('to', input.to)
+    params.set('to', toInstantQueryParam(input.to, 'end'))
   }
   const query = params.toString()
   const response = await authenticatedFetch(
     `${apiBase}/api/users/me/weight${query ? `?${query}` : ''}`,
   )
   return parseJson<WeightLog[]>(response)
+}
+
+/** Weight range API expects Instant; Analytics uses LocalDate (YYYY-MM-DD). */
+export function toInstantQueryParam(value: string, bound: 'start' | 'end'): string {
+  if (value.includes('T')) {
+    return value
+  }
+  return bound === 'end' ? `${value}T23:59:59.999Z` : `${value}T00:00:00Z`
 }
 
 export async function fetchGoals(): Promise<Goal[]> {
