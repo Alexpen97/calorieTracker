@@ -21,7 +21,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
 
   return (
     <main className="mobile-page dashboard-page mockup-dashboard">
-      <header className="screen-header">
+      <header className="screen-header dashboard-span">
         <div>
           <h1>Good morning, {name}!</h1>
           <p>Let’s make today count</p>
@@ -31,7 +31,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </header>
 
-      <DashboardCard icon={<IconFlame />} title="Today Summary">
+      <DashboardCard className="dashboard-span" icon={<IconFlame />} title="Today Summary">
         <div className="summary-layout summary-layout-nutrients">
           <NestedCalorieMacroRing
             calorieLabel="Calories"
@@ -50,25 +50,23 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </DashboardCard>
 
-      <div className="dashboard-micro-pair dashboard-card-span">
-        <DashboardCard
-          icon={<IconLeaf />}
-          title="Vitamins"
-          action={<Link className="card-action" to="/analytics">Details</Link>}
-        >
-          <MicroProgressGrid rows={vitamins} />
-        </DashboardCard>
+      <DashboardCard
+        icon={<IconLeaf />}
+        title="Vitamins"
+        action={<Link className="card-action" to="/analytics">Details</Link>}
+      >
+        <MicroProgressGrid rows={vitamins} />
+      </DashboardCard>
 
-        <DashboardCard
-          icon={<IconLeaf />}
-          title="Minerals"
-          action={<Link className="card-action" to="/analytics">Details</Link>}
-        >
-          <MicroProgressGrid rows={minerals} />
-        </DashboardCard>
-      </div>
+      <DashboardCard
+        icon={<IconLeaf />}
+        title="Minerals"
+        action={<Link className="card-action" to="/analytics">Details</Link>}
+      >
+        <MicroProgressGrid rows={minerals} />
+      </DashboardCard>
 
-      <DashboardCard icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
+      <DashboardCard className="dashboard-span" icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
         <div className="weight-layout">
           <div>
             <p className="weight-value">{latestWeight(weightHistory)}</p>

@@ -1240,24 +1240,20 @@ button {
   min-width: 5.5rem;
 }
 
-.dashboard-card-span {
+.dashboard-card-span,
+.dashboard-span {
   grid-column: 1 / -1;
 }
 
-.dashboard-micro-pair {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: stretch;
+.dashboard-page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
-  width: 100%;
+  align-items: start;
 }
 
-.dashboard-micro-pair > .dashboard-card {
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: none;
-  grid-column: auto;
+.dashboard-page > .dashboard-card {
+  margin-top: 0;
 }
 
 .micro-grid {
@@ -1791,19 +1787,16 @@ button {
   .dashboard-page,
   .analytics-page {
     width: min(1100px, 100%);
+  }
+
+  .analytics-page {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  .dashboard-page .mobile-hero,
   .analytics-page .mobile-hero,
-  .dashboard-page > .dashboard-card:first-of-type,
   .analytics-page > .dashboard-card:first-of-type {
-    grid-column: 1 / -1;
-  }
-
-  .dashboard-page > .dashboard-micro-pair {
     grid-column: 1 / -1;
   }
 
