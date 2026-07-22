@@ -3,6 +3,7 @@ import {
   buildMacroSummaries,
   buildMicronutrientRows,
   buildWeightTrend,
+  buildWeightTrendAxisLabels,
   buildWeightTrendSeries,
   dateDaysAgo,
 } from './nutritionDashboard'
@@ -116,5 +117,14 @@ describe('nutrition dashboard helpers', () => {
 
   it('formats dates relative to a provided clock', () => {
     expect(dateDaysAgo(6, new Date(2026, 6, 22))).toBe('2026-07-16')
+  })
+
+  it('builds start/mid/end axis labels for the weight window', () => {
+    const labels = buildWeightTrendAxisLabels({ days: 30, clock: new Date(2026, 6, 22, 12, 0, 0) })
+    expect(labels).toHaveLength(3)
+    expect(labels[0]).toMatch(/23/)
+    expect(labels[0]).toMatch(/Jun/i)
+    expect(labels[2]).toMatch(/22/)
+    expect(labels[2]).toMatch(/Jul/i)
   })
 })

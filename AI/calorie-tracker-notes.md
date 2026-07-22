@@ -2,6 +2,8 @@
 
 ## Completed
 
+- 2026-07-22: Weight Progress chart is a compact line graph with kg/date axes,
+  gridlines, and clearer markers. Notes: `AI/weight-line-graph-axes.md`.
 - 2026-07-22: Dev account seeder — `scripts/seed-dev-data.ps1` resets and writes
   ~30 days of meals/water/weight for `dev` + `agent-debug` via gateway APIs.
   Added `DELETE /api/users/me/weight/{id}`. Notes: `AI/seed-dev-data.md`.

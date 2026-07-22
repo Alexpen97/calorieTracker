@@ -121,6 +121,21 @@ export function buildWeightTrend(weights: WeightLog[], options: WeightTrendOptio
   return buildWeightTrendSeries(weights, options).map((point) => point.weightKg)
 }
 
+/** Short date labels for the weight chart X axis: window start, midpoint, end. */
+export function buildWeightTrendAxisLabels(options: WeightTrendOptions = {}): [string, string, string] {
+  const days = options.days ?? 30
+  const clock = options.clock ?? new Date()
+  const dayStart = startOfLocalDay(clock)
+  const start = new Date(dayStart.getTime() - (days - 1) * 24 * 60 * 60 * 1000)
+  const end = dayStart
+  const mid = new Date(start.getTime() + (end.getTime() - start.getTime()) / 2)
+  return [formatAxisDate(start), formatAxisDate(mid), formatAxisDate(end)]
+}
+
+function formatAxisDate(date: Date): string {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date)
+}
+
 export function dateDaysAgo(days: number, clock = new Date()): string {
   const date = new Date(clock)
   date.setDate(date.getDate() - days)

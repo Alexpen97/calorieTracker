@@ -118,4 +118,29 @@ describe('mini chart primitives', () => {
     expect(screen.getAllByTestId('weight-trend-point')).toHaveLength(2)
     expect(screen.getByTestId('weight-trend-path')).toBeInTheDocument()
   })
+
+  it('renders y/x axes, gridlines, and clearer markers on the weight chart', () => {
+    render(
+      <WeightTrendChart
+        label="Weight trend"
+        points={[
+          { weightKg: 72.3, t: 0.2 },
+          { weightKg: 71.8, t: 1 },
+        ]}
+        xLabels={['Jun 23', 'Jul 7', 'Jul 22']}
+      />,
+    )
+
+    expect(screen.getByTestId('weight-trend-grid')).toBeInTheDocument()
+    expect(screen.getAllByTestId('weight-trend-y-tick').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByTestId('weight-trend-x-tick')).toHaveLength(3)
+    expect(screen.getByText('Jun 23')).toBeInTheDocument()
+    expect(screen.getByText('Jul 7')).toBeInTheDocument()
+    expect(screen.getByText('Jul 22')).toBeInTheDocument()
+    expect(screen.getByText(/^72[,.]3$/)).toBeInTheDocument()
+    expect(screen.getByText(/^71[,.]8$/)).toBeInTheDocument()
+    const markers = screen.getAllByTestId('weight-trend-point')
+    expect(markers).toHaveLength(2)
+    expect(Number(markers[0].getAttribute('r'))).toBeGreaterThanOrEqual(2.6)
+  })
 })

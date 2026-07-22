@@ -184,14 +184,72 @@ export function Sparkline({ label, points }: { label: string; points: ChartPoint
 export function WeightTrendChart({
   label,
   points,
+  xLabels = [],
 }: {
   label: string
   points: TimedWeightPoint[]
+  xLabels?: string[]
 }) {
   const plotted = timedWeightLayout(points)
   return (
-    <svg className="sparkline weight-trend-chart" viewBox="0 0 100 36" role="img" aria-label={label}>
-      {plotted.path ? <path data-testid="weight-trend-path" d={plotted.path} /> : null}
+    <svg className="sparkline weight-trend-chart" viewBox="0 0 100 48" role="img" aria-label={label}>
+      <g data-testid="weight-trend-grid" className="weight-trend-grid" aria-hidden>
+        {plotted.yTicks.map((tick) => (
+          <line
+            key={`h-${tick.value}`}
+            className="weight-trend-gridline"
+            x1={PLOT.left}
+            x2={PLOT.right}
+            y1={tick.y}
+            y2={tick.y}
+          />
+        ))}
+        {[0, 0.5, 1].map((t) => {
+          const x = PLOT.left + t * PLOT.width
+          return (
+            <line
+              key={`v-${t}`}
+              className="weight-trend-gridline weight-trend-gridline-vertical"
+              x1={x}
+              x2={x}
+              y1={PLOT.top}
+              y2={PLOT.bottom}
+            />
+          )
+        })}
+      </g>
+      {plotted.yTicks.map((tick) => (
+        <text
+          key={`y-${tick.value}`}
+          className="weight-trend-axis-label"
+          data-testid="weight-trend-y-tick"
+          x={PLOT.left - 1.5}
+          y={tick.y + 1.2}
+          textAnchor="end"
+        >
+          {formatKgTick(tick.value)}
+        </text>
+      ))}
+      {xLabels.slice(0, 3).map((tickLabel, index) => {
+        const t = index / Math.max(1, Math.min(2, xLabels.length - 1))
+        const x = PLOT.left + t * PLOT.width
+        const anchor = index === 0 ? 'start' : index === xLabels.length - 1 ? 'end' : 'middle'
+        return (
+          <text
+            key={`x-${tickLabel}-${index}`}
+            className="weight-trend-axis-label"
+            data-testid="weight-trend-x-tick"
+            x={x}
+            y={PLOT.bottom + 6}
+            textAnchor={anchor}
+          >
+            {tickLabel}
+          </text>
+        )
+      })}
+      {plotted.path ? (
+        <path className="weight-trend-line" data-testid="weight-trend-path" d={plotted.path} />
+      ) : null}
       {plotted.markers.map((marker, index) => (
         <circle
           key={`${marker.x}-${marker.y}-${index}`}
@@ -199,7 +257,7 @@ export function WeightTrendChart({
           data-testid="weight-trend-point"
           cx={marker.x}
           cy={marker.y}
-          r={2.2}
+          r={2.8}
         />
       ))}
     </svg>
@@ -253,21 +311,53 @@ function sparklinePath(points: ChartPoint[]): string {
     .join(' ')
 }
 
+const PLOT = {
+  left: 14,
+  right: 98,
+  top: 4,
+  bottom: 34,
+  width: 84,
+  height: 30,
+} as const
+
 function timedWeightLayout(points: TimedWeightPoint[]): {
   path: string
   markers: Array<{ x: number; y: number }>
+  yTicks: Array<{ value: number; y: number }>
 } {
-  if (points.length === 0) return { path: '', markers: [] }
+  if (points.length === 0) {
+    return {
+      path: '',
+      markers: [],
+      yTicks: [],
+    }
+  }
   const weights = points.map((point) => point.weightKg)
-  const min = Math.min(...weights)
-  const max = Math.max(...weights)
+  const rawMin = Math.min(...weights)
+  const rawMax = Math.max(...weights)
+  const pad = rawMax === rawMin ? Math.max(0.5, rawMin * 0.01) : (rawMax - rawMin) * 0.12
+  const min = rawMin - pad
+  const max = rawMax + pad
   const spread = max - min || 1
   const markers = points.map((point) => ({
-    x: Math.max(0, Math.min(100, point.t * 100)),
-    y: 32 - ((point.weightKg - min) / spread) * 28,
+    x: PLOT.left + Math.max(0, Math.min(1, point.t)) * PLOT.width,
+    y: PLOT.bottom - ((point.weightKg - min) / spread) * PLOT.height,
   }))
   const path = markers
     .map((marker, index) => `${index === 0 ? 'M' : 'L'} ${marker.x.toFixed(2)} ${marker.y.toFixed(2)}`)
     .join(' ')
-  return { path, markers }
+  const tickValues = [rawMax, (rawMin + rawMax) / 2, rawMin]
+  const uniqueTicks = [...new Set(tickValues.map((value) => Number(value.toFixed(1))))]
+  const yTicks = uniqueTicks.map((value) => ({
+    value,
+    y: PLOT.bottom - ((value - min) / spread) * PLOT.height,
+  }))
+  return { path, markers, yTicks }
+}
+
+function formatKgTick(value: number): string {
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+  }).format(value)
 }

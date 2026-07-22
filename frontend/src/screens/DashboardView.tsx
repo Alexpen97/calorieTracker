@@ -1,5 +1,5 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
-import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrendSeries } from '../diary/nutritionDashboard'
+import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrendAxisLabels, buildWeightTrendSeries } from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
 import { DashboardCard } from '../ui/Card'
 import { MicroProgressGrid, NestedCalorieMacroRing, WeightTrendChart } from '../ui/MiniCharts'
@@ -73,7 +73,11 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
             <p className="weight-sub">Last 30 days</p>
           </div>
           <div className="weight-chart">
-            <WeightTrendChart label="Weight trend" points={buildWeightTrendSeries(weightHistory)} />
+            <WeightTrendChart
+              label="Weight trend"
+              points={buildWeightTrendSeries(weightHistory)}
+              xLabels={buildWeightTrendAxisLabels()}
+            />
           </div>
         </div>
       </DashboardCard>

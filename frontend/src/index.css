@@ -845,6 +845,36 @@ button {
   stroke-linejoin: round;
 }
 
+.weight-trend-chart {
+  height: 4.25rem;
+  overflow: visible;
+}
+
+.weight-trend-chart .weight-trend-line {
+  fill: none;
+  stroke: var(--leaf);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.weight-trend-chart .weight-trend-gridline {
+  fill: none;
+  stroke: rgba(31, 74, 55, 0.12);
+  stroke-width: 0.6;
+}
+
+.weight-trend-chart .weight-trend-gridline-vertical {
+  stroke: rgba(31, 74, 55, 0.08);
+}
+
+.weight-trend-chart .weight-trend-axis-label {
+  fill: #5d7166;
+  stroke: none;
+  font-size: 4.2px;
+  font-variant-numeric: tabular-nums;
+}
+
 .weight-trend-chart .weight-trend-point {
   fill: var(--leaf);
   stroke: #fff;
