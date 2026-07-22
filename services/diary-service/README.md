@@ -20,7 +20,9 @@ Diary container — food log entries, water intake, daily summaries. See
 
 | Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | PostgreSQL `diary` database |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://…/diary` (not `DATABASE_URL`) |
+| `SPRING_DATASOURCE_USERNAME` / `PASSWORD` | Postgres credentials |
 | `FOOD_SERVICE_URL` | food-catalog-service (nutrition snapshots) |
 | `USER_SERVICE_URL` | user-profile-service (targets for summaries) |
 | `JWKS_URI` | auth-service JWKS endpoint for JWT validation |
+| `PORT` | `8080` on Railway |
