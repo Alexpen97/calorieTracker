@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, Link } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { isLoggedIn } from './auth/tokenStorage'
 import { fetchMe } from './api/client'
@@ -8,8 +8,11 @@ import AuthCallbackPage from './pages/AuthCallbackPage'
 import LookupPage from './pages/LookupPage'
 import ProductPage from './pages/ProductPage'
 import DiaryPage from './pages/DiaryPage'
+import DashboardPage from './pages/DashboardPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import SubmitProductPage from './pages/SubmitProductPage'
 import ModerationPage from './pages/ModerationPage'
+import AppNavigation from './navigation/AppNavigation'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -28,19 +31,7 @@ export default function App() {
   const canModerate = me.data?.role === 'MODERATOR' || me.data?.role === 'ADMIN'
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <Link to={loggedIn ? '/today' : '/'} className="brand">
-          NutriTrack
-        </Link>
-        {loggedIn && (
-          <nav className="topnav">
-            <Link to="/today">Today</Link>
-            <Link to="/lookup">Lookup</Link>
-            {canModerate && <Link to="/moderation">Moderation</Link>}
-            <Link to="/me">Profile</Link>
-          </nav>
-        )}
-      </header>
+      <AppNavigation loggedIn={loggedIn} canModerate={canModerate} />
       <Routes>
         <Route path="/" element={loggedIn ? <Navigate to="/today" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -48,7 +39,23 @@ export default function App() {
           path="/today"
           element={
             <RequireAuth>
+              <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/diary"
+          element={
+            <RequireAuth>
               <DiaryPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <RequireAuth>
+              <AnalyticsPage />
             </RequireAuth>
           }
         />
