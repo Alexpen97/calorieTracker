@@ -463,3 +463,9 @@ export async function fetchDiarySummary(date: string): Promise<DaySummary> {
   )
   return parseJson<DaySummary>(response)
 }
+
+export async function fetchDiarySummaryRange(from: string, to: string): Promise<DaySummary[]> {
+  const params = new URLSearchParams({ from, to, zone: browserTimeZone() })
+  const response = await authenticatedFetch(`${apiBase}/api/diary/summary/range?${params}`)
+  return parseJson<DaySummary[]>(response)
+}

@@ -18,12 +18,9 @@ import {
   waterProgress,
   type MealType,
 } from '../diary/formatDay'
-
-const macroCards: Array<{ code: string; label: string }> = [
-  { code: 'protein', label: 'Protein' },
-  { code: 'carbohydrates', label: 'Carbs' },
-  { code: 'fat', label: 'Fat' },
-]
+import { buildMacroSummaries, buildMicronutrientRows } from '../diary/nutritionDashboard'
+import { DashboardCard, MetricPill } from '../ui/Card'
+import { GroupedBars, ProgressRing, ProgressRow } from '../ui/MiniCharts'
 
 export default function DiaryPage() {
   const today = formatLocalDate()
@@ -76,6 +73,9 @@ export default function DiaryPage() {
   const energy = summary ? getMacroProgress(summary.totals, 'energy_kcal') : null
   const water = summary ? waterProgress(summary.water) : null
   const mealGroups = groupEntriesByMeal(entries)
+  const macros = summary ? buildMacroSummaries(summary.totals) : []
+  const vitamins = summary ? buildMicronutrientRows(summary.totals, 'vitamin') : []
+  const minerals = summary ? buildMicronutrientRows(summary.totals, 'mineral') : []
   const errors = [
     summaryQuery.error,
     entriesQuery.error,
@@ -96,12 +96,12 @@ export default function DiaryPage() {
   }
 
   return (
-    <main className="panel diary-panel">
-      <div className="diary-header">
+    <main className="mobile-page diary-page">
+      <div className="mobile-hero diary-mobile-hero">
         <div>
           <p className="sheet-kicker">Today</p>
-          <h2>Your diary</h2>
-          <p className="product-meta">{today}</p>
+          <h1>Food Diary</h1>
+          <p>{today}</p>
         </div>
         <Link className="btn btn-primary" to="/lookup">
           Add food
@@ -118,54 +118,38 @@ export default function DiaryPage() {
       ))}
 
       {summary && (
-        <>
-          <section className="diary-card">
-            <div className="progress-heading">
-              <div>
-                <h3>Energy</h3>
-                <p>{energy ? progressLabel(energy.amount, energy.unit, energy.target) : 'No food logged yet'}</p>
-              </div>
-              {energy?.target && <strong>{energy.percent}%</strong>}
-            </div>
-            {energy?.target && <ProgressBar percent={energy.percent} />}
-          </section>
-
-          <section className="macro-grid" aria-label="Macro progress">
-            {macroCards
-              .map((macro) => ({
-                ...macro,
-                progress: getMacroProgress(summary.totals, macro.code),
-              }))
-              .filter((macro) => macro.progress)
-              .map((macro) => (
-                <div className="diary-card macro-card" key={macro.code}>
-                  <div className="progress-heading">
-                    <h3>{macro.label}</h3>
-                    <span>
-                      {progressLabel(
-                        macro.progress!.amount,
-                        macro.progress!.unit,
-                        macro.progress!.target,
-                      )}
-                    </span>
-                  </div>
-                  {macro.progress!.target && <ProgressBar percent={macro.progress!.percent} />}
-                </div>
+        <DashboardCard title="Today summary" eyebrow="Logged nutrition">
+          <div className="summary-card-grid">
+            <ProgressRing
+              label="Calories"
+              percent={energy?.percent ?? 0}
+              value={energy ? formatNumber(energy.amount) : '0'}
+            />
+            <div className="macro-pill-grid">
+              {macros.map((macro) => (
+                <MetricPill
+                  key={macro.code}
+                  label={macro.label}
+                  value={macro.amountLabel}
+                  tone="green"
+                />
               ))}
-          </section>
-        </>
+            </div>
+          </div>
+        </DashboardCard>
       )}
 
       {water && (
-        <section className="diary-card">
+        <DashboardCard title="Water" eyebrow="Hydration">
           <div className="progress-heading">
-            <div>
-              <h3>Water</h3>
-              <p>{waterLabel(water.amountMl, water.targetMl)}</p>
-            </div>
+            <p>{waterLabel(water.amountMl, water.targetMl)}</p>
             {water.targetMl && <strong>{water.percent}%</strong>}
           </div>
-          {water.targetMl && <ProgressBar percent={water.percent} />}
+          {water.targetMl && (
+            <div className="progress-track" aria-hidden>
+              <div className="progress-fill" style={{ width: `${water.percent}%` }} />
+            </div>
+          )}
           <div className="water-actions">
             {[250, 500].map((amountMl) => (
               <button
@@ -198,17 +182,13 @@ export default function DiaryPage() {
           {waterLogs.length > 0 && (
             <WaterLogList logs={waterLogs} onDelete={(id) => removeWater.mutate(id)} />
           )}
-        </section>
+        </DashboardCard>
       )}
 
-      <section className="entries-section">
-        <div className="diary-header">
-          <h3>Meals</h3>
-          <Link to="/lookup">Look up food</Link>
-        </div>
+      <DashboardCard title="Meals" eyebrow="Timeline">
         {mealGroups.map((group) => (
-          <section className="meal-group" key={group.mealType}>
-            <h4>{mealLabel(group.mealType)}</h4>
+          <section className="meal-card" key={group.mealType}>
+            <h3>{mealLabel(group.mealType)}</h3>
             {group.entries.length === 0 ? (
               <p className="empty-copy">No entries yet.</p>
             ) : (
@@ -224,16 +204,31 @@ export default function DiaryPage() {
             )}
           </section>
         ))}
-      </section>
-    </main>
-  )
-}
+      </DashboardCard>
 
-function ProgressBar({ percent }: { percent: number }) {
-  return (
-    <div className="progress-track" aria-hidden>
-      <div className="progress-fill" style={{ width: `${percent}%` }} />
-    </div>
+      <DashboardCard title="Vitamins" eyebrow="Checklist">
+        {vitamins.length > 0 ? (
+          vitamins.map((row) => (
+            <ProgressRow
+              key={row.code}
+              label={row.label}
+              percent={row.percent}
+              amountLabel={row.amountLabel}
+            />
+          ))
+        ) : (
+          <p className="empty-copy">No vitamin targets yet.</p>
+        )}
+      </DashboardCard>
+
+      <DashboardCard title="Minerals" eyebrow="Checklist">
+        {minerals.length > 0 ? (
+          <GroupedBars label="Minerals" groups={minerals} />
+        ) : (
+          <p className="empty-copy">No mineral targets yet.</p>
+        )}
+      </DashboardCard>
+    </main>
   )
 }
 
@@ -262,7 +257,8 @@ function WaterLogList({ logs, onDelete }: { logs: WaterLog[]; onDelete: (id: str
       {logs.map((log) => (
         <li key={log.id}>
           <span>
-            {formatNumber(log.amountMl)} ml · {new Date(log.loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {formatNumber(log.amountMl)} ml ·{' '}
+            {new Date(log.loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
           <button className="sheet-close" onClick={() => onDelete(log.id)} type="button">
             Delete
@@ -278,13 +274,6 @@ async function invalidateDay(queryClient: QueryClient, today: string) {
     queryClient.invalidateQueries({ queryKey: ['diary-summary', today] }),
     queryClient.invalidateQueries({ queryKey: ['diary-water', today] }),
   ])
-}
-
-function progressLabel(amount: number, unit: string, target: number | null) {
-  if (!target) {
-    return `${formatNumber(amount)} ${unit}`
-  }
-  return `${formatNumber(amount)} / ${formatNumber(target)} ${unit}`
 }
 
 function waterLabel(amountMl: number, targetMl: number | null) {

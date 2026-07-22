@@ -2,7 +2,8 @@ export type MealType = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK'
 
 export type DiaryEntryForDisplay = {
   id: string
-  productId: string
+  productId: string | null
+  submissionId?: string | null
   productName: string
   brand: string | null
   weightG: number
