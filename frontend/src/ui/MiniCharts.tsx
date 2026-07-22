@@ -53,12 +53,12 @@ const MACRO_RING_TONES = ['protein', 'carbs', 'fat'] as const
 export function NestedCalorieMacroRing({
   calorieLabel,
   caloriePercent,
-  calorieValue,
+  calorieAmountLabel,
   macros,
 }: {
   calorieLabel: string
   caloriePercent: number
-  calorieValue: string
+  calorieAmountLabel: string
   macros: MacroSegment[]
 }) {
   const calorieBounded = clampPercent(caloriePercent)
@@ -68,12 +68,12 @@ export function NestedCalorieMacroRing({
     <div className="nested-goal-ring">
       <div
         className="nested-goal-ring-chart"
-        aria-label={`${calorieLabel}: ${calorieBounded}%`}
+        aria-label={`${calorieLabel}: ${calorieAmountLabel}`}
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={calorieBounded}
-        aria-valuetext={`${calorieBounded}%`}
+        aria-valuetext={calorieAmountLabel}
       >
         <svg className="nested-goal-ring-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
           <circle
@@ -81,21 +81,21 @@ export function NestedCalorieMacroRing({
             data-testid="nested-calorie-track"
             cx="50"
             cy="50"
-            r="36"
+            r="38"
             pathLength={100}
           />
           <circle
             className="nested-calorie-indicator"
             cx="50"
             cy="50"
-            r="36"
+            r="38"
             pathLength={100}
             strokeDasharray={100}
             strokeDashoffset={calorieOffset}
           />
         </svg>
         <div className="nested-goal-ring-center" aria-hidden>
-          <strong>{calorieValue}</strong>
+          <strong>{calorieAmountLabel}</strong>
           <span>{calorieLabel}</span>
         </div>
       </div>

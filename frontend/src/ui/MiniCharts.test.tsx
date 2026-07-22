@@ -29,7 +29,7 @@ describe('mini chart primitives', () => {
       <NestedCalorieMacroRing
         calorieLabel="Calories"
         caloriePercent={128}
-        calorieValue="650"
+        calorieAmountLabel="1,450 / 2,100"
         macros={[
           { label: 'Protein', percent: 82, amountLabel: '82 / 100 g' },
           { label: 'Carbs', percent: 72, amountLabel: '180 / 250 g' },
@@ -38,8 +38,8 @@ describe('mini chart primitives', () => {
       />,
     )
 
-    expect(screen.getByLabelText('Calories: 100%')).toBeInTheDocument()
-    expect(screen.getByText('650')).toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 1,450 / 2,100')).toBeInTheDocument()
+    expect(screen.getByText('1,450 / 2,100')).toBeInTheDocument()
     expect(screen.getByText('Protein')).toBeInTheDocument()
     expect(screen.getByText('82 / 100 g')).toBeInTheDocument()
     expect(screen.getByText('Carbs')).toBeInTheDocument()
@@ -57,11 +57,11 @@ describe('mini chart primitives', () => {
       <NestedCalorieMacroRing
         calorieLabel="Calories"
         caloriePercent={0}
-        calorieValue="0"
+        calorieAmountLabel="0 / 2,100"
         macros={[
-          { label: 'Protein', percent: 0, amountLabel: '0 g' },
-          { label: 'Carbs', percent: 0, amountLabel: '0 g' },
-          { label: 'Fat', percent: 0, amountLabel: '0 g' },
+          { label: 'Protein', percent: 0, amountLabel: '0 / 100 g' },
+          { label: 'Carbs', percent: 0, amountLabel: '0 / 250 g' },
+          { label: 'Fat', percent: 0, amountLabel: '0 / 70 g' },
         ]}
       />,
     )
@@ -69,9 +69,10 @@ describe('mini chart primitives', () => {
     expect(screen.getByTestId('nested-calorie-track')).toBeInTheDocument()
     expect(screen.queryByTestId('nested-macro-track')).not.toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
-    expect(screen.getByLabelText('Protein: 0 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 0 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 0 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 0 / 2,100')).toBeInTheDocument()
+    expect(screen.getByLabelText('Protein: 0 / 100 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Carbs: 0 / 250 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fat: 0 / 70 g')).toBeInTheDocument()
   })
 
   it('renders sparkline, stacked, and grouped chart labels', () => {

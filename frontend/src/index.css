@@ -1048,8 +1048,8 @@ button {
 }
 
 .nested-goal-ring-chart {
-  width: 9.5rem;
-  height: 9.5rem;
+  width: 10rem;
+  height: 10rem;
   display: grid;
   place-items: center;
   position: relative;
@@ -1065,35 +1065,38 @@ button {
   fill: none;
   stroke-linecap: butt;
   stroke: rgba(31, 74, 55, 0.16);
-  stroke-width: 8;
+  stroke-width: 5.5;
 }
 
 .nested-calorie-indicator {
   fill: none;
   stroke: var(--leaf-deep);
-  stroke-width: 8;
+  stroke-width: 5.5;
   stroke-linecap: round;
   transition: stroke-dashoffset 250ms ease;
 }
 
 .nested-goal-ring-center {
   position: absolute;
-  inset: 0;
+  inset: 18%;
   display: grid;
+  place-content: center;
   place-items: center;
   text-align: center;
   pointer-events: none;
 }
 
 .nested-goal-ring-center strong {
-  font-size: 1.45rem;
-  line-height: 1;
+  font-size: 0.95rem;
+  line-height: 1.15;
   color: #0f2f22;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
 }
 
 .nested-goal-ring-center span {
-  margin-top: 0.15rem;
-  font-size: 0.78rem;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
   color: #5d7166;
 }
 
