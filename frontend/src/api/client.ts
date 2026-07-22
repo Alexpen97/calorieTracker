@@ -1,4 +1,10 @@
-import { getAccessToken, type TokenBundle } from '../auth/tokenStorage'
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+  type TokenBundle,
+} from '../auth/tokenStorage'
 import { formatHttpError, resolveApiBase } from './apiBase'
 
 const apiBase = resolveApiBase(import.meta.env.VITE_API_BASE_URL)
@@ -158,6 +164,56 @@ function authHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${token}` }
 }
 
+let refreshInFlight: Promise<boolean> | null = null
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) {
+    return false
+  }
+  const response = await fetch(`${apiBase}/api/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+  if (!response.ok) {
+    clearTokens()
+    return false
+  }
+  const tokens = (await response.json()) as TokenBundle
+  saveTokens(tokens)
+  return true
+}
+
+/** Single-flight refresh so parallel 401s only hit /api/auth/refresh once. */
+function refreshAccessTokenShared(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = refreshAccessToken().finally(() => {
+      refreshInFlight = null
+    })
+  }
+  return refreshInFlight
+}
+
+async function authenticatedFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const withAuth = {
+    ...init,
+    headers: { ...authHeaders(), ...(init.headers as Record<string, string> | undefined) },
+  }
+  const response = await fetch(input, withAuth)
+  if (response.status !== 401) {
+    return response
+  }
+  const refreshed = await refreshAccessTokenShared()
+  if (!refreshed) {
+    return response
+  }
+  return fetch(input, {
+    ...init,
+    headers: { ...authHeaders(), ...(init.headers as Record<string, string> | undefined) },
+  })
+}
+
 export async function exchangeGoogleCode(input: {
   code: string
   codeVerifier?: string
@@ -172,25 +228,23 @@ export async function exchangeGoogleCode(input: {
 }
 
 export async function fetchMe(): Promise<UserProfile> {
-  const response = await fetch(`${apiBase}/api/users/me`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(`${apiBase}/api/users/me`)
   return parseJson<UserProfile>(response)
 }
 
 export async function updateMe(input: UpdateMeInput): Promise<UserProfile> {
-  const response = await fetch(`${apiBase}/api/users/me`, {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me`, {
     method: 'PUT',
-    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
   return parseJson<UserProfile>(response)
 }
 
 export async function logWeight(input: { weightKg: number; measuredAt?: string }): Promise<WeightLog> {
-  const response = await fetch(`${apiBase}/api/users/me/weight`, {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/weight`, {
     method: 'POST',
-    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
   return parseJson<WeightLog>(response)
@@ -205,23 +259,21 @@ export async function fetchWeightHistory(input: { from?: string; to?: string } =
     params.set('to', input.to)
   }
   const query = params.toString()
-  const response = await fetch(`${apiBase}/api/users/me/weight${query ? `?${query}` : ''}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/users/me/weight${query ? `?${query}` : ''}`,
+  )
   return parseJson<WeightLog[]>(response)
 }
 
 export async function fetchGoals(): Promise<Goal[]> {
-  const response = await fetch(`${apiBase}/api/users/me/goals`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/goals`)
   return parseJson<Goal[]>(response)
 }
 
 export async function overrideGoals(input: { goals: GoalOverride[] }): Promise<Goal[]> {
-  const response = await fetch(`${apiBase}/api/users/me/goals`, {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/goals`, {
     method: 'PUT',
-    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
   return parseJson<Goal[]>(response)
@@ -229,38 +281,34 @@ export async function overrideGoals(input: { goals: GoalOverride[] }): Promise<G
 
 export async function recalculateGoals(apply: boolean): Promise<RecalculateGoalsResult> {
   const params = new URLSearchParams({ apply: String(apply) })
-  const response = await fetch(`${apiBase}/api/users/me/goals/recalculate?${params}`, {
-    method: 'POST',
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/users/me/goals/recalculate?${params}`,
+    { method: 'POST' },
+  )
   return parseJson<RecalculateGoalsResult>(response)
 }
 
 export async function fetchProductByBarcode(ean: string): Promise<Product> {
-  const response = await fetch(`${apiBase}/api/products/barcode/${encodeURIComponent(ean)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/products/barcode/${encodeURIComponent(ean)}`,
+  )
   return parseJson<Product>(response)
 }
 
 export async function fetchProductById(id: string): Promise<Product> {
-  const response = await fetch(`${apiBase}/api/products/${encodeURIComponent(id)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(`${apiBase}/api/products/${encodeURIComponent(id)}`)
   return parseJson<Product>(response)
 }
 
 export async function fetchNutrient(code: string): Promise<Nutrient> {
-  const response = await fetch(`${apiBase}/api/nutrients/${encodeURIComponent(code)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/nutrients/${encodeURIComponent(code)}`,
+  )
   return parseJson<Nutrient>(response)
 }
 
 export async function fetchNutrients(): Promise<Nutrient[]> {
-  const response = await fetch(`${apiBase}/api/nutrients`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(`${apiBase}/api/nutrients`)
   return parseJson<Nutrient[]>(response)
 }
 
@@ -273,9 +321,9 @@ function withDateAndZone(date: string): URLSearchParams {
 }
 
 export async function fetchDiaryEntries(date: string): Promise<DiaryEntry[]> {
-  const response = await fetch(`${apiBase}/api/diary/entries?${withDateAndZone(date)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/entries?${withDateAndZone(date)}`,
+  )
   return parseJson<DiaryEntry[]>(response)
 }
 
@@ -285,49 +333,49 @@ export async function createDiaryEntry(input: {
   mealType: MealType
   consumedAt?: string
 }): Promise<DiaryEntry> {
-  const response = await fetch(`${apiBase}/api/diary/entries`, {
+  const response = await authenticatedFetch(`${apiBase}/api/diary/entries`, {
     method: 'POST',
-    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
   return parseJson<DiaryEntry>(response)
 }
 
 export async function deleteDiaryEntry(id: string): Promise<void> {
-  const response = await fetch(`${apiBase}/api/diary/entries/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/entries/${encodeURIComponent(id)}`,
+    { method: 'DELETE' },
+  )
   return parseNoContent(response)
 }
 
 export async function fetchWater(date: string): Promise<WaterLog[]> {
-  const response = await fetch(`${apiBase}/api/diary/water?${withDateAndZone(date)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/water?${withDateAndZone(date)}`,
+  )
   return parseJson<WaterLog[]>(response)
 }
 
 export async function logWater(input: { amountMl: number; loggedAt?: string }): Promise<WaterLog> {
-  const response = await fetch(`${apiBase}/api/diary/water`, {
+  const response = await authenticatedFetch(`${apiBase}/api/diary/water`, {
     method: 'POST',
-    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   })
   return parseJson<WaterLog>(response)
 }
 
 export async function deleteWater(id: string): Promise<void> {
-  const response = await fetch(`${apiBase}/api/diary/water/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/water/${encodeURIComponent(id)}`,
+    { method: 'DELETE' },
+  )
   return parseNoContent(response)
 }
 
 export async function fetchDiarySummary(date: string): Promise<DaySummary> {
-  const response = await fetch(`${apiBase}/api/diary/summary?${withDateAndZone(date)}`, {
-    headers: authHeaders(),
-  })
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/summary?${withDateAndZone(date)}`,
+  )
   return parseJson<DaySummary>(response)
 }
