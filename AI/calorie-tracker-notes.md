@@ -48,7 +48,7 @@
 
 ## Remaining work / TODOs
 
-- Roadmap phases 4–6 (design doc §14).
+- Roadmap phases 5–6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.
 - Google `redirect_uri_mismatch`: register **frontend**
@@ -56,8 +56,8 @@
   Railway app). Live NutriTrack example and checklist:
   `docs/google-oauth-setup.md`. Login page shows the exact URIs for the current origin.
 - Resolve open questions in design doc §15 before the relevant phases.
-- Phase 2 follow-ups: OFF bulk mirror import + FTS search (Phase 4); harden
-  barcode scanner fallbacks for browsers without `BarcodeDetector`.
+- Harden barcode scanner fallbacks for browsers without `BarcodeDetector`.
+- Assign initial `MODERATOR`/`ADMIN` users for the submission queue.
 
 ## Phase 2 (2026-07-21)
 
@@ -82,3 +82,13 @@ Implemented on `cursor/phase-3-diary-tracking-29d6` (PR #5):
 - Gateway diary OpenAPI + Compose `diary-service` + `docs/railway-phase3.md`
 - Frontend: Today diary, water quick-add, log-from-product, profile weight/goals
 - Tests: user-profile 12, diary 11, gateway route assert, frontend Vitest 8
+
+## Phase 4 (2026-07-22)
+
+Implemented on `cursor/phase-4-mirror-search-submissions-f0d1`:
+
+- food-catalog: OFF JSONL Spring Batch import, name search + OFF fallback,
+  product submissions + moderation roles, PostgreSQL FTS GIN migration
+- diary: `submissionId` on create entry
+- frontend: search, submit product, moderation queue
+- Docs: `AI/phase-4-mirror-search-submissions.md`, `docs/railway-phase4.md`

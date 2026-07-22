@@ -24,9 +24,12 @@ export function formatHttpError(status: number, body: string): string {
   if (status === 405 && body.includes('nginx')) {
     return 'API request was blocked (405). Check VITE_API_BASE_URL includes https:// and points at the gateway, not the frontend.'
   }
-  if (status === 403 || status === 503) {
+  if (status === 403 || status === 503 || status === 409) {
     try {
-      const parsed = JSON.parse(body) as { error?: string }
+      const parsed = JSON.parse(body) as { error?: string; warnings?: string[] }
+      if (parsed.warnings?.length) {
+        return `${parsed.error ?? 'Conflict'}: ${parsed.warnings.join('; ')}`
+      }
       if (parsed.error) {
         return parsed.error
       }

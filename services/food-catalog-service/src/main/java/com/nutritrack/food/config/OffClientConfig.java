@@ -35,6 +35,17 @@ public class OffClientConfig {
   }
 
   @Bean
+  RateLimiter offSearchRateLimiter(FoodProperties properties) {
+    RateLimiterConfig config =
+        RateLimiterConfig.custom()
+            .limitForPeriod(properties.resilience().searchRateLimitPerMinute())
+            .limitRefreshPeriod(Duration.ofMinutes(1))
+            .timeoutDuration(Duration.ofSeconds(5))
+            .build();
+    return RateLimiter.of("offProductSearch", config);
+  }
+
+  @Bean
   CircuitBreaker offCircuitBreaker(FoodProperties properties) {
     CircuitBreakerConfig config =
         CircuitBreakerConfig.custom()
@@ -61,6 +72,7 @@ public class OffClientConfig {
       RestClient.Builder restClientBuilder,
       FoodProperties properties,
       RateLimiter offRateLimiter,
+      RateLimiter offSearchRateLimiter,
       CircuitBreaker offCircuitBreaker,
       Retry offRetry) {
     RestClient client =
@@ -68,6 +80,13 @@ public class OffClientConfig {
             .baseUrl(properties.off().baseUrl())
             .defaultHeader("User-Agent", properties.off().userAgent())
             .build();
-    return new OffClient(client, properties.off().fields(), offRateLimiter, offCircuitBreaker, offRetry);
+    return new OffClient(
+        client,
+        properties.off().fields(),
+        properties.off().searchPageSize(),
+        offRateLimiter,
+        offSearchRateLimiter,
+        offCircuitBreaker,
+        offRetry);
   }
 }

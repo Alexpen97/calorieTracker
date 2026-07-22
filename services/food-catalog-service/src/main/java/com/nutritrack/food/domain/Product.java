@@ -55,6 +55,9 @@ public class Product {
   @Column(name = "off_last_synced_at")
   private Instant offLastSyncedAt;
 
+  @Column(name = "search_document", columnDefinition = "TEXT")
+  private String searchDocument;
+
   @OneToMany(
       mappedBy = "product",
       cascade = CascadeType.ALL,
@@ -156,6 +159,20 @@ public class Product {
 
   public void setOffLastSyncedAt(Instant offLastSyncedAt) {
     this.offLastSyncedAt = offLastSyncedAt;
+  }
+
+  public String getSearchDocument() {
+    return searchDocument;
+  }
+
+  public void setSearchDocument(String searchDocument) {
+    this.searchDocument = searchDocument;
+  }
+
+  public void refreshSearchDocument() {
+    String namePart = name == null ? "" : name;
+    String brandPart = brand == null ? "" : brand;
+    this.searchDocument = (namePart + " " + brandPart).trim().toLowerCase();
   }
 
   public List<ProductNutrient> getNutrients() {

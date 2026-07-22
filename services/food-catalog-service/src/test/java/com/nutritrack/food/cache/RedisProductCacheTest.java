@@ -68,6 +68,7 @@ class RedisProductCacheTest {
   private static ProductResponse sampleProduct() {
     return new ProductResponse(
         UUID.fromString("11111111-1111-1111-1111-111111111111"),
+        null,
         BARCODE,
         "OFF",
         "Nutella",
