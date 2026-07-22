@@ -2,6 +2,9 @@
 
 ## Completed
 
+- 2026-07-22: Dev account seeder — `scripts/seed-dev-data.ps1` resets and writes
+  ~30 days of meals/water/weight for `dev` + `agent-debug` via gateway APIs.
+  Added `DELETE /api/users/me/weight/{id}`. Notes: `AI/seed-dev-data.md`.
 - 2026-07-22: Dashboard Weight Progress is a timed 30-day weigh-in graph;
   dashboard `row-gap` +50% (`0.18rem` → `0.27rem`). Notes:
   `AI/weight-30-day-graph.md`.

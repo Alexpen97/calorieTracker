@@ -2,6 +2,7 @@ package com.nutritrack.user;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -219,6 +220,51 @@ class UserControllerTest {
                     {"weightKg":0,"measuredAt":"2026-07-21T10:00:00Z"}
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void deleteWeightRemovesOwnEntryAndReturns404ForOtherUsersEntry() throws Exception {
+    Jwt jwt = jwtForNewUser("delete-weight-owner");
+    Jwt otherJwt = jwtForNewUser("delete-weight-other");
+
+    MvcResult created =
+        mockMvc
+            .perform(
+                post("/api/users/me/weight")
+                    .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"weightKg":72.0,"measuredAt":"2026-07-21T08:00:00Z"}
+                        """))
+            .andExpect(status().isOk())
+            .andReturn();
+    String weightId =
+        com.jayway.jsonpath.JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            delete("/api/users/me/weight/" + weightId)
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(otherJwt)))
+        .andExpect(status().isNotFound());
+
+    mockMvc
+        .perform(
+            delete("/api/users/me/weight/" + weightId)
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/users/me/weight").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+
+    mockMvc
+        .perform(
+            delete("/api/users/me/weight/" + weightId)
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isNotFound());
   }
 
   @Test

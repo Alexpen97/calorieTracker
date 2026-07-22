@@ -53,6 +53,17 @@ public class WeightService {
     return weightRepository.findByUser_IdOrderByMeasuredAtDesc(userId);
   }
 
+  @Transactional
+  public void delete(UUID userId, UUID weightId) {
+    requireUser(userId);
+    BodyWeightLog log =
+        weightRepository
+            .findByIdAndUser_Id(weightId, userId)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Weight log not found"));
+    weightRepository.delete(log);
+  }
+
   private AppUser requireUser(UUID userId) {
     return userRepository
         .findById(userId)

@@ -88,3 +88,12 @@ Dev Login test script writes `access_token` and `refresh_token` into the active 
 3. Optional: `POST /api/users/me/onboarding` if profile incomplete.
 4. Call gateway routes under test with Bearer token.
 5. On 401, Refresh then retry once.
+
+## Seed realistic demo data
+
+```powershell
+./scripts/seed-dev-data.ps1 -BaseUrl https://gateway-production-777b.up.railway.app
+```
+
+Requires `AUTH_MODE=dev` and a deployed `DELETE /api/users/me/weight/{id}`.
+Details: `AI/seed-dev-data.md`.

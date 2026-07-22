@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BodyWeightLogRepository extends JpaRepository<BodyWeightLog, UUID> {
+  Optional<BodyWeightLog> findByIdAndUser_Id(UUID id, UUID userId);
+
   Optional<BodyWeightLog> findFirstByUser_IdOrderByMeasuredAtDesc(UUID userId);
 
   List<BodyWeightLog> findByUser_IdOrderByMeasuredAtDesc(UUID userId);

@@ -309,6 +309,14 @@ export async function fetchWeightHistory(input: { from?: string; to?: string } =
   return parseJson<WeightLog[]>(response)
 }
 
+export async function deleteWeight(id: string): Promise<void> {
+  const response = await authenticatedFetch(
+    `${apiBase}/api/users/me/weight/${encodeURIComponent(id)}`,
+    { method: 'DELETE' },
+  )
+  return parseNoContent(response)
+}
+
 /** Weight range API expects Instant; Analytics uses LocalDate (YYYY-MM-DD). */
 export function toInstantQueryParam(value: string, bound: 'start' | 'end'): string {
   if (value.includes('T')) {
