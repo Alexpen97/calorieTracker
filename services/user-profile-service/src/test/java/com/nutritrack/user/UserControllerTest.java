@@ -312,14 +312,14 @@ class UserControllerTest {
                       "heightCm":180,
                       "weightKg":80,
                       "activityLevel":"MODERATE",
-                      "objective":"LOSE"
+                      "objective":"MUSCLE_GAIN"
                     }
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.needsProfile").value(false))
         .andExpect(jsonPath("$.profile.sex").value("MALE"))
         .andExpect(jsonPath("$.profile.heightCm").value(180))
-        .andExpect(jsonPath("$.profile.objective").value("LOSE"))
+        .andExpect(jsonPath("$.profile.objective").value("MUSCLE_GAIN"))
         .andExpect(jsonPath("$.profile.activityLevel").value("MODERATE"))
         .andExpect(jsonPath("$.weight.weightKg").value(80))
         .andExpect(jsonPath("$.goals[*].nutrientCode", hasItem("energy_kcal")))
@@ -330,7 +330,7 @@ class UserControllerTest {
     mockMvc
         .perform(get("/api/users/me").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.objective").value("LOSE"))
+        .andExpect(jsonPath("$.objective").value("MUSCLE_GAIN"))
         .andExpect(jsonPath("$.heightCm").value(180));
 
     mockMvc

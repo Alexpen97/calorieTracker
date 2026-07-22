@@ -37,3 +37,14 @@ Branch: `cursor/user-onboarding-flow-80e1`
   engine cannot compute energy/protein/water without them.
 - Weight history cache is updated only when leaving the results step so the
   guard does not bounce the user off the goals summary.
+
+## Updated (2026-07-22)
+
+- Onboarding goal selection now uses UI cards aligned with the dashboard card
+  styling instead of a plain objective select.
+- Supported objectives are `CUT`, `LOSE`, `MAINTAIN`, `GAIN`,
+  `MUSCLE_GAIN`, and `BULK`; existing `LOSE`/`MAINTAIN`/`GAIN` values remain
+  valid for existing profiles.
+- Goals engine now computes objective-specific macro targets for
+  `energy_kcal`, `protein`, `carbohydrates`, and `fat` before adding water and
+  reference intake goals.
