@@ -13,6 +13,10 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import SubmitProductPage from './pages/SubmitProductPage'
 import ModerationPage from './pages/ModerationPage'
 import AppNavigation from './navigation/AppNavigation'
+import PreviewIndexPage from './pages/preview/PreviewIndexPage'
+import PreviewDashboardPage from './pages/preview/PreviewDashboardPage'
+import PreviewDiaryPage from './pages/preview/PreviewDiaryPage'
+import PreviewAnalyticsPage from './pages/preview/PreviewAnalyticsPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -29,10 +33,19 @@ export default function App() {
     enabled: loggedIn,
   })
   const canModerate = me.data?.role === 'MODERATOR' || me.data?.role === 'ADMIN'
+  const showPreview = import.meta.env.DEV
   return (
     <div className="app-shell">
       <AppNavigation loggedIn={loggedIn} canModerate={canModerate} />
       <Routes>
+        {showPreview && (
+          <>
+            <Route path="/preview" element={<PreviewIndexPage />} />
+            <Route path="/preview/dashboard" element={<PreviewDashboardPage />} />
+            <Route path="/preview/diary" element={<PreviewDiaryPage />} />
+            <Route path="/preview/analytics" element={<PreviewAnalyticsPage />} />
+          </>
+        )}
         <Route path="/" element={loggedIn ? <Navigate to="/today" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route

@@ -36,3 +36,17 @@ Implemented on `cursor/implement-mobile-nutrition-ui-b34b`.
 - Bottom navigation is the primary mobile chrome; desktop keeps a top nav.
 - Profile cards reuse the shared dashboard card styling without changing form behavior.
 
+## Mockup alignment rework
+
+The first implementation landed with correct data and routes, but the visuals were not close enough to the approved mobile mockups. A follow-up rework is in progress on `cursor/rework-mobile-nutrition-ui-b34b` (PR #23) to better match the mockups:
+
+- Shared primitives updated toward mockup style (SVG ring gauges, icon card headers, icon tab bar).
+- Pages refactored into view components:
+  - `frontend/src/screens/DashboardView.tsx`
+  - `frontend/src/screens/DiaryView.tsx`
+  - `frontend/src/screens/AnalyticsView.tsx`
+- Dev-only preview routes added for visual QA without backend auth:
+  - `/preview/dashboard`
+  - `/preview/diary`
+  - `/preview/analytics`
+

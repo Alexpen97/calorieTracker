@@ -11,6 +11,18 @@ describe('DashboardPage', () => {
   })
 
   it('renders today summary, macros, vitamins, minerals, and weight cards', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue({
+      id: 'u1',
+      email: 'alex@example.com',
+      displayName: 'Alex',
+      avatarUrl: null,
+      role: 'USER',
+      sex: null,
+      birthDate: null,
+      heightCm: null,
+      activityLevel: null,
+      objective: 'MAINTAIN',
+    })
     vi.spyOn(client, 'fetchDiarySummary').mockResolvedValue({
       date: '2026-07-22',
       totals: [
@@ -33,7 +45,7 @@ describe('DashboardPage', () => {
     renderWithClient(<DashboardPage />)
 
     expect(await screen.findByRole('heading', { name: 'Macros' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
