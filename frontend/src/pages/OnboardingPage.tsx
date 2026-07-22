@@ -260,7 +260,12 @@ export default function OnboardingPage() {
                     type="radio"
                     value={option.value}
                   />
-                  <span className="goal-choice-kicker">{option.kicker}</span>
+                  <span className="goal-choice-topline">
+                    <span className="goal-choice-kicker">{option.kicker}</span>
+                    {form.objective === option.value && (
+                      <span className="goal-choice-selected">Selected</span>
+                    )}
+                  </span>
                   <strong>{option.label}</strong>
                   <span>{option.hint}</span>
                   <em>{option.macro}</em>

@@ -1507,20 +1507,41 @@ button {
   transform: translateY(-1px);
 }
 
+.goal-choice-card.is-selected {
+  background: linear-gradient(145deg, rgba(235, 248, 240, 0.98), rgba(255, 252, 245, 0.98));
+  box-shadow: 0 0 0 3px rgba(47, 107, 79, 0.12), 0 14px 28px rgba(31, 74, 55, 0.12);
+}
+
 .goal-choice-card input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-.goal-choice-kicker {
+.goal-choice-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.goal-choice-kicker,
+.goal-choice-selected {
   width: max-content;
   padding: 0.25rem 0.55rem;
   border-radius: 999px;
-  background: rgba(226, 176, 74, 0.16);
-  color: #5a3b00;
   font-size: 0.72rem;
   font-weight: 900;
+}
+
+.goal-choice-kicker {
+  background: rgba(226, 176, 74, 0.16);
+  color: #5a3b00;
+}
+
+.goal-choice-selected {
+  background: var(--leaf);
+  color: #f7fff9;
 }
 
 .goal-choice-card strong {
