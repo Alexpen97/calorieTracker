@@ -1,13 +1,16 @@
 <#
 .SYNOPSIS
-  Reset and seed NutriTrack dev accounts with ~30 days of realistic diary data.
+  Seed NutriTrack dev accounts with ~30 days of realistic diary data.
 
 .DESCRIPTION
   Talks only to the gateway. Requires AUTH_MODE=dev on auth-service.
   Seeds both frontend Dev login (code "dev") and agent-debug by default.
+  Skips accounts that already have diary + weight history (persistent DB).
+  Pass -Force to wipe and reseed.
 
 .EXAMPLE
   ./scripts/seed-dev-data.ps1
+  ./scripts/seed-dev-data.ps1 -Force
   ./scripts/seed-dev-data.ps1 -BaseUrl https://gateway-production-777b.up.railway.app
   ./scripts/seed-dev-data.ps1 -Account agent-debug -Days 30
 #>
@@ -18,7 +21,8 @@ param(
   [ValidateSet("all", "dev", "agent-debug")]
   [string]$Account = "all",
   [int]$Days = 30,
-  [string]$Zone = ""
+  [string]$Zone = "",
+  [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -588,12 +592,46 @@ function Seed-Days {
   return @{ meals = $mealCount; water = $waterCount; weights = $weightCount }
 }
 
+function Test-AccountAlreadySeeded {
+  param([ref]$Tokens, [int]$DayCount)
+
+  $weights = Update-TokensOn401 -Tokens $Tokens -Action {
+    param($access)
+    Invoke-Api -Method GET -Path "/api/users/me/weight" -Headers (Get-AuthHeaders $access)
+  }
+  $weightCount = if ($null -eq $weights) { 0 } else { @($weights).Count }
+  $minWeights = [Math]::Min(5, [Math]::Max(1, [Math]::Floor($DayCount / 4)))
+  if ($weightCount -lt $minWeights) {
+    return $false
+  }
+
+  $recentDates = Get-DateList -DayCount ([Math]::Min(3, $DayCount))
+  foreach ($date in $recentDates) {
+    $entries = Update-TokensOn401 -Tokens $Tokens -Action {
+      param($access)
+      Invoke-Api -Method GET -Path "/api/diary/entries?date=$date&zone=$([uri]::EscapeDataString($Zone))" `
+        -Headers (Get-AuthHeaders $access)
+    }
+    if ($null -eq $entries) { $entries = @() }
+    elseif ($entries -isnot [System.Array]) { $entries = @($entries) }
+    if ($entries.Count -gt 0) {
+      return $true
+    }
+  }
+  return $false
+}
+
 function Seed-Account([string]$Code, [string]$Label) {
   Write-Host ""
   Write-Info "=== Seeding $Label (code=$Code) ==="
 
   $tokens = Connect-DevAccount $Code
   $tokenRef = [ref]$tokens
+
+  if (-not $Force -and (Test-AccountAlreadySeeded -Tokens $tokenRef -DayCount $Days)) {
+    Write-Ok "  Already has weight + diary data — skipping (pass -Force to wipe and reseed)"
+    return
+  }
 
   Ensure-Persona -Tokens $tokenRef
 
@@ -625,6 +663,7 @@ Write-Info "  RedirectUri = $RedirectUri"
 Write-Info "  Zone        = $Zone"
 Write-Info "  Days        = $Days"
 Write-Info "  Account     = $Account"
+Write-Info "  Force       = $Force"
 
 # Fail fast if auth is not in dev mode
 try {

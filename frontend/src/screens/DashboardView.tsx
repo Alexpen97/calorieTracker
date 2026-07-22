@@ -68,7 +68,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
 
       <DashboardCard className="dashboard-span" icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
         <div className="weight-layout">
-          <div>
+          <div className="weight-layout-meta">
             <p className="weight-value">{latestWeight(weightHistory)}</p>
             <p className="weight-sub">Last 30 days</p>
           </div>

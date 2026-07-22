@@ -14,8 +14,9 @@ and clearer markers — without adding a chart library.
 - `buildWeightTrendAxisLabels({ days, clock })` → `[start, mid, end]` short
   dates for the same 30-day window as `buildWeightTrendSeries`.
 - Dashboard wires `xLabels={buildWeightTrendAxisLabels()}`.
-- CSS: `.weight-trend-line`, gridline, axis-label styles; chart height
-  `4.25rem`.
+- Layout: kg + “Last 30 days” on a meta row; chart full-width below with
+  height `clamp(8.5rem, 32vw, 12rem)`.
+- CSS: `.weight-trend-line`, gridline, axis-label styles.
 - Analytics / Diary sparklines unchanged (out of scope).
 
 ## Tests

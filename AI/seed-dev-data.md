@@ -1,17 +1,19 @@
 # Dev account data seeder
 
-Recorded 2026-07-22.
+Recorded 2026-07-22. Updated same day for skip-if-seeded.
 
 ## What it does
 
-`scripts/seed-dev-data.ps1` resets and reseeds demo accounts via the **gateway** only:
+`scripts/seed-dev-data.ps1` seeds demo accounts via the **gateway** only:
 
 1. Dev Login (`AUTH_MODE=dev` required)
-2. Onboarding / profile → demo persona (male, 178 cm, lose weight, moderate activity)
-3. Delete existing diary entries + water for the last `max(Days, 120)` days (wipes leftover longer seeds)
-4. Delete all weight logs (`DELETE /api/users/me/weight/{id}`)
-5. Resolve foods (OFF barcodes when available + NutriTrack Demo submissions)
-6. Write ~30 days of meals, water, and weight trend (override with `-Days`)
+2. **Skip** if the account already has weight history + recent diary
+   entries (persistent DB). Pass `-Force` to wipe and reseed.
+3. Onboarding / profile → demo persona (male, 178 cm, lose weight, moderate activity)
+4. Delete existing diary entries + water for the last `max(Days, 120)` days
+5. Delete all weight logs (`DELETE /api/users/me/weight/{id}`)
+6. Resolve foods (OFF barcodes when available + NutriTrack Demo submissions)
+7. Write ~30 days of meals, water, and weight trend (override with `-Days`)
 
 ## Accounts
 
@@ -24,8 +26,11 @@ Recorded 2026-07-22.
 ## Usage
 
 ```powershell
-# Local compose gateway
+# Local compose gateway — skips accounts that already have data
 ./scripts/seed-dev-data.ps1
+
+# Wipe and rewrite
+./scripts/seed-dev-data.ps1 -Force
 
 # Railway (auth-service must temporarily have AUTH_MODE=dev)
 ./scripts/seed-dev-data.ps1 -BaseUrl https://gateway-production-777b.up.railway.app
@@ -33,6 +38,13 @@ Recorded 2026-07-22.
 # One account / custom history length
 ./scripts/seed-dev-data.ps1 -Account agent-debug -Days 14
 ```
+
+## Skip heuristic
+
+An account is treated as already seeded when:
+
+- weight logs ≥ `min(5, max(1, floor(Days/4)))`, and
+- at least one diary entry exists in the last `min(3, Days)` local dates
 
 ## API dependency
 
@@ -44,8 +56,8 @@ Shipped in user-profile-service with the seeder. Redeploy that service before se
 
 ## Notes
 
-- Re-runs are idempotent in spirit: wipe then rewrite.
+- Default runs are safe on a persistent DB: no wipe unless `-Force`.
 - Diary `zone` must be IANA (default `Europe/Berlin`), not a Windows timezone id.
 - Demo foods are product submissions (`force: true`) named `Seed …` under the seeding user; reused on later runs via `/api/products/submissions/mine`.
 - If `DELETE /api/users/me/weight/{id}` is not deployed yet, the script warns and still writes a new weight series (old points remain until the endpoint ships).
-- Expect a couple of minutes for 30 days × 2 accounts (many HTTP round-trips).
+- Expect a couple of minutes for 30 days × 2 accounts when forcing a full reseed.
