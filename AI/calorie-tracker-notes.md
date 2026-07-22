@@ -58,7 +58,11 @@ Implemented on `cursor/user-onboarding-flow-80e1`:
 - Frontend `/onboarding` wizard (weight, height, diet goal → nutrient goals)
 - Notes: `AI/onboarding-flow.md`
 
-## Remaining work / TODOs
+## Expanded vitamins & minerals (2026-07-22)
+
+Full micronutrient checklist on dashboard (summary → vitamins → minerals →
+weight; macros card removed). Catalog education, goals DRVs, and OFF mappings
+expanded — see `AI/expanded-micronutrients.md`.
 
 - Roadmap phases 5–6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.

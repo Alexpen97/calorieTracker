@@ -47,13 +47,41 @@ describe('nutrition dashboard helpers', () => {
     ])
   })
 
-  it('builds vitamin and mineral progress rows', () => {
-    expect(buildMicronutrientRows(totals, 'vitamin')).toEqual([
-      { code: 'vitamin_d', label: 'Vitamin D', percent: 40, amountLabel: '6 / 15 ug' },
+  it('builds vitamin and mineral progress rows for the full checklist', () => {
+    const vitamins = buildMicronutrientRows(totals, 'vitamin')
+    const minerals = buildMicronutrientRows(totals, 'mineral')
+
+    expect(vitamins).toHaveLength(13)
+    expect(minerals).toHaveLength(13)
+    expect(vitamins.map((item) => item.code)).toEqual([
+      'vitamin_a',
+      'vitamin_b1',
+      'vitamin_b2',
+      'vitamin_b3',
+      'vitamin_b5',
+      'vitamin_b6',
+      'vitamin_b7',
+      'vitamin_b9',
+      'vitamin_b12',
+      'vitamin_c',
+      'vitamin_d',
+      'vitamin_e',
+      'vitamin_k',
     ])
-    expect(buildMicronutrientRows(totals, 'mineral')[0]).toMatchObject({
+    expect(vitamins.find((item) => item.code === 'vitamin_d')).toEqual({
+      code: 'vitamin_d',
+      label: 'Vitamin D',
+      percent: 40,
+      amountLabel: '6 / 15 ug',
+    })
+    expect(minerals.find((item) => item.code === 'calcium')).toMatchObject({
       label: 'Calcium',
       percent: 65,
+    })
+    expect(minerals.find((item) => item.code === 'zinc')).toMatchObject({
+      label: 'Zinc',
+      percent: 0,
+      amountLabel: '0',
     })
   })
 

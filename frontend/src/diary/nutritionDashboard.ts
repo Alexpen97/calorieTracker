@@ -18,16 +18,34 @@ const macroDisplay = [
 
 const vitaminCodes = new Map([
   ['vitamin_a', 'Vitamin A'],
+  ['vitamin_b1', 'B1'],
+  ['vitamin_b2', 'B2'],
+  ['vitamin_b3', 'B3'],
+  ['vitamin_b5', 'B5'],
+  ['vitamin_b6', 'B6'],
+  ['vitamin_b7', 'B7'],
+  ['vitamin_b9', 'B9'],
+  ['vitamin_b12', 'B12'],
   ['vitamin_c', 'Vitamin C'],
   ['vitamin_d', 'Vitamin D'],
-  ['vitamin_b12', 'B12'],
+  ['vitamin_e', 'Vitamin E'],
+  ['vitamin_k', 'Vitamin K'],
 ])
 
 const mineralCodes = new Map([
-  ['iron', 'Iron'],
   ['calcium', 'Calcium'],
+  ['iron', 'Iron'],
   ['magnesium', 'Magnesium'],
   ['potassium', 'Potassium'],
+  ['sodium', 'Sodium'],
+  ['zinc', 'Zinc'],
+  ['iodine', 'Iodine'],
+  ['selenium', 'Selenium'],
+  ['copper', 'Copper'],
+  ['manganese', 'Manganese'],
+  ['phosphorus', 'Phosphorus'],
+  ['chromium', 'Chromium'],
+  ['molybdenum', 'Molybdenum'],
 ])
 
 export function buildMacroSummaries(totals: NutrientTotalForDisplay[]): NutritionProgressRow[] {
@@ -57,9 +75,7 @@ export function buildMicronutrientRows(
   kind: MicronutrientKind,
 ): NutritionProgressRow[] {
   const labels = kind === 'vitamin' ? vitaminCodes : mineralCodes
-  return [...labels.entries()]
-    .map(([code, label]) => progressRow(totals, code, label))
-    .filter((row): row is NutritionProgressRow => row !== null)
+  return [...labels.entries()].map(([code, label]) => progressRow(totals, code, label))
 }
 
 export function buildWeightTrend(weights: WeightLog[]): number[] {
@@ -79,9 +95,16 @@ function progressRow(
   totals: NutrientTotalForDisplay[],
   code: string,
   label: string,
-): NutritionProgressRow | null {
+): NutritionProgressRow {
   const total = totals.find((item) => item.code === code)
-  if (!total) return null
+  if (!total) {
+    return {
+      code,
+      label,
+      percent: 0,
+      amountLabel: '0',
+    }
+  }
   return {
     code,
     label,

@@ -1,9 +1,9 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
 import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
-import { DashboardCard, MetricPill } from '../ui/Card'
+import { DashboardCard } from '../ui/Card'
 import { NestedCalorieMacroRing, ProgressRow, Sparkline } from '../ui/MiniCharts'
-import { IconFlame, IconLeaf, IconPie, IconScale } from '../ui/Icons'
+import { IconFlame, IconLeaf, IconScale } from '../ui/Icons'
 
 type Props = {
   me: Pick<UserProfile, 'displayName' | 'avatarUrl'> | null
@@ -50,6 +50,32 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </DashboardCard>
 
+      <DashboardCard
+        className="dashboard-card-span"
+        icon={<IconLeaf />}
+        title="Vitamins"
+        action={<Link className="card-action" to="/analytics">Details</Link>}
+      >
+        <div className="compact-rows">
+          {vitamins.map((row) => (
+            <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
+          ))}
+        </div>
+      </DashboardCard>
+
+      <DashboardCard
+        className="dashboard-card-span"
+        icon={<IconLeaf />}
+        title="Minerals"
+        action={<Link className="card-action" to="/analytics">Details</Link>}
+      >
+        <div className="compact-rows">
+          {minerals.map((row) => (
+            <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
+          ))}
+        </div>
+      </DashboardCard>
+
       <DashboardCard icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
         <div className="weight-layout">
           <div>
@@ -59,37 +85,6 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
           <div className="weight-chart">
             <Sparkline label="Weight trend" points={buildWeightTrend(weightHistory)} />
           </div>
-        </div>
-      </DashboardCard>
-
-      <div className="grid-two">
-        <DashboardCard icon={<IconPie />} title="Macros" action={<Link className="card-action" to="/analytics">Details</Link>}>
-          <div className="macro-ring-row">
-            {macros.map((macro) => (
-              <MetricPill key={macro.code} label={macro.label} value={macro.amountLabel} tone="green" />
-            ))}
-          </div>
-        </DashboardCard>
-        <DashboardCard icon={<IconLeaf />} title="Vitamins" action={<Link className="card-action" to="/analytics">Details</Link>}>
-          <div className="compact-rows">
-            {vitamins.map((row) => (
-              <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
-            ))}
-          </div>
-        </DashboardCard>
-      </div>
-
-      <DashboardCard icon={<IconLeaf />} title="Minerals" action={<Link className="card-action" to="/analytics">Details</Link>}>
-        <div className="minerals-row">
-          {minerals.map((row) => (
-            <div key={row.code} className="mineral-mini">
-              <span>{row.label}</span>
-              <div className="mini-track" aria-hidden>
-                <div className="mini-fill" style={{ width: `${row.percent}%` }} />
-              </div>
-              <strong>{row.percent}%</strong>
-            </div>
-          ))}
         </div>
       </DashboardCard>
     </main>

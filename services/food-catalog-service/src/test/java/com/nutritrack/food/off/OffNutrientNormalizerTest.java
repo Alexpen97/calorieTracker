@@ -33,7 +33,12 @@ class OffNutrientNormalizerTest {
             "fiber_100g": 0,
             "salt_100g": 0.107,
             "sodium_100g": 0.0428,
-            "calcium_100g": 84
+            "calcium_100g": 84,
+            "vitamin-b1_100g": 0.1,
+            "vitamin-pp_100g": 1.5,
+            "vitamin-b9_100g": 20,
+            "selenium_100g": 4.2,
+            "phosphorus_100g": 150
           }
         }
         """;
@@ -57,6 +62,33 @@ class OffNutrientNormalizerTest {
               assertThat(n.code()).isEqualTo("sodium");
               assertThat(n.amountPer100g()).isEqualByComparingTo("42.8");
               assertThat(n.unit()).isEqualTo("mg");
+            })
+        .anySatisfy(
+            n -> {
+              assertThat(n.code()).isEqualTo("vitamin_b1");
+              assertThat(n.amountPer100g()).isEqualByComparingTo("0.1");
+              assertThat(n.unit()).isEqualTo("mg");
+            })
+        .anySatisfy(
+            n -> {
+              assertThat(n.code()).isEqualTo("vitamin_b3");
+              assertThat(n.amountPer100g()).isEqualByComparingTo("1.5");
+            })
+        .anySatisfy(
+            n -> {
+              assertThat(n.code()).isEqualTo("vitamin_b9");
+              assertThat(n.amountPer100g()).isEqualByComparingTo("20");
+              assertThat(n.unit()).isEqualTo("µg");
+            })
+        .anySatisfy(
+            n -> {
+              assertThat(n.code()).isEqualTo("selenium");
+              assertThat(n.amountPer100g()).isEqualByComparingTo("4.2");
+            })
+        .anySatisfy(
+            n -> {
+              assertThat(n.code()).isEqualTo("phosphorus");
+              assertThat(n.amountPer100g()).isEqualByComparingTo("150");
             });
   }
 }

@@ -94,14 +94,30 @@ public final class OffNutrientNormalizer {
     // OFF stores sodium in grams; internal model uses mg.
     map.put("sodium_100g", new Mapping("sodium", "mg", true));
     map.put("vitamin-a_100g", new Mapping("vitamin_a", "µg", false));
+    map.put("vitamin-b1_100g", new Mapping("vitamin_b1", "mg", false));
+    map.put("vitamin-b2_100g", new Mapping("vitamin_b2", "mg", false));
+    map.put("vitamin-pp_100g", new Mapping("vitamin_b3", "mg", false));
+    map.put("pantothenic-acid_100g", new Mapping("vitamin_b5", "mg", false));
+    map.put("vitamin-b6_100g", new Mapping("vitamin_b6", "mg", false));
+    map.put("biotin_100g", new Mapping("vitamin_b7", "µg", false));
+    map.put("vitamin-b9_100g", new Mapping("vitamin_b9", "µg", false));
+    map.put("vitamin-b12_100g", new Mapping("vitamin_b12", "µg", false));
     map.put("vitamin-c_100g", new Mapping("vitamin_c", "mg", false));
     map.put("vitamin-d_100g", new Mapping("vitamin_d", "µg", false));
-    map.put("vitamin-b12_100g", new Mapping("vitamin_b12", "µg", false));
+    map.put("vitamin-e_100g", new Mapping("vitamin_e", "mg", false));
+    map.put("vitamin-k_100g", new Mapping("vitamin_k", "µg", false));
     map.put("calcium_100g", new Mapping("calcium", "mg", false));
     map.put("iron_100g", new Mapping("iron", "mg", false));
     map.put("magnesium_100g", new Mapping("magnesium", "mg", false));
-    map.put("zinc_100g", new Mapping("zinc", "mg", false));
     map.put("potassium_100g", new Mapping("potassium", "mg", false));
+    map.put("zinc_100g", new Mapping("zinc", "mg", false));
+    map.put("iodine_100g", new Mapping("iodine", "µg", false));
+    map.put("selenium_100g", new Mapping("selenium", "µg", false));
+    map.put("copper_100g", new Mapping("copper", "mg", false));
+    map.put("manganese_100g", new Mapping("manganese", "mg", false));
+    map.put("phosphorus_100g", new Mapping("phosphorus", "mg", false));
+    map.put("chromium_100g", new Mapping("chromium", "µg", false));
+    map.put("molybdenum_100g", new Mapping("molybdenum", "µg", false));
     return Map.copyOf(map);
   }
 

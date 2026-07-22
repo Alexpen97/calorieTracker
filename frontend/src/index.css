@@ -1237,29 +1237,11 @@ button {
 }
 
 .compact-rows .progress-row > span:first-child {
-  min-width: 4.2rem;
+  min-width: 5.5rem;
 }
 
-.minerals-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 0.85rem;
-}
-
-.mineral-mini {
-  display: grid;
-  gap: 0.35rem;
-  text-align: center;
-}
-
-.mineral-mini span {
-  font-size: 0.85rem;
-  color: #5d7166;
-}
-
-.mineral-mini strong {
-  font-size: 0.9rem;
+.dashboard-card-span {
+  grid-column: 1 / -1;
 }
 
 .preview-links {
