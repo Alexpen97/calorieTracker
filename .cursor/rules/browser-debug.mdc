@@ -1,0 +1,37 @@
+---
+description: Browser MCP workflow for UI debugging against Railway frontend
+alwaysApply: true
+---
+
+# Browser MCP debugging
+
+Use **`plugin-browse-browser`** for UI bugs, OAuth redirects, and visual checks against production.
+
+## Target
+
+- Frontend: `https://front-end-production-4a95.up.railway.app`
+- API traffic goes to gateway `https://gateway-production-777b.up.railway.app` (via `VITE_API_BASE_URL`)
+- URLs: `AI/production-debug.md`
+
+## Workflow
+
+1. `browser_navigate` → target URL (or path under frontend base)
+2. `browser_snapshot` → accessibility tree + refs (`@0-5`)
+3. Act with `browser_click` / `browser_fill` / `browser_press` using **refs from the latest snapshot**
+4. Verify with `browser_screenshot` (and snapshot again after navigation)
+5. For API failures: `browser_network` on → reproduce → inspect captures
+6. `browser_close` when finished
+
+## Auth in the browser
+
+- Prefer **Dev login** on `/` when the button is shown (`VITE_AUTH_MODE=dev`)
+- If only Google is available, stop and ask the user to complete Google sign-in (or enable Dev login / API Dev Login)
+- After login, incomplete profiles land on `/onboarding`; completed on `/today`
+
+## Rules
+
+- Always snapshot before clicking; refs go stale after DOM changes
+- Prefer refs over CSS selectors / raw coordinates
+- Do not loop navigate→click→wait more than a few times without new evidence
+- Login / captcha / human OAuth blockers → stop and report; do not invent workarounds
+- Prefer browser for UI; prefer Postman/Shell + gateway for pure API checks

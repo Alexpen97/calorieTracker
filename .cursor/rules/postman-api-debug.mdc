@@ -1,0 +1,40 @@
+---
+description: Use Postman MCP + Railway URLs for API debugging with the agent debug user
+alwaysApply: true
+---
+
+# Postman / API debugging
+
+## Source of truth
+
+- Postman workspace **NutriTrack** (`78e98043-292a-4c10-bed9-f570a3d0c0f5`)
+- Collection **NutriTrack Debug** (`a3bff6c0-32f3-492f-ae75-0a68fcce9690`)
+- Environment **Railway Production** (`5ef257ec-0c87-4e9b-9690-bb30e916caf8`)
+- Details: `AI/production-debug.md`
+
+## When debugging APIs
+
+1. Prefer **gateway** base: `https://gateway-production-777b.up.railway.app`
+2. Discover request shapes via Postman MCP (`getCollection` / `getCollectionRequest`), not inventing URLs
+3. **Execute** with Shell (`Invoke-RestMethod` / `curl.exe`) — Postman MCP cannot send HTTP
+4. Mint tokens with Dev Login:
+
+```json
+POST /api/auth/google/callback
+{ "code": "dev:agent-debug", "redirectUri": "https://front-end-production-4a95.up.railway.app/auth/callback" }
+```
+
+5. Send `Authorization: Bearer <accessToken>` on `/api/**` calls
+6. On 401: `POST /api/auth/refresh` with `refreshToken`, then retry once
+
+## Prerequisites
+
+- Dev Login works only when auth-service `AUTH_MODE=dev`
+- If Railway returns Bad Request on `code: "dev:…"`, ask the user to set `AUTH_MODE=dev` temporarily (or use local compose)
+- Prefer gateway over direct service public URLs unless isolating one service
+
+## Do not
+
+- Commit tokens or put secrets in Cypher / search queries
+- Call Google OAuth as the agent; use Dev Login instead
+- Hit internal `*.railway.internal` hosts from the laptop
