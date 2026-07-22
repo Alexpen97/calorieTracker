@@ -35,8 +35,6 @@ describe('DashboardPage', () => {
       ],
       water: { amountMl: 1200, targetMl: 2500 },
     })
-    vi.spyOn(client, 'fetchDiaryEntries').mockResolvedValue([])
-    vi.spyOn(client, 'fetchWater').mockResolvedValue([])
     vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([
       { id: 'w1', weightKg: 72.4, measuredAt: '2026-07-20T08:00:00Z' },
       { id: 'w2', weightKg: 72.1, measuredAt: '2026-07-22T08:00:00Z' },
@@ -51,6 +49,11 @@ describe('DashboardPage', () => {
     expect(screen.getByLabelText('Carbs: 72%')).toBeInTheDocument()
     expect(screen.getByLabelText('Fat: 69%')).toBeInTheDocument()
     expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
+    expect(screen.queryByRole('link', { name: 'View Diary' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Meals')).not.toBeInTheDocument()
+    expect(screen.queryByText('Goal')).not.toBeInTheDocument()
+    expect(screen.queryByText('Consumed')).not.toBeInTheDocument()
+    expect(screen.queryByText(/water/i)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()

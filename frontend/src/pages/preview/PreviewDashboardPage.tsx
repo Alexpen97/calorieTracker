@@ -35,7 +35,6 @@ export default function PreviewDashboardPage() {
     <DashboardView
       me={{ displayName: 'Alex', avatarUrl: null }}
       summary={summary}
-      mealCount={4}
       weightHistory={weights}
     />
   )
