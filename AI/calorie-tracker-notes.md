@@ -101,8 +101,8 @@ Implemented on `cursor/phase-4-mirror-search-submissions-f0d1`:
 - frontend: search, submit product, moderation queue
 - Docs: `AI/phase-4-mirror-search-submissions.md`, `docs/railway-phase4.md`
 
-## Today Summary nested donut (2026-07-22)
+## Today Summary calorie ring + macro bars (2026-07-22)
 
-Dashboard Today Summary now uses a nested calorie + macro donut (inner calorie
-goal ring, outer Protein/Carbs/Fat arcs with track backgrounds + name/% legend).
+Dashboard Today Summary uses a calorie progress ring with three horizontal macro
+bars (name above, amount/goal below, no outer macro ring or percent labels).
 Notes: `AI/today-summary-nested-donut.md`.

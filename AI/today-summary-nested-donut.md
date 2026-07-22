@@ -1,24 +1,23 @@
-# Today Summary nested donut
+# Today Summary calorie ring + macro bars
 
 ## Change
 
-Replaced the single calorie `ProgressRing` in the dashboard **Today Summary**
-card with a nested donut:
+Today Summary shows a single calorie progress ring plus three horizontal macro
+bars (Protein / Carbs / Fat):
 
-- **Inner ring:** calorie progress toward the daily goal (track background + fill).
-- **Outer ring:** three equal arcs for Protein / Carbs / Fat, each with a tinted
-  track background (full goal) and a fill based on that macro’s goal progress.
-- **Legend:** macro name + percent with color-matched swatches and progress bars
-  that also show a full-goal track background.
-- Side stats (Goal / Consumed / Meals) and the View Diary action are removed —
-  Today Summary is nutrients-only (calorie + macro donut/legend).
-- Empty days still show all three macros at `0%` with visible goal tracks.
+- **Ring:** calorie progress toward the daily goal (track background + fill).
+- **Macro bars:** laid out in one horizontal row; each column shows the macro
+  name above the bar and `amount / goal unit` below (no percent text).
+- Side stats (Goal / Consumed / Meals) and the View Diary action remain removed —
+  Today Summary is nutrients-only.
+- Empty days still show all three macros at `0` progress with visible goal tracks
+  and `0 g` amount labels.
 
 ## Files
 
 - `frontend/src/ui/MiniCharts.tsx` — `NestedCalorieMacroRing`
 - `frontend/src/diary/nutritionDashboard.ts` — always returns Protein/Carbs/Fat
-- `frontend/src/screens/DashboardView.tsx` — wires macros into Today Summary
-- `frontend/src/index.css` — nested ring + legend bar styles
+- `frontend/src/screens/DashboardView.tsx` — wires macros + amount labels
+- `frontend/src/index.css` — calorie ring + horizontal macro bar styles
 - Tests: `MiniCharts.test.tsx`, `DashboardPage.test.tsx`, `nutritionDashboard.test.ts`
 - Test setup: global RTL `cleanup()` in `src/test/setup.ts`
