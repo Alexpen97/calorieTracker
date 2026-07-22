@@ -2,7 +2,7 @@ import type { DaySummary, UserProfile, WeightLog } from '../api/client'
 import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
 import { DashboardCard } from '../ui/Card'
-import { NestedCalorieMacroRing, ProgressRow, Sparkline } from '../ui/MiniCharts'
+import { MicroProgressGrid, NestedCalorieMacroRing, Sparkline } from '../ui/MiniCharts'
 import { IconFlame, IconLeaf, IconScale } from '../ui/Icons'
 
 type Props = {
@@ -50,31 +50,23 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </DashboardCard>
 
-      <DashboardCard
-        className="dashboard-card-span"
-        icon={<IconLeaf />}
-        title="Vitamins"
-        action={<Link className="card-action" to="/analytics">Details</Link>}
-      >
-        <div className="compact-rows">
-          {vitamins.map((row) => (
-            <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
-          ))}
-        </div>
-      </DashboardCard>
+      <div className="grid-two dashboard-card-span">
+        <DashboardCard
+          icon={<IconLeaf />}
+          title="Vitamins"
+          action={<Link className="card-action" to="/analytics">Details</Link>}
+        >
+          <MicroProgressGrid rows={vitamins} />
+        </DashboardCard>
 
-      <DashboardCard
-        className="dashboard-card-span"
-        icon={<IconLeaf />}
-        title="Minerals"
-        action={<Link className="card-action" to="/analytics">Details</Link>}
-      >
-        <div className="compact-rows">
-          {minerals.map((row) => (
-            <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
-          ))}
-        </div>
-      </DashboardCard>
+        <DashboardCard
+          icon={<IconLeaf />}
+          title="Minerals"
+          action={<Link className="card-action" to="/analytics">Details</Link>}
+        >
+          <MicroProgressGrid rows={minerals} />
+        </DashboardCard>
+      </div>
 
       <DashboardCard icon={<IconScale />} title="Weight Progress" eyebrow="Trend">
         <div className="weight-layout">

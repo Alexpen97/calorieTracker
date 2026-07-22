@@ -131,7 +131,7 @@ export function ProgressRow({
 }: {
   label: string
   percent: number
-  amountLabel: string
+  amountLabel?: string
 }) {
   const bounded = clampPercent(percent)
   return (
@@ -140,7 +140,33 @@ export function ProgressRow({
       <div className="mini-track" aria-hidden>
         <div className="mini-fill" style={{ width: `${bounded}%` }} />
       </div>
-      <strong>{amountLabel}</strong>
+      {amountLabel ? <strong>{amountLabel}</strong> : null}
+    </div>
+  )
+}
+
+export function MicroProgressGrid({
+  rows,
+}: {
+  rows: Array<{ code: string; label: string; percent: number }>
+}) {
+  return (
+    <div className="micro-grid">
+      {rows.map((row) => (
+        <div className="micro-cell" key={row.code}>
+          <span>{row.label}</span>
+          <div
+            className="mini-track micro-track"
+            role="progressbar"
+            aria-label={row.label}
+            aria-valuenow={clampPercent(row.percent)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="mini-fill" style={{ width: `${clampPercent(row.percent)}%` }} />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

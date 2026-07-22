@@ -7,9 +7,9 @@ backed by catalog education rows, goals DRVs, and Open Food Facts mappings.
 
 ## Dashboard
 
-- Order: Today Summary → Vitamins → Minerals → Weight Progress
+- Order: Today Summary → Vitamins | Minerals (side-by-side) → Weight Progress
 - Removed standalone Macros card (macros remain in the nested summary ring)
-- Minerals use the same `ProgressRow` / `compact-rows` styling as vitamins
+- Vitamins/minerals share compact 3-column grids with thin bars and no % labels
 
 ## Codes
 

@@ -1244,6 +1244,34 @@ button {
   grid-column: 1 / -1;
 }
 
+.micro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.micro-cell {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.micro-cell > span {
+  font-size: 0.72rem;
+  line-height: 1.15;
+  color: #5d7166;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.micro-track {
+  flex: none;
+  width: 100%;
+  height: 0.32rem;
+}
+
 .preview-links {
   list-style: none;
   padding: 0;
