@@ -11,7 +11,7 @@ const apiBase = resolveApiBase(import.meta.env.VITE_API_BASE_URL)
 
 export type Sex = 'MALE' | 'FEMALE'
 export type ActivityLevel = 'SEDENTARY' | 'LIGHT' | 'MODERATE' | 'ACTIVE' | 'VERY_ACTIVE'
-export type Objective = 'LOSE' | 'MAINTAIN' | 'GAIN'
+export type Objective = 'LOSE' | 'MAINTAIN' | 'GAIN' | 'CUT' | 'MUSCLE_GAIN' | 'BULK'
 export type GoalOrigin = 'COMPUTED' | 'USER_OVERRIDE'
 
 export type UserProfile = {

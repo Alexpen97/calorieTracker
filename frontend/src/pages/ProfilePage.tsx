@@ -42,9 +42,12 @@ const activityOptions: Array<{ value: ActivityLevel; label: string }> = [
 ]
 
 const objectiveOptions: Array<{ value: Objective; label: string }> = [
-  { value: 'LOSE', label: 'Lose' },
+  { value: 'CUT', label: 'Cut' },
+  { value: 'LOSE', label: 'Lose weight' },
   { value: 'MAINTAIN', label: 'Maintain' },
-  { value: 'GAIN', label: 'Gain' },
+  { value: 'GAIN', label: 'Gentle gain' },
+  { value: 'MUSCLE_GAIN', label: 'Lean muscle' },
+  { value: 'BULK', label: 'Bulk' },
 ]
 
 export default function ProfilePage() {

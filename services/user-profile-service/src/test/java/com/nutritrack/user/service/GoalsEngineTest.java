@@ -71,8 +71,32 @@ class GoalsEngineTest {
 
     assertThat(target(result, "energy_kcal").dailyTarget()).isEqualByComparingTo("1601.48");
     assertThat(target(result, "protein").dailyTarget()).isEqualByComparingTo("112.00");
+    assertThat(target(result, "fat").dailyTarget()).isEqualByComparingTo("44.49");
+    assertThat(target(result, "carbohydrates").dailyTarget()).isEqualByComparingTo("188.27");
     assertThat(result.suggested()).extracting(GoalsEngine.SuggestedGoal::nutrientCode)
-        .containsOnly("energy_kcal", "protein", "water_ml");
+        .containsOnly("carbohydrates", "energy_kcal", "fat", "protein", "water_ml");
+  }
+
+  @Test
+  void calculatesMacroTargetsForMuscleGainObjective() {
+    AppUser user = completeUser(Sex.MALE, LocalDate.of(1996, 7, 21), new BigDecimal("180"));
+    user.setActivityLevel(ActivityLevel.MODERATE);
+    user.setObjective(Objective.MUSCLE_GAIN);
+
+    GoalsEngine.Result result =
+        engine.calculate(
+            user,
+            Optional.of(new BigDecimal("80")),
+            List.of(reference("fiber", Sex.MALE, "35", "g", "FIXED")),
+            LocalDate.of(2026, 7, 21));
+
+    assertThat(result.needsProfile()).isFalse();
+    assertThat(target(result, "energy_kcal").dailyTarget()).isEqualByComparingTo("3034.90");
+    assertThat(target(result, "protein").dailyTarget()).isEqualByComparingTo("160.00");
+    assertThat(target(result, "fat").dailyTarget()).isEqualByComparingTo("84.30");
+    assertThat(target(result, "carbohydrates").dailyTarget()).isEqualByComparingTo("409.05");
+    assertThat(result.suggested()).extracting(GoalsEngine.SuggestedGoal::nutrientCode)
+        .contains("energy_kcal", "protein", "fat", "carbohydrates", "water_ml", "fiber");
   }
 
   private static AppUser completeUser(Sex sex, LocalDate birthDate, BigDecimal heightCm) {

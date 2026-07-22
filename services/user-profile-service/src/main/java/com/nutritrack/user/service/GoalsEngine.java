@@ -22,6 +22,9 @@ public class GoalsEngine {
   private static final BigDecimal SIX_POINT_TWO_FIVE = new BigDecimal("6.25");
   private static final BigDecimal FIVE = new BigDecimal("5");
   private static final BigDecimal WATER_ML_PER_KG = new BigDecimal("35");
+  private static final BigDecimal CALORIES_PER_GRAM_PROTEIN = new BigDecimal("4");
+  private static final BigDecimal CALORIES_PER_GRAM_CARBOHYDRATE = new BigDecimal("4");
+  private static final BigDecimal CALORIES_PER_GRAM_FAT = new BigDecimal("9");
 
   public Result calculate(
       AppUser user,
@@ -41,12 +44,24 @@ public class GoalsEngine {
     if (!needsProfile) {
       BigDecimal weightKg = latestWeightKg.orElseThrow();
       int userAge = age.orElseThrow();
-      suggested.add(new SuggestedGoal("energy_kcal", energyTarget(user, weightKg, userAge), "kcal"));
+      MacroProfile macroProfile = macroProfile(user.getObjective());
+      BigDecimal energyKcal = energyTarget(user, weightKg, userAge, macroProfile);
+      BigDecimal proteinGrams =
+          weightKg.multiply(macroProfile.proteinPerKg()).setScale(2, RoundingMode.HALF_UP);
+      BigDecimal fatGrams =
+          energyKcal
+              .multiply(macroProfile.fatEnergyRatio())
+              .divide(CALORIES_PER_GRAM_FAT, 2, RoundingMode.HALF_UP);
+      BigDecimal carbohydratesGrams =
+          energyKcal
+              .subtract(proteinGrams.multiply(CALORIES_PER_GRAM_PROTEIN))
+              .subtract(fatGrams.multiply(CALORIES_PER_GRAM_FAT))
+              .divide(CALORIES_PER_GRAM_CARBOHYDRATE, 2, RoundingMode.HALF_UP);
+      suggested.add(new SuggestedGoal("energy_kcal", energyKcal, "kcal"));
       suggested.add(
-          new SuggestedGoal(
-              "protein",
-              weightKg.multiply(proteinPerKg(user.getObjective())).setScale(2, RoundingMode.HALF_UP),
-              "g"));
+          new SuggestedGoal("protein", proteinGrams, "g"));
+      suggested.add(new SuggestedGoal("carbohydrates", carbohydratesGrams, "g"));
+      suggested.add(new SuggestedGoal("fat", fatGrams, "g"));
       suggested.add(
           new SuggestedGoal(
               "water_ml",
@@ -87,7 +102,8 @@ public class GoalsEngine {
     return Optional.of(Period.between(user.getBirthDate(), today).getYears());
   }
 
-  private static BigDecimal energyTarget(AppUser user, BigDecimal weightKg, int age) {
+  private static BigDecimal energyTarget(
+      AppUser user, BigDecimal weightKg, int age, MacroProfile macroProfile) {
     BigDecimal bmr =
         weightKg
             .multiply(TEN)
@@ -95,7 +111,7 @@ public class GoalsEngine {
             .subtract(FIVE.multiply(BigDecimal.valueOf(age)))
             .add(sexAdjustment(user.getSex()));
     return bmr.multiply(activityMultiplier(user.getActivityLevel()))
-        .multiply(objectiveFactor(user.getObjective()))
+        .multiply(macroProfile.energyFactor())
         .setScale(2, RoundingMode.HALF_UP);
   }
 
@@ -113,20 +129,22 @@ public class GoalsEngine {
     };
   }
 
-  private static BigDecimal objectiveFactor(Objective objective) {
+  private static MacroProfile macroProfile(Objective objective) {
     return switch (objective) {
-      case LOSE -> new BigDecimal("0.85");
-      case MAINTAIN -> new BigDecimal("1.0");
-      case GAIN -> new BigDecimal("1.15");
+      case LOSE -> new MacroProfile("0.85", "1.6", "0.25");
+      case CUT -> new MacroProfile("0.80", "2.0", "0.25");
+      case MAINTAIN -> new MacroProfile("1.0", "1.2", "0.30");
+      case GAIN -> new MacroProfile("1.10", "1.5", "0.30");
+      case MUSCLE_GAIN -> new MacroProfile("1.10", "2.0", "0.25");
+      case BULK -> new MacroProfile("1.20", "1.8", "0.25");
     };
   }
 
-  private static BigDecimal proteinPerKg(Objective objective) {
-    return switch (objective) {
-      case LOSE -> new BigDecimal("1.6");
-      case MAINTAIN -> new BigDecimal("1.2");
-      case GAIN -> new BigDecimal("1.8");
-    };
+  private record MacroProfile(
+      BigDecimal energyFactor, BigDecimal proteinPerKg, BigDecimal fatEnergyRatio) {
+    MacroProfile(String energyFactor, String proteinPerKg, String fatEnergyRatio) {
+      this(new BigDecimal(energyFactor), new BigDecimal(proteinPerKg), new BigDecimal(fatEnergyRatio));
+    }
   }
 
   public record Result(boolean needsProfile, List<SuggestedGoal> suggested) {}

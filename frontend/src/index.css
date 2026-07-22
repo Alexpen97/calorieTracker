@@ -1397,6 +1397,197 @@ button {
   white-space: nowrap;
 }
 
+.onboarding-progress {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0.35rem 0 1rem;
+}
+
+.onboarding-progress span {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(47, 107, 79, 0.12);
+}
+
+.onboarding-progress span.is-active {
+  background: linear-gradient(90deg, var(--leaf), var(--sun));
+}
+
+.onboarding-card {
+  padding: 1.15rem;
+  border-color: rgba(47, 107, 79, 0.12);
+  background:
+    linear-gradient(145deg, rgba(247, 255, 251, 0.96), rgba(255, 252, 245, 0.94)),
+    #fff;
+}
+
+.onboarding-card-intro {
+  margin-bottom: 1rem;
+}
+
+.onboarding-card-intro h3 {
+  margin: 0.15rem 0 0;
+  color: #0f2f22;
+}
+
+.onboarding-card-intro p:last-child {
+  margin: 0.35rem 0 0;
+  color: #5d7166;
+}
+
+.onboarding-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.onboarding-input-grid label {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5d7166;
+}
+
+.onboarding-input-grid input,
+.onboarding-input-grid select {
+  width: 100%;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid rgba(31, 74, 55, 0.18);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+}
+
+.goal-card-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.goal-card-fieldset legend {
+  margin-bottom: 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5d7166;
+}
+
+.goal-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.goal-choice-card {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 9.25rem;
+  padding: 0.9rem;
+  border: 1.5px solid rgba(31, 74, 55, 0.12);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.goal-choice-card:hover,
+.goal-choice-card.is-selected {
+  border-color: rgba(47, 107, 79, 0.45);
+  box-shadow: 0 14px 28px rgba(31, 74, 55, 0.1);
+  transform: translateY(-1px);
+}
+
+.goal-choice-card.is-selected {
+  background: linear-gradient(145deg, rgba(235, 248, 240, 0.98), rgba(255, 252, 245, 0.98));
+  box-shadow: 0 0 0 3px rgba(47, 107, 79, 0.12), 0 14px 28px rgba(31, 74, 55, 0.12);
+}
+
+.goal-choice-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.goal-choice-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.goal-choice-kicker,
+.goal-choice-selected {
+  width: max-content;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.goal-choice-kicker {
+  background: rgba(226, 176, 74, 0.16);
+  color: #5a3b00;
+}
+
+.goal-choice-selected {
+  background: var(--leaf);
+  color: #f7fff9;
+}
+
+.goal-choice-card strong {
+  color: #0f2f22;
+  font-size: 1.05rem;
+}
+
+.goal-choice-card span:not(.goal-choice-kicker) {
+  color: #5d7166;
+}
+
+.goal-choice-card em {
+  align-self: end;
+  font-style: normal;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--leaf-deep);
+}
+
+.onboarding-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  padding: 0;
+  margin: 0 0 1.2rem;
+  list-style: none;
+}
+
+.onboarding-summary-grid li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  background: rgba(47, 107, 79, 0.08);
+}
+
+.onboarding-summary-grid span {
+  color: #5d7166;
+  font-size: 0.78rem;
+}
+
+.onboarding-summary-grid strong {
+  color: #0f2f22;
+  font-size: 0.95rem;
+}
+
 .onboarding-goal-list {
   margin: 0 0 1.25rem;
 }
@@ -1436,6 +1627,14 @@ button {
   .diary-page,
   .profile-panel {
     width: min(860px, 100%);
+  }
+}
+
+@media (max-width: 640px) {
+  .onboarding-input-grid,
+  .goal-card-grid,
+  .onboarding-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
 
