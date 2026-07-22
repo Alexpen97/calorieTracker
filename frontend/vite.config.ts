@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  // Relative asset URLs required for Capacitor (file / https://localhost WebView).
+  base: './',
   plugins: [react()],
   server: {
     port: 5173,

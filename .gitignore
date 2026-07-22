@@ -12,4 +12,14 @@ coverage/
 *.log
 .DS_Store
 
+# Capacitor / Android local build artifacts (keep android/ project sources)
+frontend/android/.gradle/
+frontend/android/**/build/
+frontend/android/local.properties
+frontend/android/captures/
+frontend/android/.idea/
+frontend/android/app/release/
+frontend/android/*.keystore
+frontend/android/*.jks
+
 .superpowers/

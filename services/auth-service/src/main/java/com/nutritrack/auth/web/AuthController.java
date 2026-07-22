@@ -101,7 +101,7 @@ public class AuthController {
   }
 
   public record GoogleCallbackRequest(
-      @NotBlank String code, String codeVerifier, @NotBlank String redirectUri) {}
+      @NotBlank String code, String codeVerifier, String redirectUri) {}
 
   public record RefreshRequest(@NotBlank String refreshToken) {}
 

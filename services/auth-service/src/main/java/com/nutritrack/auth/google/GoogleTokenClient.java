@@ -34,7 +34,10 @@ public class GoogleTokenClient {
     form.add("code", code);
     form.add("client_id", properties.googleClientId());
     form.add("client_secret", properties.googleClientSecret());
-    form.add("redirect_uri", redirectUri);
+    // Web PKCE requires redirect_uri; Android server-auth-code exchange omits it.
+    if (redirectUri != null && !redirectUri.isBlank()) {
+      form.add("redirect_uri", redirectUri);
+    }
     if (codeVerifier != null && !codeVerifier.isBlank()) {
       form.add("code_verifier", codeVerifier);
     }

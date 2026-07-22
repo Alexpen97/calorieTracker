@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchProductByBarcode, searchProducts, type Product } from '../api/client'
 import { isValidBarcode, sanitizeBarcodeInput } from '../food/barcode'
+import {
+  isNativeBarcodeScanAvailable,
+  scanBarcodeNative,
+} from '../platform/barcodeScan'
 
 type Mode = 'barcode' | 'search'
 
@@ -24,13 +28,15 @@ export default function LookupPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [scanning, setScanning] = useState(false)
-  const [scanSupported, setScanSupported] = useState(false)
+  const [webScanSupported, setWebScanSupported] = useState(false)
+  const [nativeScanSupported, setNativeScanSupported] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
-    setScanSupported(typeof window !== 'undefined' && typeof window.BarcodeDetector === 'function')
+    setWebScanSupported(typeof window !== 'undefined' && typeof window.BarcodeDetector === 'function')
+    void isNativeBarcodeScanAvailable().then(setNativeScanSupported)
     return () => stopScan()
   }, [])
 
@@ -79,7 +85,24 @@ export default function LookupPage() {
     }
   }
 
-  async function startScan() {
+  async function startNativeScan() {
+    setError(null)
+    setBusy(true)
+    try {
+      const raw = await scanBarcodeNative()
+      if (!raw) {
+        return
+      }
+      setBarcode(sanitizeBarcodeInput(raw))
+      await lookup(raw)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Native scan failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function startWebScan() {
     setError(null)
     if (!window.BarcodeDetector) {
       setError('Live scanning is not supported in this browser. Enter the barcode manually.')
@@ -143,6 +166,8 @@ export default function LookupPage() {
     setScanning(false)
   }
 
+  const showScanButton = nativeScanSupported || webScanSupported
+
   return (
     <main className="panel lookup-panel">
       <h2>Look up a food</h2>
@@ -200,8 +225,13 @@ export default function LookupPage() {
             <button className="btn btn-primary" type="submit" disabled={busy}>
               {busy ? 'Looking up…' : 'Find product'}
             </button>
-            {scanSupported && !scanning && (
-              <button className="btn btn-secondary" type="button" onClick={() => void startScan()}>
+            {showScanButton && !scanning && (
+              <button
+                className="btn btn-secondary"
+                type="button"
+                disabled={busy}
+                onClick={() => void (nativeScanSupported ? startNativeScan() : startWebScan())}
+              >
                 Scan with camera
               </button>
             )}
@@ -214,12 +244,12 @@ export default function LookupPage() {
         </form>
       )}
 
-      {mode === 'barcode' && (
+      {mode === 'barcode' && !nativeScanSupported && (
         <div className={`scanner-frame ${scanning ? 'is-active' : ''}`}>
           <video ref={videoRef} muted playsInline className="scanner-video" />
           {!scanning && (
             <p className="scanner-hint">
-              {scanSupported
+              {webScanSupported
                 ? 'Camera preview appears here when scanning.'
                 : 'This browser has no BarcodeDetector — use manual entry.'}
             </p>

@@ -22,6 +22,24 @@ Google Console must allow `https://<this-origin>/auth/callback` — see
 
 - `npm test` — Vitest
 - `npm run build` — production bundle
+- `npm run cap:sync` — build web assets and sync into `android/`
+- `npm run android:open` — open the Capacitor Android project in Android Studio
+
+## Android (Capacitor)
+
+Phase 5 wraps this SPA in Capacitor (`com.nutritrack.app`). Native adapters:
+
+- Barcode: ML Kit (`@capacitor-mlkit/barcode-scanning`) on device; web keeps `BarcodeDetector`
+- Auth: native Google Sign-In → server auth code → same `/api/auth/google/callback`
+- Tokens: Android Keystore via `@aparajita/capacitor-secure-storage`
+
+```bash
+VITE_API_BASE_URL=https://gateway-production-777b.up.railway.app \
+  VITE_GOOGLE_CLIENT_ID=<web-client-id> npm run cap:sync
+npm run android:open
+```
+
+Play Store checklist: `docs/android-play-store.md`. Notes: `AI/phase-5-android.md`.
 
 ## Container
 

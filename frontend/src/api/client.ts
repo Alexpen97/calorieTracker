@@ -221,11 +221,11 @@ async function refreshAccessToken(): Promise<boolean> {
     body: JSON.stringify({ refreshToken }),
   })
   if (!response.ok) {
-    clearTokens()
+    await clearTokens()
     return false
   }
   const tokens = (await response.json()) as TokenBundle
-  saveTokens(tokens)
+  await saveTokens(tokens)
   return true
 }
 
@@ -261,7 +261,8 @@ async function authenticatedFetch(input: string, init: RequestInit = {}): Promis
 export async function exchangeGoogleCode(input: {
   code: string
   codeVerifier?: string
-  redirectUri: string
+  /** Required for web PKCE; omit for native Google server-auth-code exchange. */
+  redirectUri?: string
 }): Promise<TokenBundle> {
   const response = await fetch(`${apiBase}/api/auth/google/callback`, {
     method: 'POST',

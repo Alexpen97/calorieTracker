@@ -1,0 +1,10 @@
+import { Capacitor } from '@capacitor/core'
+
+/** True when running inside a Capacitor native shell (Android/iOS). */
+export function isNativePlatform(): boolean {
+  return Capacitor.isNativePlatform()
+}
+
+export function nativePlatform(): string {
+  return Capacitor.getPlatform()
+}

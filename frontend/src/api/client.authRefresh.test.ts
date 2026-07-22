@@ -4,20 +4,19 @@ import { clearTokens, getAccessToken, saveTokens } from '../auth/tokenStorage'
 const apiBase = 'https://gateway.example.com'
 
 describe('authenticatedFetch refresh on 401', () => {
-  beforeEach(() => {
-    clearTokens()
+  beforeEach(async () => {
+    await clearTokens()
     vi.stubGlobal('fetch', vi.fn())
-    // api client reads VITE_API_BASE_URL at module load — tests import after stubbing via dynamic import
   })
 
-  afterEach(() => {
-    clearTokens()
+  afterEach(async () => {
+    await clearTokens()
     vi.unstubAllGlobals()
     vi.resetModules()
   })
 
   it('refreshes the access token and retries once on 401', async () => {
-    saveTokens({
+    await saveTokens({
       accessToken: 'expired',
       refreshToken: 'refresh-1',
       tokenType: 'Bearer',
