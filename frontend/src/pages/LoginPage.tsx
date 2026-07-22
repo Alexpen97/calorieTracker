@@ -54,7 +54,7 @@ export default function LoginPage() {
         redirectUri,
       })
       saveTokens(tokens)
-      navigate('/today')
+      navigate('/onboarding')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Dev login failed')
     } finally {

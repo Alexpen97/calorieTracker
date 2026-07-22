@@ -9,6 +9,8 @@ User profile container — profile, body-weight log, goals engine. See
 - Goals engine (FR-12): computes suggested nutrient/water targets from sex,
   weight, height, age, and activity (Mifflin-St Jeor, DRV reference intakes,
   ~35 ml/kg water); preserves user overrides.
+- Onboarding: `POST /api/users/me/onboarding` saves height/weight/diet goal
+  (plus sex, birth date, activity) and applies computed nutrient goals.
 
 ## Container
 

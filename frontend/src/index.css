@@ -1390,6 +1390,29 @@ button {
   margin-top: 1rem;
 }
 
+.onboarding-page .onboarding-step {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #5a7264;
+  white-space: nowrap;
+}
+
+.onboarding-goal-list {
+  margin: 0 0 1.25rem;
+}
+
+.onboarding-goal-list li {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(47, 107, 79, 0.12);
+}
+
+.onboarding-page a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 @media (min-width: 760px) {
   .mobile-page {
     padding: 0 1.5rem 2rem;

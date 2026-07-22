@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { isLoggedIn } from './auth/tokenStorage'
-import { fetchMe } from './api/client'
+import { fetchMe, fetchWeightHistory } from './api/client'
+import { needsOnboarding } from './onboarding/needsOnboarding'
 import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
@@ -12,6 +13,7 @@ import DashboardPage from './pages/DashboardPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import SubmitProductPage from './pages/SubmitProductPage'
 import ModerationPage from './pages/ModerationPage'
+import OnboardingPage from './pages/OnboardingPage'
 import AppNavigation from './navigation/AppNavigation'
 import PreviewIndexPage from './pages/preview/PreviewIndexPage'
 import PreviewDashboardPage from './pages/preview/PreviewDashboardPage'
@@ -22,6 +24,66 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
     return <Navigate to="/" replace />
   }
+  return children
+}
+
+function RequireOnboardingComplete({ children }: { children: React.ReactNode }) {
+  const me = useQuery({
+    queryKey: ['me'],
+    queryFn: fetchMe,
+  })
+  const weights = useQuery({
+    queryKey: ['weight-history'],
+    queryFn: () => fetchWeightHistory(),
+  })
+
+  if (me.isLoading || weights.isLoading) {
+    return (
+      <main className="mobile-page">
+        <p>Loading…</p>
+      </main>
+    )
+  }
+
+  if (me.error || weights.error) {
+    return (
+      <main className="mobile-page">
+        <p className="error">
+          {((me.error ?? weights.error) as Error).message}
+        </p>
+      </main>
+    )
+  }
+
+  if (me.data && weights.data && needsOnboarding(me.data, weights.data)) {
+    return <Navigate to="/onboarding" replace />
+  }
+
+  return children
+}
+
+function RequireNeedsOnboarding({ children }: { children: React.ReactNode }) {
+  const me = useQuery({
+    queryKey: ['me'],
+    queryFn: fetchMe,
+  })
+  const weights = useQuery({
+    queryKey: ['weight-history'],
+    queryFn: () => fetchWeightHistory(),
+  })
+
+  if (me.isLoading || weights.isLoading) {
+    return (
+      <main className="mobile-page">
+        <p>Loading…</p>
+      </main>
+    )
+  }
+
+  if (me.data && weights.data && !needsOnboarding(me.data, weights.data)) {
+    return <Navigate to="/today" replace />
+  }
+
   return children
 }
 
@@ -49,10 +111,22 @@ export default function App() {
         <Route path="/" element={loggedIn ? <Navigate to="/today" replace /> : <LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route
+          path="/onboarding"
+          element={
+            <RequireAuth>
+              <RequireNeedsOnboarding>
+                <OnboardingPage />
+              </RequireNeedsOnboarding>
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/today"
           element={
             <RequireAuth>
-              <DashboardPage />
+              <RequireOnboardingComplete>
+                <DashboardPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -60,7 +134,9 @@ export default function App() {
           path="/diary"
           element={
             <RequireAuth>
-              <DiaryPage />
+              <RequireOnboardingComplete>
+                <DiaryPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -68,7 +144,9 @@ export default function App() {
           path="/analytics"
           element={
             <RequireAuth>
-              <AnalyticsPage />
+              <RequireOnboardingComplete>
+                <AnalyticsPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -76,7 +154,9 @@ export default function App() {
           path="/lookup"
           element={
             <RequireAuth>
-              <LookupPage />
+              <RequireOnboardingComplete>
+                <LookupPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -84,7 +164,9 @@ export default function App() {
           path="/submit-product"
           element={
             <RequireAuth>
-              <SubmitProductPage />
+              <RequireOnboardingComplete>
+                <SubmitProductPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -92,7 +174,9 @@ export default function App() {
           path="/moderation"
           element={
             <RequireAuth>
-              <ModerationPage />
+              <RequireOnboardingComplete>
+                <ModerationPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -100,7 +184,9 @@ export default function App() {
           path="/products/:id"
           element={
             <RequireAuth>
-              <ProductPage />
+              <RequireOnboardingComplete>
+                <ProductPage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
@@ -108,7 +194,9 @@ export default function App() {
           path="/me"
           element={
             <RequireAuth>
-              <ProfilePage />
+              <RequireOnboardingComplete>
+                <ProfilePage />
+              </RequireOnboardingComplete>
             </RequireAuth>
           }
         />

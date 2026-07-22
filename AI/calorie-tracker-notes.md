@@ -46,6 +46,14 @@
 - Auth Phase 1: SPA Authorization Code + PKCE; `auth-service` issues RS256
   JWTs; `AUTH_MODE=dev` accepts code `dev` without Google for local/CI.
 
+## Onboarding (2026-07-22)
+
+Implemented on `cursor/user-onboarding-flow-80e1`:
+
+- `POST /api/users/me/onboarding` (profile + weight + apply goals)
+- Frontend `/onboarding` wizard (weight, height, diet goal → nutrient goals)
+- Notes: `AI/onboarding-flow.md`
+
 ## Remaining work / TODOs
 
 - Roadmap phases 5–6 (design doc §14).

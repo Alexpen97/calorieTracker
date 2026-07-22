@@ -21,7 +21,7 @@ export default function AuthCallbackPage() {
       .then((tokens) => {
         saveTokens(tokens)
         sessionStorage.removeItem('pkce_verifier')
-        navigate('/today', { replace: true })
+        navigate('/onboarding', { replace: true })
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Login failed')
