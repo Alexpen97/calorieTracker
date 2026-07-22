@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react'
-
 type Segment = { label: string; percent: number }
 type ChartPoint = number
 
@@ -18,14 +16,33 @@ export function ProgressRing({
   value: string
 }) {
   const bounded = clampPercent(percent)
+  const strokePercent = bounded / 100
+  const dashoffset = 100 * (1 - strokePercent)
   return (
     <div
       className="progress-ring"
       aria-label={`${label}: ${bounded}%`}
-      style={{ '--progress': `${bounded}%` } as CSSProperties}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={bounded}
+      aria-valuetext={`${bounded}%`}
     >
-      <strong>{value}</strong>
-      <span>{label}</span>
+      <svg className="progress-ring-svg" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+        <circle className="progress-ring-track" cx="18" cy="18" r="15.9155" />
+        <circle
+          className="progress-ring-indicator"
+          cx="18"
+          cy="18"
+          r="15.9155"
+          strokeDasharray={100}
+          strokeDashoffset={dashoffset}
+        />
+      </svg>
+      <div className="progress-ring-center" aria-hidden>
+        <strong>{value}</strong>
+        <span>{label}</span>
+      </div>
     </div>
   )
 }

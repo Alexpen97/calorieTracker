@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
+import { IconBars, IconBook, IconHome, IconUser } from '../ui/Icons'
 
 export default function AppNavigation({
   loggedIn,
@@ -26,10 +27,22 @@ export default function AppNavigation({
       </header>
       {loggedIn && (
         <nav className="bottom-nav" aria-label="Primary mobile">
-          <NavLink to="/today">Dashboard</NavLink>
-          <NavLink to="/diary">Diary</NavLink>
-          <NavLink to="/analytics">Analytics</NavLink>
-          <NavLink to="/me">Profile</NavLink>
+          <NavLink to="/today" className="tab-link">
+            <IconHome className="tab-icon" />
+            <span>Dashboard</span>
+          </NavLink>
+          <NavLink to="/diary" className="tab-link">
+            <IconBook className="tab-icon" />
+            <span>Diary</span>
+          </NavLink>
+          <NavLink to="/analytics" className="tab-link">
+            <IconBars className="tab-icon" />
+            <span>Analytics</span>
+          </NavLink>
+          <NavLink to="/me" className="tab-link">
+            <IconUser className="tab-icon" />
+            <span>Profile</span>
+          </NavLink>
         </nav>
       )}
     </>
