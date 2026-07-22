@@ -1,20 +1,19 @@
 # food-catalog-service
 
-Food catalog container — products, nutrition facts, nutrient education.
-See `docs/calorie-tracker-architecture.md` §5.3 and `AI/phase-2-food-lookup.md`.
+Food catalog container — products, nutrition facts, nutrient education,
+search, submissions, and OFF bulk import.
+See `docs/calorie-tracker-architecture.md` §5.3 and `AI/phase-4-mirror-search-submissions.md`.
 
-## Phase 2 scope
+## Scope
 
 - Barcode lookup: Redis (TTL 24h) → PostgreSQL mirror → Open Food Facts API
-  (Resilience4j rate limiter + circuit breaker + retry).
+  (Resilience4j rate limiter + circuit breaker + retry). Includes the caller's
+  own pending/rejected submissions.
+- Name search: local `search_document` (+ PostgreSQL GIN FTS) with OFF search
+  fallback when local results are thin.
+- User product submissions + moderation (`MODERATOR`/`ADMIN`).
+- Spring Batch JSONL OFF bulk import (`POST /api/admin/off-import`, ADMIN).
 - Nutrient reference table with FR-9 education fields, seeded via Flyway.
-- Read APIs: `GET /api/products/barcode/{ean}`, `GET /api/products/{id}`,
-  `GET /api/nutrients`, `GET /api/nutrients/{code}`.
-
-## Deferred
-
-- Spring Batch OFF bulk import and PostgreSQL full-text search (Phase 4).
-- User product submissions / moderation (Phase 4).
 
 ## Container
 
@@ -30,7 +29,9 @@ See `docs/calorie-tracker-architecture.md` §5.3 and `AI/phase-2-food-lookup.md`
 | `SPRING_DATASOURCE_URL` | PostgreSQL `food_catalog` JDBC URL |
 | `REDIS_HOST` / `REDIS_PORT` | Redis cache |
 | `FOOD_REDIS_ENABLED` | `false` to use in-memory cache (tests) |
-| `NUTRITRACK_FOOD_OFF_BASE_URL` | Open Food Facts API base (preferred Spring env name) |
-| `OFF_BASE_URL` | Same value; resolved via `application.yml` placeholder |
-| `NUTRITRACK_FOOD_OFF_USER_AGENT` / `OFF_USER_AGENT` | Required OFF User-Agent identifying this app |
+| `OFF_BASE_URL` | Open Food Facts API base |
+| `OFF_USER_AGENT` | Required OFF User-Agent identifying this app |
+| `OFF_BULK_IMPORT_ENABLED` | Enable scheduled bulk import (`false` by default) |
+| `OFF_BULK_IMPORT_URL` | Default JSONL file path or HTTPS URL for import |
+| `OFF_BULK_IMPORT_CRON` | Cron for scheduled import |
 | `JWKS_URI` | auth-service JWKS endpoint for JWT validation |

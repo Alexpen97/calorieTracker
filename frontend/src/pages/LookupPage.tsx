@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { fetchProductByBarcode } from '../api/client'
+import { Link, useNavigate } from 'react-router-dom'
+import { fetchProductByBarcode, searchProducts, type Product } from '../api/client'
 import { isValidBarcode, sanitizeBarcodeInput } from '../food/barcode'
+
+type Mode = 'barcode' | 'search'
 
 type BarcodeDetectorLike = {
   detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string }>>
@@ -15,7 +17,10 @@ declare global {
 
 export default function LookupPage() {
   const navigate = useNavigate()
+  const [mode, setMode] = useState<Mode>('search')
   const [barcode, setBarcode] = useState('')
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<Product[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [scanning, setScanning] = useState(false)
@@ -47,9 +52,31 @@ export default function LookupPage() {
     }
   }
 
-  async function onSubmit(event: React.FormEvent) {
+  async function onBarcodeSubmit(event: React.FormEvent) {
     event.preventDefault()
     await lookup(barcode)
+  }
+
+  async function onSearchSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    const q = query.trim()
+    if (q.length < 2) {
+      setError('Enter at least 2 characters to search.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      const response = await searchProducts(q)
+      setResults(response.items)
+      if (response.items.length === 0) {
+        setError('No products found. Try another name or add your own.')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed')
+    } finally {
+      setBusy(false)
+    }
   }
 
   async function startScan() {
@@ -82,23 +109,21 @@ export default function LookupPage() {
         }
         try {
           const codes = await detector.detect(videoRef.current)
-          const value = codes[0]?.rawValue
-          if (value && isValidBarcode(value)) {
+          const raw = codes[0]?.rawValue
+          if (raw) {
             stopScan()
-            setBarcode(sanitizeBarcodeInput(value))
-            await lookup(value)
+            setBarcode(sanitizeBarcodeInput(raw))
+            await lookup(raw)
             return
           }
         } catch {
-          // Keep scanning on transient detect errors.
+          // keep scanning
         }
         rafRef.current = requestAnimationFrame(() => {
           void tick()
         })
       }
-      rafRef.current = requestAnimationFrame(() => {
-        void tick()
-      })
+      void tick()
     } catch {
       setError('Camera permission denied or unavailable.')
       stopScan()
@@ -121,44 +146,104 @@ export default function LookupPage() {
   return (
     <main className="panel lookup-panel">
       <h2>Look up a food</h2>
-      <p>Scan a barcode with your camera or type the EAN/UPC digits.</p>
-      <form className="lookup-form" onSubmit={onSubmit}>
-        <label htmlFor="barcode">Barcode</label>
-        <input
-          id="barcode"
-          name="barcode"
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="e.g. 3017620422003"
-          value={barcode}
-          onChange={(e) => setBarcode(sanitizeBarcodeInput(e.target.value))}
-        />
-        <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
-          <button className="btn btn-primary" type="submit" disabled={busy}>
-            {busy ? 'Looking up…' : 'Find product'}
-          </button>
-          {scanSupported && !scanning && (
-            <button className="btn btn-secondary" type="button" onClick={() => void startScan()}>
-              Scan with camera
+      <p>Search by name, scan a barcode, or submit a product that is missing.</p>
+      <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
+        <button
+          className={`btn ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
+          type="button"
+          onClick={() => setMode('search')}
+        >
+          Search
+        </button>
+        <button
+          className={`btn ${mode === 'barcode' ? 'btn-primary' : 'btn-secondary'}`}
+          type="button"
+          onClick={() => setMode('barcode')}
+        >
+          Barcode
+        </button>
+        <Link className="btn btn-secondary" to="/submit-product">
+          Add your own
+        </Link>
+      </div>
+
+      {mode === 'search' ? (
+        <form className="lookup-form" onSubmit={(e) => void onSearchSubmit(e)}>
+          <label htmlFor="search-q">Product name</label>
+          <input
+            id="search-q"
+            name="q"
+            autoComplete="off"
+            placeholder="e.g. oat milk"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
+            <button className="btn btn-primary" type="submit" disabled={busy}>
+              {busy ? 'Searching…' : 'Search'}
             </button>
-          )}
-          {scanning && (
-            <button className="btn btn-secondary" type="button" onClick={stopScan}>
-              Stop camera
+          </div>
+        </form>
+      ) : (
+        <form className="lookup-form" onSubmit={(e) => void onBarcodeSubmit(e)}>
+          <label htmlFor="barcode">Barcode</label>
+          <input
+            id="barcode"
+            name="barcode"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="e.g. 3017620422003"
+            value={barcode}
+            onChange={(e) => setBarcode(sanitizeBarcodeInput(e.target.value))}
+          />
+          <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
+            <button className="btn btn-primary" type="submit" disabled={busy}>
+              {busy ? 'Looking up…' : 'Find product'}
             </button>
+            {scanSupported && !scanning && (
+              <button className="btn btn-secondary" type="button" onClick={() => void startScan()}>
+                Scan with camera
+              </button>
+            )}
+            {scanning && (
+              <button className="btn btn-secondary" type="button" onClick={stopScan}>
+                Stop camera
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+
+      {mode === 'barcode' && (
+        <div className={`scanner-frame ${scanning ? 'is-active' : ''}`}>
+          <video ref={videoRef} muted playsInline className="scanner-video" />
+          {!scanning && (
+            <p className="scanner-hint">
+              {scanSupported
+                ? 'Camera preview appears here when scanning.'
+                : 'This browser has no BarcodeDetector — use manual entry.'}
+            </p>
           )}
         </div>
-      </form>
-      <div className={`scanner-frame ${scanning ? 'is-active' : ''}`}>
-        <video ref={videoRef} muted playsInline className="scanner-video" />
-        {!scanning && (
-          <p className="scanner-hint">
-            {scanSupported
-              ? 'Camera preview appears here when scanning.'
-              : 'This browser has no BarcodeDetector — use manual entry.'}
-          </p>
-        )}
-      </div>
+      )}
+
+      {results.length > 0 && (
+        <ul className="search-results">
+          {results.map((item) => (
+            <li key={`${item.source}-${item.id}`}>
+              <Link to={`/products/${item.id}`}>
+                <strong>{item.name}</strong>
+                <span>
+                  {[item.brand, item.source === 'PENDING_SUBMISSION' ? 'awaiting review' : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {error && <p className="error">{error}</p>}
       <p className="attribution">
         Product data from{' '}

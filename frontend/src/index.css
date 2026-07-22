@@ -664,3 +664,29 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.search-results {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.search-results li {
+  background: var(--paper);
+  padding: 0.85rem 1rem;
+}
+
+.search-results a,
+.search-results > li > div {
+  display: grid;
+  gap: 0.25rem;
+  text-decoration: none;
+}
+
+.search-results span {
+  opacity: 0.75;
+  font-size: 0.95rem;
+}
+

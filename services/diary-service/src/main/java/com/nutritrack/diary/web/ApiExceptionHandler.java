@@ -32,4 +32,9 @@ public class ApiExceptionHandler {
   ResponseEntity<Map<String, String>> foodCatalogUnavailable(FoodCatalogUnavailableException ex) {
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", ex.getMessage()));
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  ResponseEntity<Map<String, String>> badRequest(IllegalArgumentException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+  }
 }

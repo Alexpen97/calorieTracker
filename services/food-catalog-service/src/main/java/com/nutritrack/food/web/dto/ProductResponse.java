@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record ProductResponse(
     UUID id,
+    UUID submissionId,
     String barcode,
     String source,
     String name,

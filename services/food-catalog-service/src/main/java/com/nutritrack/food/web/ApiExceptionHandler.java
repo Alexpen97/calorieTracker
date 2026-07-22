@@ -14,6 +14,12 @@ public class ApiExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
   }
 
+  @ExceptionHandler(SubmissionConflictException.class)
+  ResponseEntity<Map<String, Object>> submissionConflict(SubmissionConflictException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(Map.of("error", ex.getMessage(), "warnings", ex.getWarnings()));
+  }
+
   @ExceptionHandler(NutrientNotFoundException.class)
   ResponseEntity<Map<String, String>> nutrientNotFound(NutrientNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));

@@ -70,6 +70,7 @@ export type ProductNutrient = {
 
 export type Product = {
   id: string
+  submissionId: string | null
   barcode: string | null
   source: string
   name: string
@@ -82,6 +83,32 @@ export type Product = {
   allergenTags: string[]
   offLastSyncedAt: string | null
   nutrients: ProductNutrient[]
+}
+
+export type ProductSearchResult = {
+  query: string
+  page: number
+  pageSize: number
+  items: Product[]
+}
+
+export type SubmissionStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export type ProductSubmission = {
+  id: string
+  submitterUserId: string
+  status: SubmissionStatus
+  barcode: string | null
+  name: string
+  brand: string | null
+  servingSizeG: number | null
+  nutrients: ProductNutrient[]
+  submittedAt: string
+  reviewedBy: string | null
+  reviewedAt: string | null
+  reviewNote: string | null
+  publishedProductId: string | null
+  duplicateWarnings: string[]
 }
 
 export type Nutrient = {
@@ -108,7 +135,8 @@ export type DiaryNutrient = {
 
 export type DiaryEntry = {
   id: string
-  productId: string
+  productId: string | null
+  submissionId: string | null
   productName: string
   brand: string | null
   weightG: number
@@ -300,6 +328,61 @@ export async function fetchProductById(id: string): Promise<Product> {
   return parseJson<Product>(response)
 }
 
+export async function searchProducts(q: string, page = 1): Promise<ProductSearchResult> {
+  const params = new URLSearchParams({ q, page: String(page) })
+  const response = await authenticatedFetch(`${apiBase}/api/products/search?${params}`)
+  return parseJson<ProductSearchResult>(response)
+}
+
+export async function createProductSubmission(input: {
+  name: string
+  brand?: string
+  barcode?: string
+  servingSizeG?: number
+  nutrients: ProductNutrient[]
+  force?: boolean
+}): Promise<ProductSubmission> {
+  const response = await authenticatedFetch(`${apiBase}/api/products/submissions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<ProductSubmission>(response)
+}
+
+export async function fetchMySubmissions(): Promise<ProductSubmission[]> {
+  const response = await authenticatedFetch(`${apiBase}/api/products/submissions/mine`)
+  return parseJson<ProductSubmission[]>(response)
+}
+
+export async function fetchSubmissionQueue(
+  status: SubmissionStatus = 'PENDING',
+): Promise<ProductSubmission[]> {
+  const params = new URLSearchParams({ status })
+  const response = await authenticatedFetch(`${apiBase}/api/products/submissions?${params}`)
+  return parseJson<ProductSubmission[]>(response)
+}
+
+export async function approveSubmission(id: string): Promise<ProductSubmission> {
+  const response = await authenticatedFetch(
+    `${apiBase}/api/products/submissions/${encodeURIComponent(id)}/approve`,
+    { method: 'POST' },
+  )
+  return parseJson<ProductSubmission>(response)
+}
+
+export async function rejectSubmission(id: string, note?: string): Promise<ProductSubmission> {
+  const response = await authenticatedFetch(
+    `${apiBase}/api/products/submissions/${encodeURIComponent(id)}/reject`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note: note ?? null }),
+    },
+  )
+  return parseJson<ProductSubmission>(response)
+}
+
 export async function fetchNutrient(code: string): Promise<Nutrient> {
   const response = await authenticatedFetch(
     `${apiBase}/api/nutrients/${encodeURIComponent(code)}`,
@@ -328,7 +411,8 @@ export async function fetchDiaryEntries(date: string): Promise<DiaryEntry[]> {
 }
 
 export async function createDiaryEntry(input: {
-  productId: string
+  productId?: string
+  submissionId?: string
   weightG: number
   mealType: MealType
   consumedAt?: string

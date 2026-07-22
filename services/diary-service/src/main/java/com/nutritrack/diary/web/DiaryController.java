@@ -56,6 +56,7 @@ public class DiaryController {
         entryService.create(
             UUID.fromString(jwt.getSubject()),
             request.productId(),
+            request.submissionId(),
             request.weightG(),
             request.mealType(),
             request.consumedAt(),
@@ -148,7 +149,8 @@ public class DiaryController {
   }
 
   public record CreateDiaryEntryRequest(
-      @NotNull UUID productId,
+      UUID productId,
+      UUID submissionId,
       @NotNull @Positive BigDecimal weightG,
       @NotNull MealType mealType,
       Instant consumedAt) {}
@@ -161,6 +163,7 @@ public class DiaryController {
   public record DiaryEntryResponse(
       UUID id,
       UUID productId,
+      UUID submissionId,
       String productName,
       String brand,
       BigDecimal weightG,
@@ -172,6 +175,7 @@ public class DiaryController {
       return new DiaryEntryResponse(
           entry.getId(),
           entry.getProductId(),
+          entry.getSubmissionId(),
           entry.getProductName(),
           entry.getBrand(),
           entry.getWeightG(),

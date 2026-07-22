@@ -414,6 +414,7 @@ class DiaryControllerTest {
       UUID productId, String name, String brand, String energyKcal, String proteinG) {
     return new ProductResponse(
         productId,
+        null,
         "1234567890123",
         "OFF",
         name,

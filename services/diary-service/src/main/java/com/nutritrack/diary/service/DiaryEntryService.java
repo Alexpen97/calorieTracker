@@ -31,16 +31,30 @@ public class DiaryEntryService {
   public DiaryEntry create(
       UUID userId,
       UUID productId,
+      UUID submissionId,
       BigDecimal weightG,
       MealType mealType,
       Instant consumedAt,
       String bearerToken) {
-    ProductResponse product = foodCatalogClient.getProduct(productId, bearerToken);
+    if ((productId == null && submissionId == null) || (productId != null && submissionId != null)) {
+      throw new IllegalArgumentException("Provide exactly one of productId or submissionId");
+    }
+    UUID lookupId = productId != null ? productId : submissionId;
+    ProductResponse product = foodCatalogClient.getProduct(lookupId, bearerToken);
     Instant now = Instant.now();
     DiaryEntry entry = new DiaryEntry();
     entry.setId(UUID.randomUUID());
     entry.setUserId(userId);
-    entry.setProductId(product.id());
+
+    boolean pendingSubmission = "PENDING_SUBMISSION".equals(product.source());
+    if (pendingSubmission || submissionId != null) {
+      entry.setSubmissionId(product.submissionId() != null ? product.submissionId() : submissionId);
+      entry.setProductId(null);
+    } else {
+      entry.setProductId(product.id());
+      entry.setSubmissionId(null);
+    }
+
     entry.setProductName(product.name());
     entry.setBrand(product.brand());
     entry.setWeightG(weightG);

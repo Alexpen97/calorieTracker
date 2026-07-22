@@ -18,8 +18,12 @@ export default function ProductPage() {
     enabled: Boolean(id),
   })
   const addEntry = useMutation({
-    mutationFn: (input: { productId: string; weightG: number; mealType: MealType }) =>
-      createDiaryEntry(input),
+    mutationFn: (input: {
+      productId?: string
+      submissionId?: string
+      weightG: number
+      mealType: MealType
+    }) => createDiaryEntry(input),
     onSuccess: () => navigate('/today'),
   })
 
@@ -34,7 +38,15 @@ export default function ProductPage() {
       return
     }
     setEntryError(null)
-    addEntry.mutate({ productId: data.id, weightG: parsedWeight, mealType })
+    if (data.submissionId || data.source === 'PENDING_SUBMISSION') {
+      addEntry.mutate({
+        submissionId: data.submissionId ?? data.id,
+        weightG: parsedWeight,
+        mealType,
+      })
+    } else {
+      addEntry.mutate({ productId: data.id, weightG: parsedWeight, mealType })
+    }
   }
 
   return (
@@ -54,6 +66,9 @@ export default function ProductPage() {
             )}
             <div>
               <h2>{data.name}</h2>
+              {data.source === 'PENDING_SUBMISSION' && (
+                <p className="product-meta">Awaiting review — visible only to you until approved.</p>
+              )}
               <p className="product-meta">
                 {[data.brand, data.quantityLabel, data.barcode && `EAN ${data.barcode}`]
                   .filter(Boolean)
