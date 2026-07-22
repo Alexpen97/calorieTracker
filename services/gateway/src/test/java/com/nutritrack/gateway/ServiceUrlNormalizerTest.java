@@ -29,6 +29,20 @@ class ServiceUrlNormalizerTest {
   }
 
   @Test
+  void stripsTrailingEqualsFromJwksUri() {
+    assertThat(
+            ServiceUrlNormalizer.normalize(
+                "http://auth.railway.internal:8080/.well-known/jwks.json="))
+        .isEqualTo("http://auth.railway.internal:8080/.well-known/jwks.json");
+  }
+
+  @Test
+  void stripsWrappingQuotes() {
+    assertThat(ServiceUrlNormalizer.normalize("\"http://diary.railway.internal:8080\""))
+        .isEqualTo("http://diary.railway.internal:8080");
+  }
+
+  @Test
   void rejectsBlankHost() {
     assertThatThrownBy(() -> ServiceUrlNormalizer.normalize("http://"))
         .isInstanceOf(IllegalArgumentException.class)

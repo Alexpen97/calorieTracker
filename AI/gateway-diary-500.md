@@ -69,7 +69,30 @@ Quick check while logged in:
 - Drop unused `recommendation-service` route until Phase 6 (blank
   `RECO_SERVICE_URL` previously broke startup).
 
+## Current production finding (2026-07-22)
+
+Gateway startup logged:
+
+```
+JWKS_URI=http://auth.railway.internal:8080/.well-known/jwks.json=
+```
+
+Note the trailing `=`. Authenticated requests then fail with:
+
+```
+java.lang.IllegalStateException: Could not obtain the keys
+```
+
+**Fix:** on gateway (and any other service), set `JWKS_URI` to exactly:
+
+```
+http://auth.railway.internal:8080/.well-known/jwks.json
+```
+
+with no trailing `=`. Redeploy gateway. Code now strips a trailing `=` automatically.
+
 ## If diary-service logs nothing
+
 
 The request never reached diary — search **gateway** logs for the `requestId`
 from the JSON error (e.g. `88650e34-109`), or for `Host is not specified` /

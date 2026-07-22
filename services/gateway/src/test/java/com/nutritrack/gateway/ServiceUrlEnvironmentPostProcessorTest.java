@@ -14,6 +14,8 @@ class ServiceUrlEnvironmentPostProcessorTest {
   void normalizesBarePrivateDomainBeforeRoutesLoad() {
     MockPropertySource source = new MockPropertySource();
     source.setProperty("DIARY_SERVICE_URL", "diary-service.railway.internal:8080");
+    source.setProperty(
+        "JWKS_URI", "http://auth.railway.internal:8080/.well-known/jwks.json=");
     StandardEnvironment environment = new StandardEnvironment();
     environment.getPropertySources().addLast(source);
 
@@ -22,5 +24,7 @@ class ServiceUrlEnvironmentPostProcessorTest {
 
     assertThat(environment.getProperty("DIARY_SERVICE_URL"))
         .isEqualTo("http://diary-service.railway.internal:8080");
+    assertThat(environment.getProperty("JWKS_URI"))
+        .isEqualTo("http://auth.railway.internal:8080/.well-known/jwks.json");
   }
 }
