@@ -24,7 +24,7 @@ export default function LookupPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const mealType = parseMealTypeParam(searchParams.get('meal'))
-  const [mode, setMode] = useState<Mode>('search')
+  const [mode, setMode] = useState<Mode>('barcode')
   const [barcode, setBarcode] = useState('')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Product[]>([])
@@ -42,6 +42,12 @@ export default function LookupPage() {
     void isNativeBarcodeScanAvailable().then(setNativeScanSupported)
     return () => stopScan()
   }, [])
+
+  useEffect(() => {
+    if (mode !== 'barcode') {
+      stopScan()
+    }
+  }, [mode])
 
   async function lookup(raw: string) {
     const cleaned = sanitizeBarcodeInput(raw)
@@ -175,25 +181,27 @@ export default function LookupPage() {
     <main className="panel lookup-panel">
       <h2>Look up a food</h2>
       <p>Search by name, scan a barcode, or submit a product that is missing.</p>
-      <div className="cta-row" style={{ justifyContent: 'flex-start' }}>
+      <nav className="lookup-method-nav" aria-label="Add method">
         <button
-          className={`btn ${mode === 'search' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`lookup-method-tab ${mode === 'barcode' ? 'is-active' : ''}`}
           type="button"
-          onClick={() => setMode('search')}
-        >
-          Search
-        </button>
-        <button
-          className={`btn ${mode === 'barcode' ? 'btn-primary' : 'btn-secondary'}`}
-          type="button"
+          aria-current={mode === 'barcode' ? 'page' : undefined}
           onClick={() => setMode('barcode')}
         >
           Barcode
         </button>
-        <Link className="btn btn-secondary" to="/submit-product">
+        <button
+          className={`lookup-method-tab ${mode === 'search' ? 'is-active' : ''}`}
+          type="button"
+          aria-current={mode === 'search' ? 'page' : undefined}
+          onClick={() => setMode('search')}
+        >
+          Search
+        </button>
+        <Link className="lookup-method-tab" to="/submit-product">
           Add your own
         </Link>
-      </div>
+      </nav>
 
       {mode === 'search' ? (
         <form className="lookup-form" onSubmit={(e) => void onSearchSubmit(e)}>

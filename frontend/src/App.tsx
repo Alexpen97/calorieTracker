@@ -19,6 +19,7 @@ import PreviewIndexPage from './pages/preview/PreviewIndexPage'
 import PreviewDashboardPage from './pages/preview/PreviewDashboardPage'
 import PreviewDiaryPage from './pages/preview/PreviewDiaryPage'
 import PreviewAnalyticsPage from './pages/preview/PreviewAnalyticsPage'
+import PreviewLookupPage from './pages/preview/PreviewLookupPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -106,6 +107,7 @@ export default function App() {
             <Route path="/preview/dashboard" element={<PreviewDashboardPage />} />
             <Route path="/preview/diary" element={<PreviewDiaryPage />} />
             <Route path="/preview/analytics" element={<PreviewAnalyticsPage />} />
+            <Route path="/preview/lookup" element={<PreviewLookupPage />} />
           </>
         )}
         <Route path="/" element={loggedIn ? <Navigate to="/today" replace /> : <LoginPage />} />
