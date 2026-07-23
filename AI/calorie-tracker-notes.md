@@ -2,6 +2,8 @@
 
 ## Completed
 
+- 2026-07-23: Dashboard card vertical spacing — `.dashboard-page` `row-gap`
+  `0.27rem` → `0.9rem` (matches column gap). Notes: `AI/weight-30-day-graph.md`.
 - 2026-07-22: Weight Progress chart is a compact line graph with kg/date axes,
   gridlines, and clearer markers; chart is full-width in the card. Notes:
   `AI/weight-line-graph-axes.md`.

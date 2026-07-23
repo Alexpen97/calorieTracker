@@ -9,6 +9,12 @@
 3. **Chart fills the card** — meta row (kg + “Last 30 days”) on top; chart is
    full-width underneath with viewBox `360×140` and matching CSS aspect-ratio.
 
+## Spacing follow-up (2026-07-23)
+
+- **Vertical card gap** — `.dashboard-page` `row-gap` raised again from
+  `0.27rem` → `0.9rem` so it matches `column-gap` and cards read with clearer
+  separation.
+
 ## Behavior
 
 - `buildWeightTrendSeries(weights, { days: 30, clock })` keeps logs whose
