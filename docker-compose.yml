@@ -68,6 +68,9 @@ services:
       OFF_BASE_URL: ${OFF_BASE_URL:-https://world.openfoodfacts.org}
       OFF_USER_AGENT: ${OFF_USER_AGENT:-NutriTrack - Server - Version 0.1}
       FOOD_REDIS_ENABLED: "true"
+      ENRICHMENT_ENABLED: ${ENRICHMENT_ENABLED:-true}
+      ENRICHMENT_SERVICE_URL: http://nutrient-enrichment-service:8080
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,6 +78,23 @@ services:
         condition: service_started
       auth-service:
         condition: service_started
+      nutrient-enrichment-service:
+        condition: service_started
+
+  nutrient-enrichment-service:
+    profiles: ["full"]
+    build: ./services/nutrient-enrichment-service
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/enrichment
+      SPRING_DATASOURCE_USERNAME: nutritrack
+      SPRING_DATASOURCE_PASSWORD: nutritrack
+      FDC_BASE_URL: ${FDC_BASE_URL:-https://api.nal.usda.gov/fdc/v1}
+      FDC_API_KEY: ${FDC_API_KEY:-DEMO_KEY}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   diary-service:
     profiles: ["full"]

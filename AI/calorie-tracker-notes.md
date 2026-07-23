@@ -144,6 +144,17 @@ Foundation/SR proxy), stored as estimated (`source=USDA_*`) and never
 overwriting OFF values. Plan:
 `docs/superpowers/plans/2026-07-23-usda-micronutrient-enrichment.md`.
 
+## Implemented: USDA micronutrient enrichment (2026-07-23)
+
+Implemented on `cursor/usda-enrichment-plan-1504`:
+
+- New `services/nutrient-enrichment-service` (FDC client, matching, 90-day cache,
+  `POST /internal/enrich`)
+- food-catalog: `V6` nutrient `source`, EnrichmentClient after OFF upsert,
+  `estimated` DTO, ADMIN backfill
+- Compose + `enrichment` DB; frontend ≈ marker on product detail
+- Notes: `AI/usda-micronutrient-enrichment.md`, `docs/railway-enrichment.md`
+
 ## Today Summary calorie ring + macro bars (2026-07-22)
 
 Dashboard Today Summary uses a calorie progress ring with three horizontal macro

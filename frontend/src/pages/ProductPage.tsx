@@ -130,7 +130,10 @@ export default function ProductPage() {
                     className="nutrient-row"
                     onClick={() => setSelectedNutrient(n.code)}
                   >
-                    <span>{n.code.replaceAll('_', ' ')}</span>
+                    <span>
+                      {n.estimated ? '≈ ' : ''}
+                      {n.code.replaceAll('_', ' ')}
+                    </span>
                     <span>
                       {n.amountPer100g} {n.unit}
                     </span>
@@ -138,6 +141,11 @@ export default function ProductPage() {
                 </li>
               ))}
             </ul>
+            {data.nutrients.some((n) => n.estimated) && (
+              <p className="product-meta">
+                ≈ estimated from USDA FoodData Central generic data
+              </p>
+            )}
           </section>
 
           {data.ingredientsText && (

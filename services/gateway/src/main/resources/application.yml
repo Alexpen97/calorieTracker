@@ -52,6 +52,7 @@ spring:
               filters:
                 - RewritePath=/api-docs/diary(?<segment>/?.*), /v3/api-docs$\{segment}
             # recommendation-service is Phase 6 — omit until RECO_SERVICE_URL is required
+            # nutrient-enrichment-service is internal-only (no gateway route)
 
 server:
   port: ${PORT:8080}
