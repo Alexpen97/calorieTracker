@@ -136,6 +136,14 @@ Implemented on `cursor/phase-5-android-7d17`:
 - Play Store checklist: `docs/android-play-store.md`
 - Notes: `AI/phase-5-android.md`
 
+## Planned: USDA micronutrient enrichment (2026-07-23)
+
+Separate `nutrient-enrichment-service` fills missing vitamins/minerals on OFF
+products from USDA FoodData Central (GTIN → name+brand → generic
+Foundation/SR proxy), stored as estimated (`source=USDA_*`) and never
+overwriting OFF values. Plan:
+`docs/superpowers/plans/2026-07-23-usda-micronutrient-enrichment.md`.
+
 ## Today Summary calorie ring + macro bars (2026-07-22)
 
 Dashboard Today Summary uses a calorie progress ring with three horizontal macro
