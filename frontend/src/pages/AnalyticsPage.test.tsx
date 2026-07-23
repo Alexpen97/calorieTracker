@@ -35,8 +35,20 @@ describe('AnalyticsPage', () => {
       },
     ])
     vi.spyOn(client, 'fetchGoals').mockResolvedValue([
-      { nutrientCode: 'vitamin_c', dailyTarget: 80, unit: 'mg' },
-      { nutrientCode: 'iron', dailyTarget: 14, unit: 'mg' },
+      {
+        nutrientCode: 'vitamin_c',
+        dailyTarget: 80,
+        unit: 'mg',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
+      {
+        nutrientCode: 'iron',
+        dailyTarget: 14,
+        unit: 'mg',
+        origin: 'COMPUTED',
+        computedAt: '2026-07-21T00:00:00Z',
+      },
     ])
     const weightSpy = vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([
       { id: 'w1', weightKg: 72.3, measuredAt: '2026-07-16T08:00:00Z' },
