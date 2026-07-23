@@ -27,6 +27,24 @@ export type WaterSummaryForDisplay = {
 
 export const mealOrder: MealType[] = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK']
 
+export function parseMealTypeParam(value: string | null | undefined): MealType | null {
+  if (value === 'BREAKFAST' || value === 'LUNCH' || value === 'DINNER' || value === 'SNACK') {
+    return value
+  }
+  return null
+}
+
+export function mealLookupPath(mealType: MealType): string {
+  return `/lookup?meal=${mealType}`
+}
+
+export function productPathWithMeal(productId: string, mealType: MealType | null): string {
+  if (!mealType) {
+    return `/products/${productId}`
+  }
+  return `/products/${productId}?meal=${mealType}`
+}
+
 export type MealGroup<T extends DiaryEntryForDisplay = DiaryEntryForDisplay> = {
   mealType: MealType
   entries: T[]
