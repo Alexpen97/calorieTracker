@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchProductByBarcode, searchProducts, type Product } from '../api/client'
 import { isValidBarcode, sanitizeBarcodeInput } from '../food/barcode'
+import { parseMealTypeParam, productPathWithMeal } from '../diary/formatDay'
 import {
   isNativeBarcodeScanAvailable,
   scanBarcodeNative,
@@ -21,6 +22,8 @@ declare global {
 
 export default function LookupPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const mealType = parseMealTypeParam(searchParams.get('meal'))
   const [mode, setMode] = useState<Mode>('search')
   const [barcode, setBarcode] = useState('')
   const [query, setQuery] = useState('')
@@ -50,7 +53,7 @@ export default function LookupPage() {
     setError(null)
     try {
       const product = await fetchProductByBarcode(cleaned)
-      navigate(`/products/${product.id}`)
+      navigate(productPathWithMeal(product.id, mealType))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lookup failed')
     } finally {
@@ -261,7 +264,7 @@ export default function LookupPage() {
         <ul className="search-results">
           {results.map((item) => (
             <li key={`${item.source}-${item.id}`}>
-              <Link to={`/products/${item.id}`}>
+              <Link to={productPathWithMeal(item.id, mealType)}>
                 <strong>{item.name}</strong>
                 <span>
                   {[item.brand, item.source === 'PENDING_SUBMISSION' ? 'awaiting review' : null]

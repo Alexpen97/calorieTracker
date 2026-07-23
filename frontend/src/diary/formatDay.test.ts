@@ -4,6 +4,9 @@ import {
   formatLocalDate,
   getMacroProgress,
   groupEntriesByMeal,
+  mealLookupPath,
+  parseMealTypeParam,
+  productPathWithMeal,
   shiftLocalDate,
   waterProgress,
   type DiaryEntryForDisplay,
@@ -42,6 +45,15 @@ describe('diary day formatting helpers', () => {
       { mealType: 'DINNER', entries: [entries[0]] },
       { mealType: 'SNACK', entries: [entries[2]] },
     ])
+  })
+
+  it('parses meal query params and builds meal-aware paths', () => {
+    expect(parseMealTypeParam('LUNCH')).toBe('LUNCH')
+    expect(parseMealTypeParam('snack')).toBeNull()
+    expect(parseMealTypeParam(null)).toBeNull()
+    expect(mealLookupPath('DINNER')).toBe('/lookup?meal=DINNER')
+    expect(productPathWithMeal('abc', 'SNACK')).toBe('/products/abc?meal=SNACK')
+    expect(productPathWithMeal('abc', null)).toBe('/products/abc')
   })
 
   it('builds bounded nutrient and water progress values', () => {

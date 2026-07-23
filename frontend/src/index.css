@@ -1561,9 +1561,46 @@ button {
   padding-top: 0.9rem;
 }
 
+.meal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .meal-title {
   margin: 0;
   font-size: 1.05rem;
+}
+
+.meal-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  color: var(--leaf-deep, #1f4a37);
+  background: rgba(47, 107, 79, 0.1);
+  border: 1px solid rgba(31, 74, 55, 0.18);
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.meal-add-btn:hover,
+.meal-add-btn:focus-visible {
+  background: rgba(47, 107, 79, 0.18);
+  outline: none;
+}
+
+.meal-add-btn:active {
+  transform: scale(0.96);
+}
+
+.meal-add-btn-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .meal-entry-list {

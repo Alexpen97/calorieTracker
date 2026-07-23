@@ -1,9 +1,10 @@
+import { Link } from 'react-router-dom'
 import type { DaySummary, DiaryEntry, WaterLog, WeightLog } from '../api/client'
-import { groupEntriesByMeal, getMacroProgress } from '../diary/formatDay'
+import { groupEntriesByMeal, getMacroProgress, mealLookupPath } from '../diary/formatDay'
 import { buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { DashboardCard } from '../ui/Card'
 import { ProgressRow, Sparkline, StackedFoodBars } from '../ui/MiniCharts'
-import { IconBook, IconFlame, IconPie, IconScale } from '../ui/Icons'
+import { IconBook, IconFlame, IconPie, IconPlus, IconScale } from '../ui/Icons'
 
 type Props = {
   selectedDateLabel: string
@@ -100,7 +101,16 @@ export default function DiaryView({
         <div className="meal-timeline">
           {groups.map((group) => (
             <section className="meal-block" key={group.mealType}>
-              <h2 className="meal-title">{mealLabel(group.mealType)}</h2>
+              <div className="meal-header">
+                <h2 className="meal-title">{mealLabel(group.mealType)}</h2>
+                <Link
+                  className="meal-add-btn"
+                  to={mealLookupPath(group.mealType)}
+                  aria-label={`Add food to ${mealLabel(group.mealType)}`}
+                >
+                  <IconPlus className="meal-add-btn-icon" />
+                </Link>
+              </div>
               {group.entries.length === 0 ? (
                 <p className="empty-copy">No entries yet.</p>
               ) : (

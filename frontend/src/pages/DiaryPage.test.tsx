@@ -62,7 +62,23 @@ describe('DiaryPage', () => {
     expect(screen.queryByRole('progressbar', { name: /Calories: \d+%/ })).not.toBeInTheDocument()
     expect(document.querySelector('.progress-ring')).not.toBeInTheDocument()
     expect(screen.getByTestId('diary-macro-bars')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /add food/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /add food$/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Add food to Breakfast' })).toHaveAttribute(
+      'href',
+      '/lookup?meal=BREAKFAST',
+    )
+    expect(screen.getByRole('link', { name: 'Add food to Lunch' })).toHaveAttribute(
+      'href',
+      '/lookup?meal=LUNCH',
+    )
+    expect(screen.getByRole('link', { name: 'Add food to Dinner' })).toHaveAttribute(
+      'href',
+      '/lookup?meal=DINNER',
+    )
+    expect(screen.getByRole('link', { name: 'Add food to Snacks' })).toHaveAttribute(
+      'href',
+      '/lookup?meal=SNACK',
+    )
   })
 
   it('shows the selected day between summary and meals and loads adjacent days', async () => {

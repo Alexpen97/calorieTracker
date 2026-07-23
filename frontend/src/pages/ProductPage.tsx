@@ -1,16 +1,19 @@
 import { useMutation } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { createDiaryEntry, fetchProductById, type MealType } from '../api/client'
+import { mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
 import { useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
 
 export default function ProductPage() {
   const { id = '' } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const selectedMeal = parseMealTypeParam(searchParams.get('meal'))
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
   const [weightG, setWeightG] = useState('100')
-  const [mealType, setMealType] = useState<MealType>('BREAKFAST')
+  const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? 'BREAKFAST')
   const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
     queryKey: ['product', id],
@@ -52,7 +55,7 @@ export default function ProductPage() {
   return (
     <main className="panel product-panel">
       <p className="crumb">
-        <Link to="/lookup">← Look up</Link>
+        <Link to={selectedMeal ? mealLookupPath(selectedMeal) : '/lookup'}>← Look up</Link>
       </p>
       {isLoading && <p>Loading product…</p>}
       {error && <p className="error">{(error as Error).message}</p>}
