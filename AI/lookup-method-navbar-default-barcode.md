@@ -12,6 +12,10 @@ like a small navbar and to default the flow to barcode entry.
 - Switching tabs swaps the visible form fields without navigation.
 - Leaving Barcode mode stops any active scan session.
 
+## Preview
+
+- Dev-only route: `/preview/lookup` (no auth needed, for UI QA)
+
 ## Files
 
 - `frontend/src/pages/LookupPage.tsx`
