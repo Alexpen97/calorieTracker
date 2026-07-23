@@ -10,7 +10,8 @@ public record FoodProperties(
     @DefaultValue Cache cache,
     @DefaultValue Resilience resilience,
     @DefaultValue Search search,
-    @DefaultValue BulkImport bulkImport) {
+    @DefaultValue BulkImport bulkImport,
+    @DefaultValue Enrichment enrichment) {
 
   public record Off(
       @DefaultValue("https://world.openfoodfacts.org") String baseUrl,
@@ -36,4 +37,10 @@ public record FoodProperties(
       @DefaultValue("false") boolean enabled,
       @DefaultValue("0 30 3 * * *") String cron,
       @DefaultValue("") String defaultUrl) {}
+
+  public record Enrichment(
+      @DefaultValue("false") boolean enabled,
+      @DefaultValue("http://localhost:8086") String baseUrl,
+      @DefaultValue("dev-internal-key") String internalApiKey,
+      @DefaultValue("3s") Duration timeout) {}
 }

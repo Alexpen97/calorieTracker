@@ -3,6 +3,7 @@ package com.nutritrack.food.service;
 import com.nutritrack.food.cache.ProductCache;
 import com.nutritrack.food.domain.Product;
 import com.nutritrack.food.domain.ProductNutrient;
+import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.domain.ProductSubmission;
@@ -27,6 +28,7 @@ public class ProductLookupService {
   private final OffClient offClient;
   private final ProductMapper productMapper;
   private final OffProductUpsertService upsertService;
+  private final ProductEnrichmentService enrichmentService;
 
   public ProductLookupService(
       ProductRepository productRepository,
@@ -34,13 +36,15 @@ public class ProductLookupService {
       ProductCache productCache,
       OffClient offClient,
       ProductMapper productMapper,
-      OffProductUpsertService upsertService) {
+      OffProductUpsertService upsertService,
+      ProductEnrichmentService enrichmentService) {
     this.productRepository = productRepository;
     this.submissionRepository = submissionRepository;
     this.productCache = productCache;
     this.offClient = offClient;
     this.productMapper = productMapper;
     this.upsertService = upsertService;
+    this.enrichmentService = enrichmentService;
   }
 
   @Transactional
@@ -108,6 +112,7 @@ public class ProductLookupService {
             .fetchByBarcode(barcode)
             .orElseThrow(() -> new ProductNotFoundException(barcode));
     Product saved = upsertService.upsertFromOff(offProduct);
+    saved = enrichmentService.enrichIfSparse(saved);
     ProductResponse response = productMapper.toResponse(saved);
     productCache.putByBarcode(barcode, response);
     return response;
@@ -134,6 +139,7 @@ public class ProductLookupService {
               pn.setNutrientCode(n.code());
               pn.setAmountPer100g(n.amountPer100g());
               pn.setUnit(n.unit());
+              pn.setSource(NutrientSource.OFF);
               return pn;
             })
         .toList();

@@ -2,6 +2,8 @@ package com.nutritrack.food.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -29,6 +31,10 @@ public class ProductNutrient {
 
   @Column(nullable = false, length = 16)
   private String unit;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 16)
+  private NutrientSource source = NutrientSource.OFF;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id", insertable = false, updatable = false)
@@ -64,6 +70,14 @@ public class ProductNutrient {
 
   public void setUnit(String unit) {
     this.unit = unit;
+  }
+
+  public NutrientSource getSource() {
+    return source;
+  }
+
+  public void setSource(NutrientSource source) {
+    this.source = source;
   }
 
   public Product getProduct() {

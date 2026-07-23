@@ -2,6 +2,7 @@ package com.nutritrack.food.service;
 
 import com.nutritrack.food.domain.Product;
 import com.nutritrack.food.domain.ProductNutrient;
+import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.off.NormalizedOffProduct;
@@ -59,6 +60,7 @@ public class OffProductUpsertService {
                   pn.setNutrientCode(n.code());
                   pn.setAmountPer100g(n.amountPer100g());
                   pn.setUnit(n.unit());
+                  pn.setSource(NutrientSource.OFF);
                   return pn;
                 })
             .toList();
