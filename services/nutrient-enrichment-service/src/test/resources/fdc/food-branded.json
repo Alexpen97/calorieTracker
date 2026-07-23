@@ -1,0 +1,19 @@
+{
+  "fdcId": 2262074,
+  "description": "NUTELLA",
+  "dataType": "Branded",
+  "foodNutrients": [
+    {
+      "amount": 1.2,
+      "nutrient": { "number": "406", "name": "Niacin", "unitName": "mg" }
+    },
+    {
+      "amount": 80,
+      "nutrient": { "number": "301", "name": "Calcium, Ca", "unitName": "mg" }
+    },
+    {
+      "amount": 100,
+      "nutrient": { "number": "328", "name": "Vitamin D (D2 + D3)", "unitName": "IU" }
+    }
+  ]
+}

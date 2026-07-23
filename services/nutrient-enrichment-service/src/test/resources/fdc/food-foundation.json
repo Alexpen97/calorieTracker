@@ -1,0 +1,35 @@
+{
+  "fdcId": 171265,
+  "description": "Milk, whole",
+  "dataType": "Foundation",
+  "foodNutrients": [
+    {
+      "amount": 0.046,
+      "nutrient": { "number": "404", "name": "Thiamin", "unitName": "mg" }
+    },
+    {
+      "amount": 0.169,
+      "nutrient": { "number": "405", "name": "Riboflavin", "unitName": "mg" }
+    },
+    {
+      "amount": 0.089,
+      "nutrient": { "number": "406", "name": "Niacin", "unitName": "mg" }
+    },
+    {
+      "amount": 5.0,
+      "nutrient": { "number": "401", "name": "Vitamin C, total ascorbic acid", "unitName": "mg" }
+    },
+    {
+      "amount": 113,
+      "nutrient": { "number": "301", "name": "Calcium, Ca", "unitName": "mg" }
+    },
+    {
+      "amount": 0.03,
+      "nutrient": { "number": "303", "name": "Iron, Fe", "unitName": "mg" }
+    },
+    {
+      "amount": 1.2,
+      "nutrient": { "name": "Chromium, Cr", "unitName": "µg" }
+    }
+  ]
+}
