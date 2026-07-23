@@ -2,6 +2,7 @@ package com.nutritrack.food.service;
 
 import com.nutritrack.food.domain.Product;
 import com.nutritrack.food.domain.ProductSubmission;
+import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.web.dto.ProductNutrientResponse;
 import com.nutritrack.food.web.dto.ProductResponse;
 import java.math.BigDecimal;
@@ -42,7 +43,11 @@ public class ProductMapper {
             .map(
                 n ->
                     new ProductNutrientResponse(
-                        n.getNutrientCode(), n.getAmountPer100g(), n.getUnit()))
+                        n.getNutrientCode(),
+                        n.getAmountPer100g(),
+                        n.getUnit(),
+                        n.getSource() == NutrientSource.USDA_BRANDED
+                            || n.getSource() == NutrientSource.USDA_PROXY))
             .toList());
   }
 
@@ -70,6 +75,7 @@ public class ProductMapper {
       Map<String, Object> body = new LinkedHashMap<>();
       body.put("amountPer100g", nutrient.amountPer100g());
       body.put("unit", nutrient.unit());
+      body.put("estimated", nutrient.estimated());
       payload.put(nutrient.code(), body);
     }
     try {
@@ -88,12 +94,14 @@ public class ProductMapper {
               entry -> {
                 Object amount = entry.getValue().get("amountPer100g");
                 Object unit = entry.getValue().get("unit");
+                Object estimated = entry.getValue().get("estimated");
                 return new ProductNutrientResponse(
                     entry.getKey(),
                     amount instanceof BigDecimal bd
                         ? bd
                         : new BigDecimal(String.valueOf(amount)),
-                    unit == null ? "g" : unit.toString());
+                    unit == null ? "g" : unit.toString(),
+                    Boolean.TRUE.equals(estimated) || "true".equals(String.valueOf(estimated)));
               })
           .toList();
     } catch (JacksonException ex) {

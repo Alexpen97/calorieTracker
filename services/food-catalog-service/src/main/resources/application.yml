@@ -66,3 +66,8 @@ nutritrack:
       enabled: ${OFF_BULK_IMPORT_ENABLED:false}
       cron: ${OFF_BULK_IMPORT_CRON:0 30 3 * * *}
       default-url: ${OFF_BULK_IMPORT_URL:}
+    enrichment:
+      enabled: ${ENRICHMENT_ENABLED:false}
+      base-url: ${ENRICHMENT_SERVICE_URL:http://localhost:8086}
+      internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
+      timeout: ${ENRICHMENT_TIMEOUT:3s}

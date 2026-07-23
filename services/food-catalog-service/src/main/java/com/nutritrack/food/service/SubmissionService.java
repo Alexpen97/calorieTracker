@@ -2,6 +2,7 @@ package com.nutritrack.food.service;
 
 import com.nutritrack.food.domain.Product;
 import com.nutritrack.food.domain.ProductNutrient;
+import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.domain.ProductSubmission;
@@ -56,7 +57,7 @@ public class SubmissionService {
     submission.setNutrients(
         productMapper.writeNutrients(
             request.nutrients().stream()
-                .map(n -> new ProductNutrientResponse(n.code(), n.amountPer100g(), n.unit()))
+                .map(n -> new ProductNutrientResponse(n.code(), n.amountPer100g(), n.unit(), false))
                 .toList()));
     submission.setSubmittedAt(Instant.now());
     ProductSubmission saved = submissionRepository.save(submission);
@@ -98,6 +99,7 @@ public class SubmissionService {
                   pn.setNutrientCode(n.code());
                   pn.setAmountPer100g(n.amountPer100g());
                   pn.setUnit(n.unit());
+                  pn.setSource(NutrientSource.USER);
                   return pn;
                 })
             .toList();

@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: nutrient-enrichment-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/enrichment}
+    username: ${SPRING_DATASOURCE_USERNAME:nutritrack}
+    password: ${SPRING_DATASOURCE_PASSWORD:nutritrack}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8086}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+nutritrack:
+  enrichment:
+    internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
+    cache-ttl-days: ${ENRICHMENT_CACHE_TTL_DAYS:90}
+    fdc:
+      base-url: ${FDC_BASE_URL:https://api.nal.usda.gov/fdc/v1}
+      api-key: ${FDC_API_KEY:DEMO_KEY}
+    resilience:
+      rate-limit-per-minute: ${FDC_RATE_LIMIT_PER_MINUTE:10}
+      circuit-wait-duration: 30s
+      retry-max-attempts: 2

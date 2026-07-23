@@ -82,6 +82,7 @@ export type ProductNutrient = {
   code: string
   amountPer100g: number
   unit: string
+  estimated?: boolean
 }
 
 export type Product = {

@@ -1,0 +1,11 @@
+{
+  "foods": [
+    {
+      "fdcId": 2262074,
+      "description": "NUTELLA",
+      "brandOwner": "Ferrero U.S.A., Incorporated",
+      "gtinUpc": "009800860022",
+      "dataType": "Branded"
+    }
+  ]
+}
