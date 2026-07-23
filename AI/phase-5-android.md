@@ -25,7 +25,8 @@ Implemented on `cursor/phase-5-android-7d17`.
 
 - `capacitor.config.ts` — `com.nutritrack.app`, `webDir: dist`, `androidScheme: https`
 - SocialLogin providers: Google only (Facebook/Apple/Twitter disabled)
-- Vite `base: './'` for WebView asset paths
+- Vite `base: '/'` for the Railway web SPA; `CAPACITOR_BUILD=1` → `base: './'`
+  for WebView asset paths (`npm run cap:sync`)
 - Scripts: `cap:sync`, `android:sync`, `android:open`
 - Committed `frontend/android/` native project
 

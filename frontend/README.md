@@ -22,8 +22,12 @@ Google Console must allow `https://<this-origin>/auth/callback` — see
 
 - `npm test` — Vitest
 - `npm run build` — production bundle
-- `npm run cap:sync` — build web assets and sync into `android/`
+- `npm run cap:sync` — Capacitor build (`CAPACITOR_BUILD=1` → relative Vite `base`)
+  and sync into `android/`
 - `npm run android:open` — open the Capacitor Android project in Android Studio
+
+Railway web builds use absolute Vite `base: '/'` so deep links like `/analytics`
+load `/assets/*` correctly.
 
 ## Android (Capacitor)
 
