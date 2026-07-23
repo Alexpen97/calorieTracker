@@ -4,6 +4,11 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
+  # Never SPA-fallback hashed bundles — missing assets must 404, not return HTML.
+  location /assets/ {
+    try_files $uri =404;
+  }
+
   location / {
     try_files $uri $uri/ /index.html;
   }

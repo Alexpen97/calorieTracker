@@ -2,6 +2,9 @@
 
 ## Completed
 
+- 2026-07-23: Web deep links (`/analytics`, etc.) blanked because Capacitor
+  `base: './'` made assets resolve under the route; web builds now use `/`.
+  Notes: `AI/analytics-deep-link-assets.md`.
 - 2026-07-23: Dashboard card vertical spacing — `.dashboard-page` `row-gap`
   `0.27rem` → `0.9rem` (matches column gap). Notes: `AI/weight-30-day-graph.md`.
 - 2026-07-22: Weight Progress chart is a compact line graph with kg/date axes,
