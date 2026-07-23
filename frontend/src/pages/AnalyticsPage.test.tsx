@@ -12,16 +12,31 @@ describe('AnalyticsPage', () => {
   it('renders weight, macro, vitamin, mineral, and insight cards', async () => {
     vi.spyOn(client, 'fetchDiarySummaryRange').mockResolvedValue([
       {
+        date: '2026-07-21',
+        totals: [
+          { code: 'protein', amount: 80, unit: 'g', target: 100 },
+          { code: 'carbohydrates', amount: 200, unit: 'g', target: 250 },
+          { code: 'fat', amount: 50, unit: 'g', target: 70 },
+          { code: 'vitamin_d', amount: 3, unit: 'ug', target: 15 },
+          { code: 'calcium', amount: 400, unit: 'mg', target: 1000 },
+        ],
+        water: { amountMl: 1800, targetMl: 2500 },
+      },
+      {
         date: '2026-07-22',
         totals: [
           { code: 'protein', amount: 92, unit: 'g', target: 100 },
           { code: 'carbohydrates', amount: 210, unit: 'g', target: 250 },
           { code: 'fat', amount: 60, unit: 'g', target: 70 },
-          { code: 'vitamin_d', amount: 5, unit: 'ug', target: 15 },
-          { code: 'calcium', amount: 700, unit: 'mg', target: 1000 },
+          { code: 'vitamin_d', amount: 9, unit: 'ug', target: 15 },
+          { code: 'calcium', amount: 800, unit: 'mg', target: 1000 },
         ],
         water: { amountMl: 1800, targetMl: 2500 },
       },
+    ])
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue([
+      { nutrientCode: 'vitamin_c', dailyTarget: 80, unit: 'mg' },
+      { nutrientCode: 'iron', dailyTarget: 14, unit: 'mg' },
     ])
     const weightSpy = vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([
       { id: 'w1', weightKg: 72.3, measuredAt: '2026-07-16T08:00:00Z' },
@@ -30,7 +45,10 @@ describe('AnalyticsPage', () => {
 
     renderWithClient(<AnalyticsPage />)
 
-    expect(await screen.findByText('Low')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Vitamin D')).toHaveAttribute('aria-valuenow', '40')
+    expect(screen.getByLabelText('Calcium')).toHaveAttribute('aria-valuenow', '60')
+    expect(screen.getByLabelText('Vitamin C')).toBeInTheDocument()
+    expect(screen.getByLabelText('Iron')).toBeInTheDocument()
     expect(weightSpy).toHaveBeenCalledWith({
       from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
       to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
@@ -40,7 +58,6 @@ describe('AnalyticsPage', () => {
     expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
-    expect(screen.getAllByText(/Vitamin D/i).length).toBeGreaterThan(0)
   })
 })
 

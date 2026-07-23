@@ -78,6 +78,41 @@ export function buildMicronutrientRows(
   return [...labels.entries()].map(([code, label]) => progressRow(totals, code, label))
 }
 
+/** Average micronutrient intake across day summaries (amount mean vs shared target). */
+export function averageMicronutrientRows(
+  summaries: Array<{ totals: NutrientTotalForDisplay[] }>,
+  kind: MicronutrientKind,
+): NutritionProgressRow[] {
+  if (summaries.length === 0) {
+    return buildMicronutrientRows([], kind)
+  }
+  const labels = kind === 'vitamin' ? vitaminCodes : mineralCodes
+  return [...labels.entries()].map(([code, label]) => {
+    let amountSum = 0
+    let target: number | null = null
+    let unit = ''
+    for (const summary of summaries) {
+      const total = summary.totals.find((item) => item.code === code)
+      if (!total) continue
+      amountSum += total.amount
+      if (total.target != null) target = total.target
+      if (total.unit) unit = total.unit
+    }
+    const amount = amountSum / summaries.length
+    if (amount === 0 && target == null && !unit) {
+      return { code, label, percent: 0, amountLabel: '0' }
+    }
+    return {
+      code,
+      label,
+      percent: target ? Math.min(100, Math.round((amount / target) * 100)) : 0,
+      amountLabel: target
+        ? `${formatNumber(amount)} / ${formatNumber(target)} ${unit}`
+        : `${formatNumber(amount)} ${unit}`.trim(),
+    }
+  })
+}
+
 export type WeightTrendPoint = {
   weightKg: number
   /** Position on the window: 0 = window start, 1 = window end (clock). */

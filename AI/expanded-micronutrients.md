@@ -34,3 +34,5 @@ selenium, copper, manganese, phosphorus, chromium, molybdenum
 - Existing users need goals recalculate / re-apply after deploy so new DRVs
   appear in diary summary targets.
 - Redeploy `food-catalog-service` and `user-profile-service` for Flyway.
+- 2026-07-23: Diary + Analytics now use the same full checklist / grids as the
+  dashboard (see `AI/fix-micros-diary-analytics.md`).

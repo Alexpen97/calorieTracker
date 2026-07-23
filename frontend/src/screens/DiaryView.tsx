@@ -3,8 +3,8 @@ import type { DaySummary, DiaryEntry, WaterLog, WeightLog } from '../api/client'
 import { groupEntriesByMeal, getMacroProgress, mealLookupPath } from '../diary/formatDay'
 import { buildMicronutrientRows, buildWeightTrend } from '../diary/nutritionDashboard'
 import { DashboardCard } from '../ui/Card'
-import { ProgressRow, Sparkline, StackedFoodBars } from '../ui/MiniCharts'
-import { IconBook, IconFlame, IconPie, IconPlus, IconScale } from '../ui/Icons'
+import { MicroProgressGrid, Sparkline, StackedFoodBars } from '../ui/MiniCharts'
+import { IconBook, IconFlame, IconLeaf, IconPie, IconPlus, IconScale } from '../ui/Icons'
 
 type Props = {
   selectedDateLabel: string
@@ -144,26 +144,16 @@ export default function DiaryView({
         </div>
       </DashboardCard>
 
-      <div className="grid-three">
-        <DashboardCard icon={<IconScale />} title="Vitamin Checklist" eyebrow="Targets">
-          <div className="compact-rows">
-            {vitamins.slice(0, 4).map((row) => (
-              <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
-            ))}
-          </div>
-        </DashboardCard>
-        <DashboardCard icon={<IconScale />} title="Mineral Checklist" eyebrow="Targets">
-          <div className="compact-rows">
-            {minerals.slice(0, 4).map((row) => (
-              <ProgressRow key={row.code} label={row.label} percent={row.percent} amountLabel={`${row.percent}%`} />
-            ))}
-          </div>
-        </DashboardCard>
-        <DashboardCard icon={<IconScale />} title="Weight Check-in" eyebrow="Trend">
-          <p className="weight-value">{latestWeight(weightHistory)}</p>
-          <Sparkline label="Weight trend" points={buildWeightTrend(weightHistory)} />
-        </DashboardCard>
-      </div>
+      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="Targets">
+        <MicroProgressGrid rows={vitamins} />
+      </DashboardCard>
+      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="Targets">
+        <MicroProgressGrid rows={minerals} />
+      </DashboardCard>
+      <DashboardCard icon={<IconScale />} title="Weight Check-in" eyebrow="Trend">
+        <p className="weight-value">{latestWeight(weightHistory)}</p>
+        <Sparkline label="Weight trend" points={buildWeightTrend(weightHistory)} />
+      </DashboardCard>
     </main>
   )
 }
