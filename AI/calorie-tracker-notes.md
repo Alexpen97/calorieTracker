@@ -74,6 +74,9 @@ Full micronutrient checklist on dashboard (summary → vitamins → minerals →
 weight; macros card removed). Catalog education, goals DRVs, and OFF mappings
 expanded — see `AI/expanded-micronutrients.md`.
 
+2026-07-23: Diary and Analytics now show the same full vitamins/minerals grids
+(and Analytics averages the range) — see `AI/fix-micros-diary-analytics.md`.
+
 - Roadmap phase 6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  averageMicronutrientRows,
   buildMacroSummaries,
   buildMicronutrientRows,
   buildWeightTrend,
@@ -85,6 +86,39 @@ describe('nutrition dashboard helpers', () => {
       percent: 0,
       amountLabel: '0',
     })
+  })
+
+  it('averages micronutrient progress across multiple day summaries', () => {
+    const days: NutrientTotalForDisplay[][] = [
+      [
+        { code: 'vitamin_d', amount: 6, unit: 'ug', target: 15 },
+        { code: 'calcium', amount: 500, unit: 'mg', target: 1000 },
+      ],
+      [
+        { code: 'vitamin_d', amount: 9, unit: 'ug', target: 15 },
+        { code: 'calcium', amount: 700, unit: 'mg', target: 1000 },
+      ],
+    ]
+
+    const vitamins = averageMicronutrientRows(
+      days.map((dayTotals) => ({ totals: dayTotals })),
+      'vitamin',
+    )
+    const minerals = averageMicronutrientRows(
+      days.map((dayTotals) => ({ totals: dayTotals })),
+      'mineral',
+    )
+
+    expect(vitamins.find((item) => item.code === 'vitamin_d')).toMatchObject({
+      percent: 50,
+      amountLabel: '7.5 / 15 ug',
+    })
+    expect(minerals.find((item) => item.code === 'calcium')).toMatchObject({
+      percent: 60,
+      amountLabel: '600 / 1,000 mg',
+    })
+    expect(vitamins).toHaveLength(13)
+    expect(minerals).toHaveLength(13)
   })
 
   it('builds oldest-to-newest weight trend points for the last 30 days', () => {
