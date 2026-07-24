@@ -101,6 +101,30 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <!-- Keep the JAR lean: package the wide food matrix + nutrient dictionary only. -->
+          <excludes>
+            <exclude>nevo/*_Details.csv</exclude>
+            <exclude>nevo/*_Recepten_Recipes.csv</exclude>
+            <exclude>nevo/*_Referenties_References.csv</exclude>
+            <exclude>nevo/*.xlsx</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>nevo/*_Details.csv</exclude>
+          <exclude>nevo/*_Recepten_Recipes.csv</exclude>
+          <exclude>nevo/*_Referenties_References.csv</exclude>
+          <exclude>nevo/*.xlsx</exclude>
+        </excludes>
+      </resource>
+    </resources>
   </build>
 </project>

@@ -8,11 +8,11 @@ import com.nutritrack.nevo.domain.NevoImportRunRepository;
 import com.nutritrack.nevo.domain.NevoNutrientValue;
 import com.nutritrack.nevo.domain.NevoNutrientValueRepository;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,14 +27,30 @@ import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NevoCsvImporter {
 
+  /** Default RIVM NEVO-online 2025/9.0 wide export shipped on the classpath. */
+  public static final String DEFAULT_CLASSPATH_CSV = "nevo/NEVO2025_v9.0.csv";
+
+  private static final String COL_VERSION = "NEVO-versie/NEVO-version";
+  private static final String COL_GROUP_NL = "Voedingsmiddelgroep";
+  private static final String COL_GROUP_EN = "Food group";
+  private static final String COL_CODE = "NEVO-code";
+  private static final String COL_NAME_NL = "Voedingsmiddelnaam/Dutch food name";
+  private static final String COL_NAME_EN = "Engelse naam/Food name";
+  private static final String COL_SYNONYM = "Synoniem";
+  private static final String COL_QUANTITY = "Hoeveelheid/Quantity";
+  private static final String COL_REMARK = "Opmerking";
+
   private static final Set<String> REQUIRED_HEADERS =
-      Set.of("Nevocode", "Food name", "Food group");
+      Set.of(COL_CODE, COL_NAME_EN, COL_GROUP_EN);
 
   private final NevoProperties properties;
   private final NevoFoodRepository foodRepository;
@@ -54,17 +70,27 @@ public class NevoCsvImporter {
 
   @Transactional
   public NevoImportRun importFromConfiguredPath() {
-    if (properties.csvPath() == null || properties.csvPath().isBlank()) {
-      throw new IllegalArgumentException("NEVO_CSV_PATH is not configured");
+    String configured = properties.csvPath();
+    if (configured == null || configured.isBlank()) {
+      return importResource(new ClassPathResource(DEFAULT_CLASSPATH_CSV), DEFAULT_CLASSPATH_CSV);
     }
-    return importFromPath(Path.of(properties.csvPath()));
+    if (configured.startsWith("classpath:")) {
+      String location = configured.substring("classpath:".length());
+      return importResource(new ClassPathResource(location), location);
+    }
+    return importFromPath(Path.of(configured));
   }
 
   @Transactional
   public NevoImportRun importFromPath(Path path) {
+    return importResource(new FileSystemResource(path), path.getFileName().toString());
+  }
+
+  @Transactional
+  public NevoImportRun importResource(Resource resource, String displayName) {
     NevoImportRun run = new NevoImportRun();
     run.setId(UUID.randomUUID());
-    run.setCsvFilename(path.getFileName().toString());
+    run.setCsvFilename(displayName);
     run.setNevoVersion(properties.version());
     run.setStartedAt(Instant.now());
     run.setStatus("RUNNING");
@@ -73,12 +99,12 @@ public class NevoCsvImporter {
     importRunRepository.save(run);
 
     try {
-      if (!Files.exists(path)) {
-        throw new IllegalArgumentException("NEVO CSV not found: " + path.toAbsolutePath());
+      if (!resource.exists()) {
+        throw new IllegalArgumentException("NEVO CSV not found: " + displayName);
       }
       ImportResult result;
-      try (Reader reader =
-          new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
+      try (InputStream in = resource.getInputStream();
+          Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
         result = parse(reader, properties.version());
       }
       replaceAll(result);
@@ -103,10 +129,12 @@ public class NevoCsvImporter {
     CSVFormat format =
         CSVFormat.DEFAULT
             .builder()
+            .setDelimiter('|')
             .setHeader()
             .setSkipHeaderRecord(true)
             .setIgnoreEmptyLines(true)
             .setTrim(true)
+            .setQuote('"')
             .build();
 
     try (CSVParser parser = format.parse(reader)) {
@@ -121,10 +149,16 @@ public class NevoCsvImporter {
         throw new IllegalArgumentException("NEVO CSV missing required columns: " + missing);
       }
 
+      // Preserve first-seen NEVO code preference (e.g. VITA_RAE before VITA_RE).
       Map<String, NevoNutrientColumnMapper.Mapping> nutrientColumns = new HashMap<>();
+      List<String> nutrientHeaderOrder = new ArrayList<>();
       for (String header : headerMap.keySet()) {
         NevoNutrientColumnMapper.map(header)
-            .ifPresent(mapping -> nutrientColumns.put(header, mapping));
+            .ifPresent(
+                mapping -> {
+                  nutrientColumns.put(header, mapping);
+                  nutrientHeaderOrder.add(header);
+                });
       }
       if (nutrientColumns.isEmpty()) {
         throw new IllegalArgumentException("NEVO CSV has no recognizable nutrient columns");
@@ -135,14 +169,17 @@ public class NevoCsvImporter {
       Set<String> seenCodes = new HashSet<>();
 
       for (CSVRecord record : parser) {
-        String code = value(record, "Nevocode");
+        String code = value(record, COL_CODE);
         if (code == null || code.isBlank()) {
           continue;
         }
         if (!seenCodes.add(code)) {
           continue;
         }
-        String foodName = value(record, "Food name");
+        String foodName = value(record, COL_NAME_EN);
+        if (foodName == null || foodName.isBlank()) {
+          foodName = value(record, COL_NAME_NL);
+        }
         if (foodName == null || foodName.isBlank()) {
           continue;
         }
@@ -150,32 +187,36 @@ public class NevoCsvImporter {
         NevoFood food = new NevoFood();
         food.setNevoCode(code.trim());
         food.setFoodNameEn(foodName.trim());
-        food.setFoodNameNl(blankToNull(value(record, "Voedingsmiddelnaam")));
-        food.setFoodGroup(blankToNull(value(record, "Food group")));
-        food.setSynonym(blankToNull(value(record, "Synonym")));
-        food.setQuantityLabel(blankToNull(value(record, "Quantity")));
-        food.setRemark(blankToNull(value(record, "Remark")));
-        String versionFromRow = blankToNull(value(record, "NEVO-version"));
+        food.setFoodNameNl(blankToNull(value(record, COL_NAME_NL)));
+        food.setFoodGroup(blankToNull(value(record, COL_GROUP_EN)));
+        if (food.getFoodGroup() == null) {
+          food.setFoodGroup(blankToNull(value(record, COL_GROUP_NL)));
+        }
+        food.setSynonym(blankToNull(value(record, COL_SYNONYM)));
+        food.setQuantityLabel(blankToNull(value(record, COL_QUANTITY)));
+        food.setRemark(blankToNull(value(record, COL_REMARK)));
+        String versionFromRow = blankToNull(value(record, COL_VERSION));
         food.setNevoVersion(versionFromRow == null ? version : versionFromRow);
         food.setSearchDocument(buildSearchDocument(food));
-        food.setEnergyKcal(amount(record, "kcal (kcal)"));
-        food.setProteinG(firstAmount(record, "Protein (g)"));
-        food.setFatG(firstAmount(record, "Fat (g)"));
-        food.setCarbohydrateG(firstAmount(record, "Carbohydrate (g)"));
-        food.setSugarsG(amount(record, "Sugars (g)"));
-        food.setFiberG(firstAmount(record, "Fibre (g)"));
-        food.setSodiumMg(amount(record, "Sodium (mg)"));
+        food.setEnergyKcal(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "energy_kcal"));
+        food.setProteinG(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "protein"));
+        food.setFatG(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "fat"));
+        food.setCarbohydrateG(
+            amountByCode(record, nutrientHeaderOrder, nutrientColumns, "carbohydrates"));
+        food.setSugarsG(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "sugars"));
+        food.setFiberG(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "fiber"));
+        food.setSodiumMg(amountByCode(record, nutrientHeaderOrder, nutrientColumns, "sodium"));
         foods.add(food);
 
         Set<String> mappedCodes = new LinkedHashSet<>();
-        for (Map.Entry<String, NevoNutrientColumnMapper.Mapping> entry : nutrientColumns.entrySet()) {
-          String raw = value(record, entry.getKey());
+        for (String header : nutrientHeaderOrder) {
+          NevoNutrientColumnMapper.Mapping mapping = nutrientColumns.get(header);
+          String raw = value(record, header);
           var amount = NevoNutrientColumnMapper.parseAmount(raw);
           if (amount.isEmpty()) {
             continue;
           }
-          NevoNutrientColumnMapper.Mapping mapping = entry.getValue();
-          // Prefer first mapped column for a nutrient code (e.g. RAE before RE).
+          // Prefer first mapped column for a nutrient code (e.g. VITA_RAE before VITA_RE).
           if (!mappedCodes.add(mapping.nutrientCode())) {
             continue;
           }
@@ -183,7 +224,7 @@ public class NevoCsvImporter {
           nutrient.setId(UUID.randomUUID());
           nutrient.setNevoCode(food.getNevoCode());
           nutrient.setNutrientCode(mapping.nutrientCode());
-          nutrient.setNevoColumn(entry.getKey());
+          nutrient.setNevoColumn(header);
           nutrient.setAmountPer100g(amount.get());
           nutrient.setUnit(mapping.unit());
           nutrient.setRawValue(raw);
@@ -204,6 +245,20 @@ public class NevoCsvImporter {
     foodRepository.flush();
     foodRepository.saveAll(result.foods());
     nutrientRepository.saveAll(result.nutrients());
+  }
+
+  private static BigDecimal amountByCode(
+      CSVRecord record,
+      List<String> headerOrder,
+      Map<String, NevoNutrientColumnMapper.Mapping> nutrientColumns,
+      String internalCode) {
+    for (String header : headerOrder) {
+      NevoNutrientColumnMapper.Mapping mapping = nutrientColumns.get(header);
+      if (mapping != null && internalCode.equals(mapping.nutrientCode())) {
+        return NevoNutrientColumnMapper.parseAmount(value(record, header)).orElse(null);
+      }
+    }
+    return null;
   }
 
   private static String buildSearchDocument(NevoFood food) {
@@ -230,16 +285,11 @@ public class NevoCsvImporter {
     if (!record.isMapped(header)) {
       return null;
     }
-    return record.get(header);
-  }
-
-  private static BigDecimal amount(CSVRecord record, String header) {
-    return NevoNutrientColumnMapper.parseAmount(value(record, header)).orElse(null);
-  }
-
-  private static BigDecimal firstAmount(CSVRecord record, String header) {
-    // NEVO exports duplicate some macro columns; first non-empty wins via parse.
-    return amount(record, header);
+    String raw = record.get(header);
+    if (raw == null) {
+      return null;
+    }
+    return raw.trim();
   }
 
   private static String blankToNull(String value) {

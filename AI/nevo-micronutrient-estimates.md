@@ -15,18 +15,38 @@ lacks vitamins/minerals.
 - `food-catalog-service` calls NEVO after OFF upsert and merges only **missing**
   micronutrient codes with provenance `NEVO_ESTIMATE`
 
+## NEVO file format (RIVM 2025/9.0)
+
+Files live in `services/nevo-service/src/main/resources/nevo/`:
+
+- Delimiter: pipe `|`
+- Encoding: UTF-8
+- Wide matrix: `NEVO2025_v9.0.csv` (~2300 foods, nutrient codes as columns)
+- Identity columns: `NEVO-code`, `Engelse naam/Food name`,
+  `Voedingsmiddelnaam/Dutch food name`, `Food group`, `Synoniem`, …
+- Nutrient columns use codes + unit, e.g. `ENERCC (kcal)`, `THIA (mg)`,
+  `VITA_RAE (µg)`, `NA (mg)`
+- Decimal separator in values: Dutch comma (`0,12`)
+
+Mapped NEVO codes → internal codes include: ENERCC, PROT, FAT, CHO, SUGAR,
+FIBT, NA, K, CA, P, MG, FE, CU, SE, ZN, ID, VITA_RAE, VITD, VITE, VITK,
+THIA, RIBF, NIAEQ, VITB6, FOL, VITB12, VITC.
+
+Not present in NEVO 2025/9.0 matrix: manganese, chromium, molybdenum,
+pantothenic acid (B5), biotin (B7).
+
 ## Local setup
 
-1. Place your NEVO-online CSV at `data/nevo.csv` (sample included for smoke tests).
-2. Compose mounts it to `/data/nevo.csv` in `nevo-service`.
-3. Import:
+1. Ensure `NEVO2025_v9.0.csv` is under `services/nevo-service/src/main/resources/nevo/`
+   (already the default classpath source).
+2. Start `nevo-service`, then import:
 
 ```bash
 curl -X POST http://localhost:8085/internal/nevo/import \
   -H "X-Internal-Api-Key: $INTERNAL_API_KEY"
 ```
 
-4. Enable enrichment in food catalog:
+3. Enable enrichment in food catalog:
 
 ```bash
 NEVO_ESTIMATE_ENABLED=true
@@ -52,14 +72,11 @@ NEVO_SERVICE_URL=http://nevo-service:8080
 
 ## Citation
 
-Imported data should be attributed as:
-
 > NEVO-online version 2025/9.0, RIVM, Bilthoven
-
-(Replace version with the actual CSV release you imported.)
 
 ## Known limitations
 
 - Estimates are generic-food composition, not branded lab assays.
 - No live scrape of nevo-online.rivm.nl; local CSV only.
 - If `nevo-service` is down, barcode lookup still succeeds without micros.
+- Details / recipes / references companion CSVs are not imported (yet).

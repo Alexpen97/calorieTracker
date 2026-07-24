@@ -89,11 +89,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nevo
       SPRING_DATASOURCE_USERNAME: nutritrack
       SPRING_DATASOURCE_PASSWORD: nutritrack
-      NEVO_CSV_PATH: ${NEVO_CSV_PATH:-/data/nevo.csv}
+      # Empty uses classpath:nevo/NEVO2025_v9.0.csv baked into the JAR.
+      NEVO_CSV_PATH: ${NEVO_CSV_PATH:-}
       NEVO_VERSION: ${NEVO_VERSION:-2025/9.0}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
-    volumes:
-      - ${NEVO_CSV_HOST_PATH:-./data/nevo.csv}:/data/nevo.csv:ro
     depends_on:
       postgres:
         condition: service_healthy

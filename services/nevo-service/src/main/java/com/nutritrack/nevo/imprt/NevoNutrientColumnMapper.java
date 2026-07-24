@@ -5,11 +5,19 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/** Maps NEVO-online CSV column headers to NutriTrack nutrient codes. */
+/**
+ * Maps NEVO-online 2025/9.0 nutrient column headers (e.g. {@code ENERCC (kcal)}, {@code
+ * VITA_RAE (µg)}) to NutriTrack nutrient codes.
+ */
 public final class NevoNutrientColumnMapper {
 
-  private static final Map<String, Mapping> BY_NORMALIZED_HEADER = build();
+  private static final Pattern CODE_UNIT =
+      Pattern.compile("^([A-Za-z0-9:_]+)\\s*\\(([^)]+)\\)\\s*$");
+
+  private static final Map<String, Mapping> BY_NEVO_CODE = build();
 
   private NevoNutrientColumnMapper() {}
 
@@ -17,75 +25,21 @@ public final class NevoNutrientColumnMapper {
     if (header == null || header.isBlank()) {
       return Optional.empty();
     }
-    return Optional.ofNullable(BY_NORMALIZED_HEADER.get(normalizeHeader(header)));
-  }
-
-  public static String normalizeHeader(String header) {
-    return header
-        .trim()
-        .toLowerCase(Locale.ROOT)
-        .replace('\u00a0', ' ')
-        .replaceAll("\\s+", " ");
-  }
-
-  private static Map<String, Mapping> build() {
-    Map<String, Mapping> map = new LinkedHashMap<>();
-    put(map, "kcal (kcal)", "energy_kcal", "kcal");
-    put(map, "kj (kj)", "energy_kj", "kJ");
-    put(map, "protein (g)", "protein", "g");
-    put(map, "fat (g)", "fat", "g");
-    put(map, "sfa (g)", "saturated_fat", "g");
-    put(map, "carbohydrate (g)", "carbohydrates", "g");
-    put(map, "sugars (g)", "sugars", "g");
-    put(map, "fibre (g)", "fiber", "g");
-    put(map, "sodium (mg)", "sodium", "mg");
-    put(map, "potassium (mg)", "potassium", "mg");
-    put(map, "calcium (mg)", "calcium", "mg");
-    put(map, "phosphorus (mg)", "phosphorus", "mg");
-    put(map, "magnesium (mg)", "magnesium", "mg");
-    put(map, "iron (mg)", "iron", "mg");
-    put(map, "copper (mg)", "copper", "mg");
-    put(map, "selenium (µg)", "selenium", "µg");
-    put(map, "selenium (ug)", "selenium", "µg");
-    put(map, "zinc (mg)", "zinc", "mg");
-    put(map, "iodine (µg)", "iodine", "µg");
-    put(map, "iodine (ug)", "iodine", "µg");
-    put(map, "manganese (mg)", "manganese", "mg");
-    put(map, "chromium (µg)", "chromium", "µg");
-    put(map, "chromium (ug)", "chromium", "µg");
-    put(map, "molybdenum (µg)", "molybdenum", "µg");
-    put(map, "molybdenum (ug)", "molybdenum", "µg");
-    put(map, "rae (vit a) (µg)", "vitamin_a", "µg");
-    put(map, "rae (vit a) (ug)", "vitamin_a", "µg");
-    put(map, "re (vit a) (µg)", "vitamin_a", "µg");
-    put(map, "vit d (µg)", "vitamin_d", "µg");
-    put(map, "vit d (ug)", "vitamin_d", "µg");
-    put(map, "vit e (mg)", "vitamin_e", "mg");
-    put(map, "vit k (µg)", "vitamin_k", "µg");
-    put(map, "vit k (ug)", "vitamin_k", "µg");
-    put(map, "vit b1 (mg)", "vitamin_b1", "mg");
-    put(map, "vit b2 (mg)", "vitamin_b2", "mg");
-    put(map, "niacin equiv (mg)", "vitamin_b3", "mg");
-    put(map, "niacin (mg)", "vitamin_b3", "mg");
-    put(map, "vit b6 (mg)", "vitamin_b6", "mg");
-    put(map, "folate dfe (µg)", "vitamin_b9", "µg");
-    put(map, "folate dfe (ug)", "vitamin_b9", "µg");
-    put(map, "folate food (µg)", "vitamin_b9", "µg");
-    put(map, "vit b12 (µg)", "vitamin_b12", "µg");
-    put(map, "vit b12 (ug)", "vitamin_b12", "µg");
-    put(map, "vit c (mg)", "vitamin_c", "mg");
-    return Map.copyOf(map);
-  }
-
-  private static void put(Map<String, Mapping> map, String header, String code, String unit) {
-    map.putIfAbsent(normalizeHeader(header), new Mapping(code, unit));
+    String trimmed = header.trim().replace("\"", "");
+    Matcher matcher = CODE_UNIT.matcher(trimmed);
+    if (matcher.matches()) {
+      String nevoCode = matcher.group(1).toUpperCase(Locale.ROOT);
+      return Optional.ofNullable(BY_NEVO_CODE.get(nevoCode));
+    }
+    // Fallback: bare nutrient code without unit suffix.
+    return Optional.ofNullable(BY_NEVO_CODE.get(trimmed.toUpperCase(Locale.ROOT)));
   }
 
   public static Optional<BigDecimal> parseAmount(String raw) {
     if (raw == null) {
       return Optional.empty();
     }
-    String trimmed = raw.trim();
+    String trimmed = raw.trim().replace("\"", "");
     if (trimmed.isEmpty() || trimmed.equalsIgnoreCase("NA") || trimmed.equals("-")) {
       return Optional.empty();
     }
@@ -95,6 +49,50 @@ public final class NevoNutrientColumnMapper {
     } catch (NumberFormatException ex) {
       return Optional.empty();
     }
+  }
+
+  private static Map<String, Mapping> build() {
+    Map<String, Mapping> map = new LinkedHashMap<>();
+    put(map, "ENERCC", "energy_kcal", "kcal");
+    put(map, "ENERCJ", "energy_kj", "kJ");
+    put(map, "PROT", "protein", "g");
+    put(map, "FAT", "fat", "g");
+    put(map, "FASAT", "saturated_fat", "g");
+    put(map, "CHO", "carbohydrates", "g");
+    put(map, "SUGAR", "sugars", "g");
+    put(map, "FIBT", "fiber", "g");
+    put(map, "NA", "sodium", "mg");
+    put(map, "K", "potassium", "mg");
+    put(map, "CA", "calcium", "mg");
+    put(map, "P", "phosphorus", "mg");
+    put(map, "MG", "magnesium", "mg");
+    put(map, "FE", "iron", "mg");
+    put(map, "CU", "copper", "mg");
+    put(map, "SE", "selenium", "µg");
+    put(map, "ZN", "zinc", "mg");
+    put(map, "ID", "iodine", "µg");
+    // Prefer RAE over RE for vitamin A.
+    put(map, "VITA_RAE", "vitamin_a", "µg");
+    put(map, "VITA_RE", "vitamin_a", "µg");
+    put(map, "VITD", "vitamin_d", "µg");
+    put(map, "VITE", "vitamin_e", "mg");
+    put(map, "VITK", "vitamin_k", "µg");
+    put(map, "THIA", "vitamin_b1", "mg");
+    put(map, "RIBF", "vitamin_b2", "mg");
+    // Prefer niacin equivalents over plain niacin.
+    put(map, "NIAEQ", "vitamin_b3", "mg");
+    put(map, "NIA", "vitamin_b3", "mg");
+    put(map, "VITB6", "vitamin_b6", "mg");
+    // Prefer dietary folate equivalents.
+    put(map, "FOL", "vitamin_b9", "µg");
+    put(map, "FOLFD", "vitamin_b9", "µg");
+    put(map, "VITB12", "vitamin_b12", "µg");
+    put(map, "VITC", "vitamin_c", "mg");
+    return Map.copyOf(map);
+  }
+
+  private static void put(Map<String, Mapping> map, String nevoCode, String code, String unit) {
+    map.putIfAbsent(nevoCode, new Mapping(code, unit));
   }
 
   public record Mapping(String nutrientCode, String unit) {}

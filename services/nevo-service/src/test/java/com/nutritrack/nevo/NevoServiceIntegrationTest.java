@@ -5,21 +5,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.nutritrack.nevo.domain.NevoFoodRepository;
+import com.nutritrack.nevo.imprt.NevoCsvImporter;
+import com.nutritrack.nevo.web.dto.NevoMatchRequest;
 import java.math.BigDecimal;
-import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
-import com.nutritrack.nevo.domain.NevoFoodRepository;
-import com.nutritrack.nevo.imprt.NevoCsvImporter;
-import com.nutritrack.nevo.web.dto.NevoMatchRequest;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,10 +43,8 @@ class NevoServiceIntegrationTest {
   @Autowired private JsonMapper jsonMapper;
 
   @BeforeEach
-  void importSample() throws Exception {
-    Path sample =
-        Path.of(getClass().getClassLoader().getResource("nevo-sample.csv").toURI());
-    importer.importFromPath(sample);
+  void importSample() {
+    importer.importResource(new ClassPathResource("nevo-sample.csv"), "nevo-sample.csv");
     assertThat(foodRepository.count()).isGreaterThan(0);
   }
 
@@ -122,5 +120,18 @@ class NevoServiceIntegrationTest {
                 .content(jsonMapper.writeValueAsString(soy)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nevoCode").value("1007"));
+  }
+
+  @Test
+  void importsRealClasspathNevoMatrix() {
+    // Smoke-test the actual RIVM export shipped under resources/nevo/.
+    var run =
+        importer.importResource(
+            new ClassPathResource(NevoCsvImporter.DEFAULT_CLASSPATH_CSV),
+            NevoCsvImporter.DEFAULT_CLASSPATH_CSV);
+    assertThat(run.getStatus()).isEqualTo("SUCCEEDED");
+    assertThat(run.getFoodCount()).isGreaterThan(2000);
+    assertThat(foodRepository.findById("1")).isPresent();
+    assertThat(foodRepository.findById("1").get().getFoodNameEn()).containsIgnoringCase("Potato");
   }
 }

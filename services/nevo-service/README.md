@@ -2,36 +2,43 @@
 
 Local Dutch Food Composition Database (NEVO) import and micronutrient estimate matching.
 
-## Role
+## Data files
 
-- Imports NEVO-online CSV into a dedicated `nevo` Postgres database
-- Matches barcode/product queries to the best NEVO food
-- Returns estimated micronutrients for foods where Open Food Facts lacks micros
+Shipped under `src/main/resources/nevo/`:
+
+| File | Role |
+|---|---|
+| `NEVO2025_v9.0.csv` | Wide food × nutrient matrix (pipe `\|` delimited) — **imported** |
+| `NEVO2025_v9.0_Nutrienten_Nutrients.csv` | Nutrient code dictionary (reference) |
+| `NEVO2025_v9.0_Details.csv` | Long-form per-value provenance (not imported; excluded from JAR) |
+| `NEVO2025_v9.0_Recepten_Recipes.csv` | Recipe ingredient breakdown (not imported) |
+| `NEVO2025_v9.0_Referenties_References.csv` | Source references (not imported) |
+
+Default import uses the classpath matrix (`classpath:nevo/NEVO2025_v9.0.csv`).
 
 ## Endpoints
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| `POST` | `/internal/nevo/import` | `X-Internal-Api-Key` | Import CSV from configured path or request body path |
+| `POST` | `/internal/nevo/import` | `X-Internal-Api-Key` | Import configured/default CSV |
 | `POST` | `/internal/nevo/matches/best` | `X-Internal-Api-Key` | Best NEVO match + mapped nutrients |
-| `GET` | `/api/nevo/foods/{nevoCode}` | JWT | Debug/detail lookup (optional gateway) |
+| `GET` | `/api/nevo/foods/{nevoCode}` | open (debug) | Direct food lookup |
 
 ## Import
-
-Place the NEVO CSV on disk and set:
-
-```bash
-NEVO_CSV_PATH=/data/nevo.csv
-NEVO_VERSION=2025/9.0
-```
-
-Then call:
 
 ```bash
 curl -X POST http://localhost:8085/internal/nevo/import \
   -H "X-Internal-Api-Key: $INTERNAL_API_KEY"
 ```
 
+Optional override:
+
+```bash
+NEVO_CSV_PATH=classpath:nevo/NEVO2025_v9.0.csv
+# or a filesystem path:
+NEVO_CSV_PATH=D:/data/NEVO2025_v9.0.csv
+```
+
 ## Attribution
 
-Data: NEVO-online (RIVM). Cite the imported version (for example `NEVO-online version 2025/9.0, RIVM, Bilthoven`).
+> NEVO-online version 2025/9.0, RIVM, Bilthoven

@@ -32,6 +32,8 @@ springdoc:
 
 nutritrack:
   nevo:
+    # Empty = classpath:nevo/NEVO2025_v9.0.csv (shipped RIVM export).
+    # Override with a filesystem path or classpath:… location.
     csv-path: ${NEVO_CSV_PATH:}
     version: ${NEVO_VERSION:2025/9.0}
     internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
