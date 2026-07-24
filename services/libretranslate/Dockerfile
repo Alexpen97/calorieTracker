@@ -8,8 +8,8 @@ ENV LT_HOST=0.0.0.0
 ENV LT_LOAD_ONLY=en,nl
 ENV LT_UPDATE=true
 
-COPY docker-entrypoint.sh /usr/local/bin/nutritrack-lt-entrypoint.sh
-RUN chmod +x /usr/local/bin/nutritrack-lt-entrypoint.sh
+# Image runs as non-root; set mode via COPY --chmod (no RUN chmod).
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/nutritrack-lt-entrypoint.sh
 
 # Railway injects PORT; local Compose defaults to 5000 via entrypoint.
 EXPOSE 5000
