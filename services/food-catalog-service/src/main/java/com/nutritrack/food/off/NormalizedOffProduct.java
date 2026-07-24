@@ -8,6 +8,7 @@ public record NormalizedOffProduct(
     String barcode,
     String name,
     String brand,
+    String genericName,
     String quantityLabel,
     BigDecimal servingSizeG,
     String imageUrl,

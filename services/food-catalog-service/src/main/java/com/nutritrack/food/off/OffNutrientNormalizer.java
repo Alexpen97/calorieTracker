@@ -30,6 +30,7 @@ public final class OffNutrientNormalizer {
     }
 
     String brand = text(productNode, "brands");
+    String genericName = text(productNode, "generic_name");
     String quantity = text(productNode, "quantity");
     String imageUrl =
         firstNonBlank(text(productNode, "image_url"), text(productNode, "image_front_url"));
@@ -64,6 +65,7 @@ public final class OffNutrientNormalizer {
         barcode,
         name.trim(),
         blankToNull(brand),
+        blankToNull(genericName),
         blankToNull(quantity),
         servingSizeG,
         blankToNull(imageUrl),

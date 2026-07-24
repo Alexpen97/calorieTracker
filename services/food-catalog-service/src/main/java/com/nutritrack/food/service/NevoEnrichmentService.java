@@ -80,7 +80,7 @@ public class NevoEnrichmentService {
         new NevoMatchRequest(
             product.getName(),
             product.getBrand(),
-            null,
+            product.getGenericName(),
             List.of(),
             product.getIngredientsText(),
             macros);

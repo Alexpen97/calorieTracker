@@ -5,6 +5,7 @@ import com.nutritrack.nevo.domain.NevoFood;
 import com.nutritrack.nevo.domain.NevoFoodRepository;
 import com.nutritrack.nevo.domain.NevoNutrientValue;
 import com.nutritrack.nevo.domain.NevoNutrientValueRepository;
+import com.nutritrack.nevo.translate.TranslationClient;
 import com.nutritrack.nevo.web.dto.NevoMatchRequest;
 import com.nutritrack.nevo.web.dto.NevoMatchResponse;
 import java.math.BigDecimal;
@@ -17,11 +18,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NevoMatchService {
+
+  private static final Logger log = LoggerFactory.getLogger(NevoMatchService.class);
 
   private static final Set<String> IMPORTANT_MODIFIERS =
       Set.of(
@@ -47,17 +52,20 @@ public class NevoMatchService {
   private final NevoNutrientValueRepository nutrientRepository;
   private final ProductNameNormalizer normalizer;
   private final NevoProperties properties;
+  private final TranslationClient translationClient;
   private final JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
 
   public NevoMatchService(
       NevoFoodRepository foodRepository,
       NevoNutrientValueRepository nutrientRepository,
       ProductNameNormalizer normalizer,
-      NevoProperties properties) {
+      NevoProperties properties,
+      TranslationClient translationClient) {
     this.foodRepository = foodRepository;
     this.nutrientRepository = nutrientRepository;
     this.normalizer = normalizer;
     this.properties = properties;
+    this.translationClient = translationClient;
   }
 
   @Transactional(readOnly = true)
@@ -68,10 +76,30 @@ public class NevoMatchService {
 
     String primaryName =
         !blank(request.genericName()) ? request.genericName() : request.name();
-    ProductNameNormalizer.NormalizedQuery query =
-        normalizer.normalize(
-            primaryName, request.brand(), request.categories(), request.ingredientsText());
+    String matchName =
+        translationClient
+            .translate(primaryName)
+            .map(
+                translated -> {
+                  log.debug("Translated NEVO match name '{}' -> '{}'", primaryName, translated);
+                  return translated;
+                })
+            .orElse(primaryName);
 
+    ProductNameNormalizer.NormalizedQuery translatedQuery =
+        normalizer.normalize(
+            matchName, request.brand(), request.categories(), request.ingredientsText());
+
+    // Also search with the original (often Dutch) tokens so NL names still hit Dutch columns.
+    final ProductNameNormalizer.NormalizedQuery query;
+    if (!matchName.equalsIgnoreCase(primaryName)) {
+      ProductNameNormalizer.NormalizedQuery original =
+          normalizer.normalize(
+              primaryName, request.brand(), request.categories(), request.ingredientsText());
+      query = mergeQueries(translatedQuery, original);
+    } else {
+      query = translatedQuery;
+    }
     Map<String, NevoFood> candidates = new LinkedHashMap<>();
     int limit = properties.match().candidateLimit();
     for (String term : query.queryTerms()) {
@@ -125,6 +153,27 @@ public class NevoMatchService {
         round(best.score()),
         best.reasons(),
         nutrients);
+  }
+
+  private static ProductNameNormalizer.NormalizedQuery mergeQueries(
+      ProductNameNormalizer.NormalizedQuery primary, ProductNameNormalizer.NormalizedQuery extra) {
+    LinkedHashMap<String, Boolean> terms = new LinkedHashMap<>();
+    for (String term : primary.queryTerms()) {
+      terms.put(term, Boolean.TRUE);
+    }
+    for (String term : extra.queryTerms()) {
+      terms.putIfAbsent(term, Boolean.TRUE);
+    }
+    List<String> categories = new ArrayList<>(primary.categories());
+    for (String category : extra.categories()) {
+      if (!categories.contains(category)) {
+        categories.add(category);
+      }
+    }
+    String ingredients =
+        blank(primary.ingredients()) ? extra.ingredients() : primary.ingredients();
+    return new ProductNameNormalizer.NormalizedQuery(
+        primary.cleanedName(), categories, ingredients, List.copyOf(terms.keySet()));
   }
 
   private ScoredCandidate score(

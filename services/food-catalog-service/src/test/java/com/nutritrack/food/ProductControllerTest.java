@@ -69,6 +69,7 @@ class ProductControllerTest {
                     "3017620422003",
                     "Nutella",
                     "Ferrero",
+                    null,
                     "400 g",
                     new BigDecimal("15"),
                     "https://example.test/n.jpg",

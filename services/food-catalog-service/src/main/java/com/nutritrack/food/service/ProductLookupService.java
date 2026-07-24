@@ -154,6 +154,7 @@ public class ProductLookupService {
   public static void applyOffFields(Product product, NormalizedOffProduct offProduct) {
     product.setSource(ProductSource.OFF);
     product.setName(offProduct.name());
+    product.setGenericName(offProduct.genericName());
     product.setBrand(offProduct.brand());
     product.setQuantityLabel(offProduct.quantityLabel());
     product.setServingSizeG(offProduct.servingSizeG());

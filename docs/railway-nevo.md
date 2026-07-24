@@ -20,6 +20,7 @@
 | `NEVO_CSV_PATH` | optional; empty uses classpath `nevo/NEVO2025_v9.0.csv` |
 | `NEVO_VERSION` | optional, default `2025/9.0` |
 | `NEVO_AUTO_IMPORT_ON_STARTUP` | optional, default `true` — import CSV when `nevo_food` is empty |
+| `LIBRETRANSLATE_ENABLED` / `LIBRETRANSLATE_URL` | see `docs/railway-libretranslate.md` |
 
 ## food-catalog-service additions
 

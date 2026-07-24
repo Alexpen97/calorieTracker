@@ -17,6 +17,7 @@ folder below has its own `Dockerfile` and is built from that root directory.
 | `diary-service` | `/services/diary-service` | `/services/diary-service/**` | No | DB: `diary` |
 | `nutrient-enrichment-service` | `/services/nutrient-enrichment-service` | `/services/nutrient-enrichment-service/**` | No | DB: `enrichment` — see `docs/railway-enrichment.md` |
 | `nevo-service` | `/services/nevo-service` | `/services/nevo-service/**` | No | DB: `nevo` — see `docs/railway-nevo.md` |
+| `libretranslate` | `/services/libretranslate` | `/services/libretranslate/**` | No | NL→EN for NEVO — see `docs/railway-libretranslate.md` |
 
 `recommendation-service` is Phase 6 — no Dockerfile until implemented.
 

@@ -25,7 +25,13 @@ class NevoStartupImporterTest {
   void importsWhenDatabaseEmpty() {
     NevoProperties properties =
         new NevoProperties(
-            "", "2025/9.0", "key", true, new NevoProperties.Match(0.72, 0.48, 25));
+            "",
+            "2025/9.0",
+            "key",
+            true,
+            new NevoProperties.Match(0.72, 0.48, 25),
+            new NevoProperties.Translate(
+                false, "http://localhost:5000", "auto", "en", java.time.Duration.ofSeconds(3)));
     when(foodRepository.count()).thenReturn(0L);
     NevoImportRun run = new NevoImportRun();
     run.setId(UUID.randomUUID());
@@ -46,7 +52,13 @@ class NevoStartupImporterTest {
   void skipsWhenDatabaseAlreadyHasFoods() {
     NevoProperties properties =
         new NevoProperties(
-            "", "2025/9.0", "key", true, new NevoProperties.Match(0.72, 0.48, 25));
+            "",
+            "2025/9.0",
+            "key",
+            true,
+            new NevoProperties.Match(0.72, 0.48, 25),
+            new NevoProperties.Translate(
+                false, "http://localhost:5000", "auto", "en", java.time.Duration.ofSeconds(3)));
     when(foodRepository.count()).thenReturn(42L);
 
     new NevoStartupImporter(properties, foodRepository, importer)
@@ -59,7 +71,13 @@ class NevoStartupImporterTest {
   void skipsWhenAutoImportDisabled() {
     NevoProperties properties =
         new NevoProperties(
-            "", "2025/9.0", "key", false, new NevoProperties.Match(0.72, 0.48, 25));
+            "",
+            "2025/9.0",
+            "key",
+            false,
+            new NevoProperties.Match(0.72, 0.48, 25),
+            new NevoProperties.Translate(
+                false, "http://localhost:5000", "auto", "en", java.time.Duration.ofSeconds(3)));
 
     new NevoStartupImporter(properties, foodRepository, importer)
         .run(new DefaultApplicationArguments(new String[0]));

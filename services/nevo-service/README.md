@@ -48,3 +48,9 @@ NEVO_AUTO_IMPORT_ON_STARTUP=true
 ## Attribution
 
 > NEVO-online version 2025/9.0, RIVM, Bilthoven
+
+## Translation
+
+Optional LibreTranslate (`LIBRETRANSLATE_ENABLED`) translates the primary match
+name (prefer OFF `generic_name`) to English before candidate search. Failures
+fall back to the original string. See `docs/railway-libretranslate.md`.

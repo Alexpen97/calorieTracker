@@ -43,3 +43,9 @@ nutritrack:
       high-threshold: ${NEVO_HIGH_THRESHOLD:0.72}
       medium-threshold: ${NEVO_MEDIUM_THRESHOLD:0.48}
       candidate-limit: ${NEVO_CANDIDATE_LIMIT:25}
+    translate:
+      enabled: ${LIBRETRANSLATE_ENABLED:false}
+      base-url: ${LIBRETRANSLATE_URL:http://localhost:5000}
+      source: ${LIBRETRANSLATE_SOURCE:auto}
+      target: ${LIBRETRANSLATE_TARGET:en}
+      timeout: ${LIBRETRANSLATE_TIMEOUT:3s}

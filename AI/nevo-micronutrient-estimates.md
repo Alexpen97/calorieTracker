@@ -15,6 +15,8 @@ lacks vitamins/minerals.
 - `food-catalog-service` after OFF upsert: USDA (`enrichIfSparse`) then NEVO
   (`enrichMissingMicros`); NEVO merges only **still-missing** micronutrient
   codes with provenance `NEVO_ESTIMATE`
+- Optional LibreTranslate (`services/libretranslate`) translates generic/product
+  names to English before NEVO matching (`LIBRETRANSLATE_ENABLED`)
 
 ## NEVO file format (RIVM 2025/9.0)
 

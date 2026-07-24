@@ -41,6 +41,7 @@ public class OffProductUpsertService {
 
     product.setSource(ProductSource.OFF);
     product.setName(offProduct.name());
+    product.setGenericName(offProduct.genericName());
     product.setBrand(offProduct.brand());
     product.setQuantityLabel(offProduct.quantityLabel());
     product.setServingSizeG(offProduct.servingSizeG());

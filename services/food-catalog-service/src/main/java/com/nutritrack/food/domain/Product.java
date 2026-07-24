@@ -31,6 +31,9 @@ public class Product {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String name;
 
+  @Column(name = "generic_name", columnDefinition = "TEXT")
+  private String genericName;
+
   @Column(columnDefinition = "TEXT")
   private String brand;
 
@@ -95,6 +98,14 @@ public class Product {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getGenericName() {
+    return genericName;
+  }
+
+  public void setGenericName(String genericName) {
+    this.genericName = genericName;
   }
 
   public String getBrand() {
@@ -171,8 +182,9 @@ public class Product {
 
   public void refreshSearchDocument() {
     String namePart = name == null ? "" : name;
+    String genericPart = genericName == null ? "" : genericName;
     String brandPart = brand == null ? "" : brand;
-    this.searchDocument = (namePart + " " + brandPart).trim().toLowerCase();
+    this.searchDocument = (namePart + " " + genericPart + " " + brandPart).trim().toLowerCase();
   }
 
   public List<ProductNutrient> getNutrients() {
