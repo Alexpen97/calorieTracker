@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      {(meQuery.isLoading || summaryQuery.isLoading || weightQuery.isLoading) && (
+      {(meQuery.isLoading || summaryQuery.isLoading || goalsQuery.isLoading || weightQuery.isLoading) && (
         <p className="mobile-page">Loading dashboard…</p>
       )}
       {[meQuery.error, summaryQuery.error, goalsQuery.error, weightQuery.error]
@@ -35,7 +35,7 @@ export default function DashboardPage() {
             {(error as Error).message}
           </p>
         ))}
-      {summaryQuery.data && (
+      {summaryQuery.data && !goalsQuery.isLoading && (
         <DashboardView
           me={meQuery.data ?? null}
           summary={mergeSummaryWithGoals(summaryQuery.data, goalsQuery.data)}

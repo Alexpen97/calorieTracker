@@ -45,10 +45,15 @@ public class GoalsService {
     this.goalsEngine = goalsEngine;
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public List<GoalResponse> list(UUID userId) {
-    requireUser(userId);
-    return currentGoals(userId);
+    AppUser user = requireUser(userId);
+    List<GoalResponse> current = currentGoals(userId);
+    if (needsMicroBackfill(user, current)) {
+      recalculate(userId, true);
+      return currentGoals(userId);
+    }
+    return current;
   }
 
   @Transactional
@@ -124,8 +129,28 @@ public class GoalsService {
     }
     int age = java.time.Period.between(user.getBirthDate(), today).getYears();
     short ageForLookup = (short) age;
+    List<NutrientReferenceIntake> exact =
+        referenceRepository.findBySexAndAgeMinLessThanEqualAndAgeMaxGreaterThanEqual(
+            user.getSex(), ageForLookup, ageForLookup);
+    if (!exact.isEmpty()) {
+      return exact;
+    }
+    // Seeded DRVs currently cover adults 19–50; fall back so other ages still get micros.
     return referenceRepository.findBySexAndAgeMinLessThanEqualAndAgeMaxGreaterThanEqual(
-        user.getSex(), ageForLookup, ageForLookup);
+        user.getSex(), (short) 19, (short) 19);
+  }
+
+  private static boolean needsMicroBackfill(AppUser user, List<GoalResponse> current) {
+    if (user.getSex() == null || user.getBirthDate() == null) {
+      return false;
+    }
+    java.util.Set<String> codes =
+        current.stream().map(GoalResponse::nutrientCode).collect(Collectors.toSet());
+    // Sentinel codes from the expanded DRV set; missing any means pre-expand goals.
+    return !codes.contains("vitamin_a")
+        || !codes.contains("iron")
+        || !codes.contains("selenium")
+        || !codes.contains("vitamin_b9");
   }
 
   private List<GoalResponse> currentGoals(UUID userId) {

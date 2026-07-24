@@ -289,10 +289,14 @@ class UserControllerTest {
         .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("water_ml")))
         .andExpect(jsonPath("$.suggested[*].nutrientCode", hasItem("fiber")));
 
+    // Listing goals backfills expanded DRVs when the profile is complete.
     mockMvc
         .perform(get("/api/users/me/goals").with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
+        .andExpect(jsonPath("$[*].nutrientCode", hasItem("energy_kcal")))
+        .andExpect(jsonPath("$[*].nutrientCode", hasItem("vitamin_a")))
+        .andExpect(jsonPath("$[*].nutrientCode", hasItem("iron")))
+        .andExpect(jsonPath("$[*].nutrientCode", hasItem("selenium")));
   }
 
   @Test

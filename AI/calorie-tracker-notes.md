@@ -182,6 +182,13 @@ blocked gap fill. food-catalog now re-runs USDA→NEVO when sparse (&lt;6 filled
 micros), treats zeros as gaps, and admin backfill includes NEVO.
 Notes: `AI/nevo-micronutrient-estimates.md`.
 
+## Micro daily targets on summary (2026-07-24)
+
+Summary bars are `intake / dailyTarget`. Empty bars mean missing targets (or
+zero intake), not missing amount labels. food-catalog re-enriches on product
+by-id; user-profile backfills expanded DRVs on goals fetch + age-band fallback;
+diary goals client logs failures. Notes: `AI/nevo-micronutrient-estimates.md`.
+
 ## Today Summary calorie ring + macro bars (2026-07-22)
 
 Dashboard Today Summary uses a calorie progress ring with three horizontal macro

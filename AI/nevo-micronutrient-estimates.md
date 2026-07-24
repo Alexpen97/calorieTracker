@@ -115,3 +115,40 @@ Fixes root causes (2) and (3) above:
 
 After deploy (with `NEVO_ESTIMATE_ENABLED=true`), re-lookup e.g.
 `8718452513673` (Jumbo Franse Kwark) and optionally `6413300019247`.
+
+## Debug: EAN 4056489801771 Milbona Choco Pudding + Today summary (2026-07-24)
+
+Catalog (after barcode lookup) has macros + **19 estimated micros** (product id
+`fff1314e-1cc1-464d-823e-263f319eaf23`). A **new** diary entry for that product
+snapshots those micros and they appear in `GET /api/diary/summary`.
+
+Why the Today summary can still show empty micros while the product page shows
+them:
+
+1. Diary **snapshots** nutrients at create time and never refreshes from catalog
+   when enrichment is added later.
+2. Product page / diary create use `GET /api/products/{id}`, which does **not**
+   run `MicroEnrichmentGate` (only barcode lookup does). Search upsert also
+   skips enrichment. So logging without a prior barcode enrich can snapshot a
+   sparse product.
+
+## Debug: EAN 8076800195057 Barilla Spaghetti + dashboard grid (2026-07-24)
+
+Catalog has ~20 estimated micros after barcode lookup. New diary logs snapshot them
+into `/api/diary/summary` correctly.
+
+Dashboard bars are **percent of daily target** (`amount / target`), not raw amounts.
+Production diary summary often returns `target: null` for every nutrient (diary →
+user-profile goals call failing silently), so the SPA merges `/api/users/me/goals`
+client-side. If that goals list is missing expanded micros (pre-V3 onboard) or the
+profile age is outside the 19–50 DRV band, every micro bar stays at 0% and looks
+empty even when pasta minerals are present.
+
+Pasta vitamins are also mostly 0 estimates; minerals (Fe, Mg, …) carry the real
+intake signal against DRVs (e.g. iron ~2 mg / 8 mg ≈ 25% for 100 g male).
+
+Fixes: re-enrich sparse products on `GET /api/products/{id}`; backfill missing
+micro DRVs on goals list; fall back to adult 19–50 references when age has no
+band; harden diary goals client logging; wait for goals before rendering the
+dashboard grid.
+

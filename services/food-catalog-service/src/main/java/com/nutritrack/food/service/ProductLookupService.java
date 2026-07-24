@@ -64,11 +64,11 @@ public class ProductLookupService {
                     .orElseGet(() -> fetchPersistAndCache(barcode)));
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public ProductResponse getById(UUID id, UUID callerUserId) {
     return productRepository
         .findById(id)
-        .map(productMapper::toResponse)
+        .map(this::enrichPersistAndCache)
         .or(
             () ->
                 submissionRepository
@@ -83,7 +83,7 @@ public class ProductLookupService {
                           if (s.getPublishedProductId() != null) {
                             return productRepository
                                 .findById(s.getPublishedProductId())
-                                .map(productMapper::toResponse)
+                                .map(this::enrichPersistAndCache)
                                 .orElseGet(() -> productMapper.toResponse(s));
                           }
                           return productMapper.toResponse(s);
