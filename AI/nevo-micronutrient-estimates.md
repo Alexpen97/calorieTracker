@@ -73,9 +73,28 @@ NEVO_SERVICE_URL=http://nevo-service:8080
 
 > NEVO-online version 2025/9.0, RIVM, Bilthoven
 
-## Known limitations
+## Debug: EAN 6413300019247 Melkunie Protein strawberry (2026-07-24)
 
-- Estimates are generic-food composition, not branded lab assays.
-- No live scrape of nevo-online.rivm.nl; local CSV only.
-- If `nevo-service` is down, barcode lookup still succeeds without micros.
-- Details / recipes / references companion CSVs are not imported (yet).
+Production product has macros from OFF plus many **zero** micros (`estimated=false`),
+and **no** `NEVO_ESTIMATE` rows.
+
+Root causes (layered):
+
+1. **Match request too weak** — food-catalog sends only `name=Protein strawberry`
+   (+ brand/ingredients). No OFF `generic_name` / categories (not stored on
+   `Product`). NEVO then picks `Blancmange vanilla w strawberry sauce` at
+   **LOW** confidence (`score≈0.42`) → auto-apply skips LOW.
+2. **OFF zero micros block gaps** — OFF publishes `calcium=0`, `iron=0`, etc.
+   Those codes are treated as “present”, so even a good NEVO match would not
+   overwrite them. USDA `enrichIfSparse` also skips because micro count ≥ 6.
+3. **Enrichment only on first OFF persist path** — existing barcode DB hits
+   do not re-run NEVO/USDA; search upserts skip enrichment entirely.
+4. **Deploy caveat** — if `NEVO_ESTIMATE_ENABLED` is still false in Railway,
+   enrichment never runs (confirm env). Even when enabled, (1) alone fails this EAN.
+
+Good NEVO target for this product is roughly `Quark low fat w fruit` (code 931)
+/ `Quark low fat w fruit/vanilla w sweetener` (2246), not fruit blancmange.
+
+Fix directions (not yet implemented): pass generic name + categories into match;
+treat OFF zeros as missing for estimate fill; optionally re-enrich on lookup /
+admin backfill including NEVO.
