@@ -10,7 +10,8 @@ public record FoodProperties(
     @DefaultValue Cache cache,
     @DefaultValue Resilience resilience,
     @DefaultValue Search search,
-    @DefaultValue BulkImport bulkImport) {
+    @DefaultValue BulkImport bulkImport,
+    @DefaultValue Nevo nevo) {
 
   public record Off(
       @DefaultValue("https://world.openfoodfacts.org") String baseUrl,
@@ -36,4 +37,9 @@ public record FoodProperties(
       @DefaultValue("false") boolean enabled,
       @DefaultValue("0 30 3 * * *") String cron,
       @DefaultValue("") String defaultUrl) {}
+
+  public record Nevo(
+      @DefaultValue("false") boolean enabled,
+      @DefaultValue("http://localhost:8085") String serviceUrl,
+      @DefaultValue("dev-internal-key") String internalApiKey) {}
 }

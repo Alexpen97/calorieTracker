@@ -74,6 +74,11 @@ Full micronutrient checklist on dashboard (summary → vitamins → minerals →
 weight; macros card removed). Catalog education, goals DRVs, and OFF mappings
 expanded — see `AI/expanded-micronutrients.md`.
 
+## NEVO micronutrient estimates (2026-07-24)
+
+Local NEVO CSV import microservice + food-catalog enrichment for missing
+micros (`NEVO_ESTIMATE`). See `AI/nevo-micronutrient-estimates.md`.
+
 - Roadmap phases 5–6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.

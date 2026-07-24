@@ -66,3 +66,7 @@ nutritrack:
       enabled: ${OFF_BULK_IMPORT_ENABLED:false}
       cron: ${OFF_BULK_IMPORT_CRON:0 30 3 * * *}
       default-url: ${OFF_BULK_IMPORT_URL:}
+    nevo:
+      enabled: ${NEVO_ESTIMATE_ENABLED:false}
+      service-url: ${NEVO_SERVICE_URL:http://localhost:8085}
+      internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}

@@ -15,6 +15,7 @@ import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.off.NormalizedOffProduct;
 import com.nutritrack.food.off.OffClient;
+import com.nutritrack.food.nevo.NevoClient;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,7 @@ class ProductControllerTest {
   @Autowired private ProductRepository productRepository;
 
   @MockitoBean private OffClient offClient;
+  @MockitoBean private NevoClient nevoClient;
 
   @Test
   void barcodeLookupFetchesFromOffPersistsAndServesNutrients() throws Exception {

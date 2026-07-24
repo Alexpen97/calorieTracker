@@ -30,6 +30,18 @@ public class ProductNutrient {
   @Column(nullable = false, length = 16)
   private String unit;
 
+  @Column(length = 32)
+  private String source;
+
+  @Column(name = "source_ref", length = 64)
+  private String sourceRef;
+
+  @Column(length = 16)
+  private String confidence;
+
+  @Column(nullable = false)
+  private boolean estimated;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id", insertable = false, updatable = false)
   private Product product;
@@ -64,6 +76,38 @@ public class ProductNutrient {
 
   public void setUnit(String unit) {
     this.unit = unit;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public void setSource(String source) {
+    this.source = source;
+  }
+
+  public String getSourceRef() {
+    return sourceRef;
+  }
+
+  public void setSourceRef(String sourceRef) {
+    this.sourceRef = sourceRef;
+  }
+
+  public String getConfidence() {
+    return confidence;
+  }
+
+  public void setConfidence(String confidence) {
+    this.confidence = confidence;
+  }
+
+  public boolean isEstimated() {
+    return estimated;
+  }
+
+  public void setEstimated(boolean estimated) {
+    this.estimated = estimated;
   }
 
   public Product getProduct() {

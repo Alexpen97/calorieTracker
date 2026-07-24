@@ -34,3 +34,4 @@ selenium, copper, manganese, phosphorus, chromium, molybdenum
 - Existing users need goals recalculate / re-apply after deploy so new DRVs
   appear in diary summary targets.
 - Redeploy `food-catalog-service` and `user-profile-service` for Flyway.
+- NEVO estimate enrichment: see `AI/nevo-micronutrient-estimates.md`.

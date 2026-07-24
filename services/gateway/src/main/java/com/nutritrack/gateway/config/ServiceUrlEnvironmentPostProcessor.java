@@ -23,6 +23,7 @@ public class ServiceUrlEnvironmentPostProcessor implements EnvironmentPostProces
           "USER_SERVICE_URL",
           "FOOD_SERVICE_URL",
           "DIARY_SERVICE_URL",
+          "NEVO_SERVICE_URL",
           "RECO_SERVICE_URL",
           "JWKS_URI");
 

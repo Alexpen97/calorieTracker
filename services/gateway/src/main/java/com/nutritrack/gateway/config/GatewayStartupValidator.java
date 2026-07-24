@@ -22,7 +22,8 @@ public class GatewayStartupValidator {
           "auth-service", "AUTH_SERVICE_URL",
           "user-profile-service", "USER_SERVICE_URL",
           "food-catalog-service", "FOOD_SERVICE_URL",
-          "diary-service", "DIARY_SERVICE_URL");
+          "diary-service", "DIARY_SERVICE_URL",
+          "nevo-service", "NEVO_SERVICE_URL");
 
   private final RouteDefinitionLocator routeDefinitionLocator;
   private final Environment environment;
@@ -146,6 +147,7 @@ public class GatewayStartupValidator {
       case "user-profile-service" -> "user-profile-service";
       case "food-catalog-service" -> "food-catalog-service";
       case "diary-service" -> "diary-service";
+      case "nevo-service" -> "nevo-service";
       default -> routeId;
     };
   }
