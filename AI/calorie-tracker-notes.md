@@ -175,6 +175,13 @@ Implemented on `cursor/usda-enrichment-plan-1504`:
 - Compose + `enrichment` DB; frontend ≈ marker on product detail
 - Notes: `AI/usda-micronutrient-enrichment.md`, `docs/railway-enrichment.md`
 
+## NEVO sparse re-enrich on lookup (2026-07-24)
+
+Existing OFF barcodes skipped USDA/NEVO after first persist; OFF zeros also
+blocked gap fill. food-catalog now re-runs USDA→NEVO when sparse (&lt;6 filled
+micros), treats zeros as gaps, and admin backfill includes NEVO.
+Notes: `AI/nevo-micronutrient-estimates.md`.
+
 ## Today Summary calorie ring + macro bars (2026-07-22)
 
 Dashboard Today Summary uses a calorie progress ring with three horizontal macro

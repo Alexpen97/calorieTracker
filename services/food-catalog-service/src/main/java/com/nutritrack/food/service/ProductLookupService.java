@@ -54,16 +54,12 @@ public class ProductLookupService {
     String barcode = sanitizeBarcode(rawBarcode);
     return productCache
         .getByBarcode(barcode)
+        .filter(response -> !MicroEnrichmentGate.needsEnrichment(response))
         .orElseGet(
             () ->
                 productRepository
                     .findByBarcode(barcode)
-                    .map(
-                        product -> {
-                          ProductResponse response = productMapper.toResponse(product);
-                          productCache.putByBarcode(barcode, response);
-                          return response;
-                        })
+                    .map(this::enrichPersistAndCache)
                     .or(() -> findOwnSubmissionByBarcode(barcode, callerUserId))
                     .orElseGet(() -> fetchPersistAndCache(barcode)));
   }
@@ -106,6 +102,19 @@ public class ProductLookupService {
             callerUserId,
             List.of(SubmissionStatus.PENDING, SubmissionStatus.REJECTED))
         .map(productMapper::toResponse);
+  }
+
+  private ProductResponse enrichPersistAndCache(Product product) {
+    Product enriched = product;
+    if (MicroEnrichmentGate.needsEnrichment(product)) {
+      enriched = enrichmentService.enrichIfSparse(product);
+      enriched = nevoEnrichmentService.enrichMissingMicros(enriched);
+    }
+    ProductResponse response = productMapper.toResponse(enriched);
+    if (enriched.getBarcode() != null) {
+      productCache.putByBarcode(enriched.getBarcode(), response);
+    }
+    return response;
   }
 
   private ProductResponse fetchPersistAndCache(String barcode) {

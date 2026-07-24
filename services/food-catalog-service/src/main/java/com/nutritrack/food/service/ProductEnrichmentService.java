@@ -8,8 +8,11 @@ import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.enrichment.EnrichmentClient;
 import com.nutritrack.food.enrichment.EnrichmentResult;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +53,6 @@ public class ProductEnrichmentService {
           "chromium",
           "molybdenum");
 
-  private static final int SPARSE_THRESHOLD = 6;
-
   private final EnrichmentClient enrichmentClient;
   private final ProductRepository productRepository;
   private final ProductCache productCache;
@@ -70,20 +71,18 @@ public class ProductEnrichmentService {
     if (product == null || product.getSource() != ProductSource.OFF) {
       return product;
     }
-    long microCount =
-        product.getNutrients().stream()
-            .map(ProductNutrient::getNutrientCode)
-            .filter(MICRO_CODES::contains)
-            .count();
-    if (microCount >= SPARSE_THRESHOLD) {
+    Map<String, ProductNutrient> byCode = new HashMap<>();
+    for (ProductNutrient nutrient : product.getNutrients()) {
+      byCode.put(nutrient.getNutrientCode(), nutrient);
+    }
+    if (!MicroEnrichmentGate.isSparse(byCode)) {
       return product;
     }
     if (product.getBarcode() == null || product.getBarcode().isBlank()) {
       return product;
     }
 
-    List<String> existing =
-        product.getNutrients().stream().map(ProductNutrient::getNutrientCode).toList();
+    List<String> existing = List.copyOf(MicroEnrichmentGate.filledCodes(product));
 
     try {
       return enrichmentClient
@@ -104,15 +103,17 @@ public class ProductEnrichmentService {
     if (source == null) {
       return product;
     }
-    Set<String> existing = new HashSet<>();
-    for (ProductNutrient n : product.getNutrients()) {
-      existing.add(n.getNutrientCode());
-    }
+    Set<String> filled = MicroEnrichmentGate.filledCodes(product);
+    List<ProductNutrient> merged = new ArrayList<>(product.getNutrients());
     boolean changed = false;
     for (EnrichmentResult.Nutrient n : result.nutrients()) {
-      if (n.code() == null || existing.contains(n.code()) || !MICRO_CODES.contains(n.code())) {
+      if (n.code() == null || filled.contains(n.code()) || !MICRO_CODES.contains(n.code())) {
         continue;
       }
+      merged.removeIf(
+          existing ->
+              n.code().equals(existing.getNutrientCode())
+                  && !MicroEnrichmentGate.isFilled(existing));
       ProductNutrient pn = new ProductNutrient();
       pn.setProductId(product.getId());
       pn.setNutrientCode(n.code());
@@ -124,13 +125,14 @@ public class ProductEnrichmentService {
           result.confidence() == null ? null : result.confidence().toPlainString());
       pn.setEstimated(true);
       pn.setProduct(product);
-      product.getNutrients().add(pn);
-      existing.add(n.code());
+      merged.add(pn);
+      filled.add(n.code());
       changed = true;
     }
     if (!changed) {
       return product;
     }
+    product.replaceNutrients(merged);
     Product saved = productRepository.save(product);
     if (saved.getBarcode() != null) {
       productCache.evictByBarcode(saved.getBarcode());

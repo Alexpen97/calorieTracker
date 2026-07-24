@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.nutritrack.food.cache.ProductCache;
 import com.nutritrack.food.config.FoodProperties;
 import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.domain.Product;
@@ -31,6 +32,7 @@ class NevoEnrichmentServiceTest {
 
   @Mock private NevoClient nevoClient;
   @Mock private ProductRepository productRepository;
+  @Mock private ProductCache productCache;
 
   private NevoEnrichmentService service;
 
@@ -47,7 +49,7 @@ class NevoEnrichmentServiceTest {
             new FoodProperties.BulkImport(false, "0 0 * * * *", ""),
             new FoodProperties.Enrichment(false, "http://localhost:8086", "key", java.time.Duration.ofSeconds(3)),
             new FoodProperties.Nevo(true, "http://localhost:8085", "key"));
-    service = new NevoEnrichmentService(nevoClient, productRepository, properties);
+    service = new NevoEnrichmentService(nevoClient, productRepository, productCache, properties);
   }
 
   @Test
@@ -139,11 +141,53 @@ class NevoEnrichmentServiceTest {
             new FoodProperties.BulkImport(false, "0 0 * * * *", ""),
             new FoodProperties.Enrichment(false, "http://localhost:8086", "key", java.time.Duration.ofSeconds(3)),
             new FoodProperties.Nevo(false, "http://localhost:8085", "key"));
-    service = new NevoEnrichmentService(nevoClient, productRepository, disabled);
+    service = new NevoEnrichmentService(nevoClient, productRepository, productCache, disabled);
 
     service.enrichMissingMicros(productWithMacrosOnly());
 
     verify(nevoClient, never()).matchBest(any());
+  }
+
+  @Test
+  void replacesOffZeroMicrosWithNevoEstimates() {
+    Product product = productWithMacrosOnly();
+    ProductNutrient zeroCalcium = new ProductNutrient();
+    zeroCalcium.setProductId(product.getId());
+    zeroCalcium.setNutrientCode("calcium");
+    zeroCalcium.setAmountPer100g(BigDecimal.ZERO);
+    zeroCalcium.setUnit("mg");
+    zeroCalcium.setSource(NutrientSource.OFF);
+    zeroCalcium.setEstimated(false);
+    product.replaceNutrients(new ArrayList<>(List.of(product.getNutrients().get(0), zeroCalcium)));
+
+    when(nevoClient.matchBest(any(NevoMatchRequest.class)))
+        .thenReturn(
+            new NevoMatchResponse(
+                true,
+                "305",
+                "Quark low fat",
+                "Milk and milk products",
+                "2025/9.0",
+                "HIGH",
+                0.9,
+                List.of(),
+                List.of(
+                    new NevoMatchResponse.NevoNutrientDto(
+                        "calcium", new BigDecimal("120"), "mg"))));
+    when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    Product enriched = service.enrichMissingMicros(product);
+
+    assertThat(enriched.getNutrients())
+        .filteredOn(n -> "calcium".equals(n.getNutrientCode()))
+        .hasSize(1)
+        .first()
+        .satisfies(
+            n -> {
+              assertThat(n.getAmountPer100g()).isEqualByComparingTo("120");
+              assertThat(n.getSource()).isEqualTo(NutrientSource.NEVO_ESTIMATE);
+              assertThat(n.isEstimated()).isTrue();
+            });
   }
 
   private static Product productWithMacrosOnly() {

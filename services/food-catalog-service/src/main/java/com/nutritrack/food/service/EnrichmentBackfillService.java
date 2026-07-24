@@ -16,11 +16,15 @@ public class EnrichmentBackfillService {
 
   private final ProductRepository productRepository;
   private final ProductEnrichmentService enrichmentService;
+  private final NevoEnrichmentService nevoEnrichmentService;
 
   public EnrichmentBackfillService(
-      ProductRepository productRepository, ProductEnrichmentService enrichmentService) {
+      ProductRepository productRepository,
+      ProductEnrichmentService enrichmentService,
+      NevoEnrichmentService nevoEnrichmentService) {
     this.productRepository = productRepository;
     this.enrichmentService = enrichmentService;
+    this.nevoEnrichmentService = nevoEnrichmentService;
   }
 
   @Transactional
@@ -34,19 +38,17 @@ public class EnrichmentBackfillService {
       if (product.getSource() != ProductSource.OFF) {
         continue;
       }
-      long microCount =
-          product.getNutrients().stream()
-              .map(ProductNutrient::getNutrientCode)
-              .filter(ProductEnrichmentService.MICRO_CODES::contains)
-              .count();
-      if (microCount >= 6) {
+      if (!MicroEnrichmentGate.needsEnrichment(product)) {
         continue;
       }
       scanned++;
       int before = product.getNutrients().size();
+      boolean hadEstimate = product.getNutrients().stream().anyMatch(ProductNutrient::isEstimated);
       try {
         Product updated = enrichmentService.enrichIfSparse(product);
-        if (updated.getNutrients().size() > before) {
+        updated = nevoEnrichmentService.enrichMissingMicros(updated);
+        boolean hasEstimate = updated.getNutrients().stream().anyMatch(ProductNutrient::isEstimated);
+        if (updated.getNutrients().size() > before || (hasEstimate && !hadEstimate)) {
           enriched++;
         }
       } catch (RuntimeException ex) {

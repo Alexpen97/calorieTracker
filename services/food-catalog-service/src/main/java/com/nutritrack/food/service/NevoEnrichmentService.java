@@ -9,11 +9,14 @@ import com.nutritrack.food.nevo.NevoMatchRequest;
 import com.nutritrack.food.nevo.NevoMatchResponse;
 import com.nutritrack.food.nevo.NevoMicronutrientCodes;
 import com.nutritrack.food.nevo.NevoUnavailableException;
+import com.nutritrack.food.cache.ProductCache;
 import com.nutritrack.food.config.FoodProperties;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +31,17 @@ public class NevoEnrichmentService {
 
   private final NevoClient nevoClient;
   private final ProductRepository productRepository;
+  private final ProductCache productCache;
   private final FoodProperties properties;
 
   public NevoEnrichmentService(
-      NevoClient nevoClient, ProductRepository productRepository, FoodProperties properties) {
+      NevoClient nevoClient,
+      ProductRepository productRepository,
+      ProductCache productCache,
+      FoodProperties properties) {
     this.nevoClient = nevoClient;
     this.productRepository = productRepository;
+    this.productCache = productCache;
     this.properties = properties;
   }
 
@@ -46,14 +54,11 @@ public class NevoEnrichmentService {
       return product;
     }
 
-    Set<String> existing =
-        product.getNutrients().stream()
-            .map(ProductNutrient::getNutrientCode)
-            .collect(HashSet::new, HashSet::add, HashSet::addAll);
-
-    boolean missingMicros =
-        NevoMicronutrientCodes.CODES.stream().anyMatch(code -> !existing.contains(code));
-    if (!missingMicros) {
+    Map<String, ProductNutrient> byCode = new HashMap<>();
+    for (ProductNutrient nutrient : product.getNutrients()) {
+      byCode.put(nutrient.getNutrientCode(), nutrient);
+    }
+    if (!MicroEnrichmentGate.hasNevoGaps(byCode)) {
       return product;
     }
 
@@ -106,7 +111,8 @@ public class NevoEnrichmentService {
     }
 
     List<ProductNutrient> merged = new ArrayList<>(product.getNutrients());
-    Set<String> present = new HashSet<>(existing);
+    Set<String> filled = new HashSet<>(MicroEnrichmentGate.filledCodes(product));
+    boolean changed = false;
     for (NevoMatchResponse.NevoNutrientDto nutrient : match.nutrients()) {
       if (nutrient == null
           || nutrient.code() == null
@@ -114,9 +120,13 @@ public class NevoEnrichmentService {
           || !NevoMicronutrientCodes.CODES.contains(nutrient.code())) {
         continue;
       }
-      if (present.contains(nutrient.code())) {
+      if (filled.contains(nutrient.code())) {
         continue;
       }
+      merged.removeIf(
+          existing ->
+              nutrient.code().equals(existing.getNutrientCode())
+                  && !MicroEnrichmentGate.isFilled(existing));
       ProductNutrient pn = new ProductNutrient();
       pn.setProductId(product.getId());
       pn.setNutrientCode(nutrient.code());
@@ -127,9 +137,17 @@ public class NevoEnrichmentService {
       pn.setConfidence(confidence);
       pn.setEstimated(true);
       merged.add(pn);
-      present.add(nutrient.code());
+      filled.add(nutrient.code());
+      changed = true;
+    }
+    if (!changed) {
+      return product;
     }
     product.replaceNutrients(merged);
-    return productRepository.save(product);
+    Product saved = productRepository.save(product);
+    if (saved.getBarcode() != null) {
+      productCache.evictByBarcode(saved.getBarcode());
+    }
+    return saved;
   }
 }

@@ -97,6 +97,21 @@ Root causes (layered):
 Good NEVO target for this product is roughly `Quark low fat w fruit` (code 931)
 / `Quark low fat w fruit/vanilla w sweetener` (2246), not fruit blancmange.
 
-Fix directions (not yet implemented): pass generic name + categories into match;
-treat OFF zeros as missing for estimate fill; optionally re-enrich on lookup /
-admin backfill including NEVO.
+Remaining follow-ups (match quality; not part of sparse re-enrich):
+
+1. Pass OFF generic name + categories into NEVO match (and/or alias `kwark`→`quark`)
+2. Prefer food-term NL→EN (e.g. `kwark`) over branded dessert names for Melkunie-like EANs
+
+## Re-enrich sparse products (2026-07-24) — shipped
+
+Fixes root causes (2) and (3) above:
+
+- `MicroEnrichmentGate`: sparse = &lt;6 **filled** micros; OFF zeros are gaps;
+  USDA/NEVO/USER rows always count as filled.
+- Barcode lookup: skip cache when sparse; on DB hit run USDA then NEVO;
+  NEVO replaces unfilled OFF zeros and evicts barcode cache after save.
+- Admin `POST /api/admin/enrichment-backfill` runs NEVO after USDA using the
+  same gate.
+
+After deploy (with `NEVO_ESTIMATE_ENABLED=true`), re-lookup e.g.
+`8718452513673` (Jumbo Franse Kwark) and optionally `6413300019247`.
