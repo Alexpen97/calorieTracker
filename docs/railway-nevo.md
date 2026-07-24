@@ -19,6 +19,7 @@
 | `INTERNAL_API_KEY` | must match food-catalog |
 | `NEVO_CSV_PATH` | optional; empty uses classpath `nevo/NEVO2025_v9.0.csv` |
 | `NEVO_VERSION` | optional, default `2025/9.0` |
+| `NEVO_AUTO_IMPORT_ON_STARTUP` | optional, default `true` — import CSV when `nevo_food` is empty |
 
 ## food-catalog-service additions
 
@@ -30,7 +31,9 @@
 
 ## Post-deploy import
 
-CSV ships in the JAR. After first deploy, import once:
+CSV ships in the JAR. On first boot with an empty `nevo` database the service
+auto-imports it (see `NEVO_AUTO_IMPORT_ON_STARTUP`). Restarts skip when foods
+already exist. Force a full reload with:
 
 ```bash
 curl -X POST http://nevo-service.railway.internal:8080/internal/nevo/import \

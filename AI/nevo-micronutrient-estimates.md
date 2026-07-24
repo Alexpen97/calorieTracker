@@ -40,13 +40,10 @@ pantothenic acid (B5), biotin (B7).
 
 1. Ensure `NEVO2025_v9.0.csv` is under `services/nevo-service/src/main/resources/nevo/`
    (already the default classpath source).
-2. Start `nevo-service`, then import:
-
-```bash
-curl -X POST http://localhost:8085/internal/nevo/import \
-  -H "X-Internal-Api-Key: $INTERNAL_API_KEY"
-```
-
+2. Start `nevo-service`. On first boot (empty `nevo_food` table) it auto-imports
+   the configured CSV. Restarts with data already present skip the import.
+   Override with `NEVO_AUTO_IMPORT_ON_STARTUP=false` if needed; force reload via
+   `POST /internal/nevo/import`.
 3. Enable enrichment in food catalog:
 
 ```bash

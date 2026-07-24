@@ -33,7 +33,8 @@ import tools.jackson.databind.json.JsonMapper;
       "spring.flyway.locations=classpath:db/migration",
       "spring.jpa.hibernate.ddl-auto=validate",
       "nutritrack.nevo.internal-api-key=test-internal",
-      "nutritrack.nevo.version=2025/9.0"
+      "nutritrack.nevo.version=2025/9.0",
+      "nutritrack.nevo.auto-import-on-startup=false"
     })
 class NevoServiceIntegrationTest {
 

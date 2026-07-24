@@ -37,6 +37,8 @@ nutritrack:
     csv-path: ${NEVO_CSV_PATH:}
     version: ${NEVO_VERSION:2025/9.0}
     internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
+    # Import classpath/configured CSV on first boot when nevo_food is empty.
+    auto-import-on-startup: ${NEVO_AUTO_IMPORT_ON_STARTUP:true}
     match:
       high-threshold: ${NEVO_HIGH_THRESHOLD:0.72}
       medium-threshold: ${NEVO_MEDIUM_THRESHOLD:0.48}

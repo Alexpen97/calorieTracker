@@ -26,6 +26,12 @@ Default import uses the classpath matrix (`classpath:nevo/NEVO2025_v9.0.csv`).
 
 ## Import
 
+On startup, if `nevo_food` is empty, the service imports the configured CSV
+automatically (`NEVO_AUTO_IMPORT_ON_STARTUP=true` by default). Restarts with
+data already present skip the import.
+
+Force a full reload:
+
 ```bash
 curl -X POST http://localhost:8085/internal/nevo/import \
   -H "X-Internal-Api-Key: $INTERNAL_API_KEY"
@@ -37,8 +43,8 @@ Optional override:
 NEVO_CSV_PATH=classpath:nevo/NEVO2025_v9.0.csv
 # or a filesystem path:
 NEVO_CSV_PATH=D:/data/NEVO2025_v9.0.csv
+NEVO_AUTO_IMPORT_ON_STARTUP=true
 ```
-
 ## Attribution
 
 > NEVO-online version 2025/9.0, RIVM, Bilthoven

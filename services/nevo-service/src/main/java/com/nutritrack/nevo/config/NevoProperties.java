@@ -8,6 +8,7 @@ public record NevoProperties(
     @DefaultValue("") String csvPath,
     @DefaultValue("2025/9.0") String version,
     @DefaultValue("dev-internal-key") String internalApiKey,
+    @DefaultValue("true") boolean autoImportOnStartup,
     @DefaultValue Match match) {
 
   public record Match(
