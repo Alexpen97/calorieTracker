@@ -87,7 +87,8 @@ expanded — see `AI/expanded-micronutrients.md`.
 Local NEVO CSV import microservice + food-catalog enrichment for missing
 micros (`NEVO_ESTIMATE`). Runs **after** USDA enrichment on barcode fetch:
 USDA fills first, NEVO only fills remaining gaps. See
-`AI/nevo-micronutrient-estimates.md`.
+`AI/nevo-micronutrient-estimates.md` and `docs/railway-nevo.md`.
+Merged to `main` 2026-07-24 (`feature/nevo-micronutrient-estimates`).
 
 - Roadmap phase 6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.

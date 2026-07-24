@@ -15,6 +15,8 @@ folder below has its own `Dockerfile` and is built from that root directory.
 | `user-profile-service` | `/services/user-profile-service` | `/services/user-profile-service/**` | No | DB: `users` |
 | `food-catalog-service` | `/services/food-catalog-service` | `/services/food-catalog-service/**` | No | DB: `food_catalog` + Redis |
 | `diary-service` | `/services/diary-service` | `/services/diary-service/**` | No | DB: `diary` |
+| `nutrient-enrichment-service` | `/services/nutrient-enrichment-service` | `/services/nutrient-enrichment-service/**` | No | DB: `enrichment` — see `docs/railway-enrichment.md` |
+| `nevo-service` | `/services/nevo-service` | `/services/nevo-service/**` | No | DB: `nevo` — see `docs/railway-nevo.md` |
 
 `recommendation-service` is Phase 6 — no Dockerfile until implemented.
 
@@ -28,7 +30,8 @@ See `infra/postgres/README.md`.
 
 - Set `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB=postgres`.
 - Attach a **volume** on `/var/lib/postgresql/data`.
-- Init script creates `users`, `food_catalog`, `diary` on first boot.
+- Init script creates `users`, `food_catalog`, `diary`, `enrichment`, `nevo` on first boot
+  (local Compose). On Railway, create those databases manually if the plugin does not.
 
 ### redis
 
@@ -79,6 +82,9 @@ See `infra/redis/README.md`.
 | `OFF_BASE_URL` | `https://world.openfoodfacts.org` |
 | `OFF_USER_AGENT` | `NutriTrack - Server - Version 0.1` |
 | `FOOD_REDIS_ENABLED` | `true` |
+| `ENRICHMENT_ENABLED` / `ENRICHMENT_SERVICE_URL` | see `docs/railway-enrichment.md` |
+| `NEVO_ESTIMATE_ENABLED` / `NEVO_SERVICE_URL` | see `docs/railway-nevo.md` |
+| `INTERNAL_API_KEY` | shared with enrichment + nevo services |
 
 ### diary-service
 
