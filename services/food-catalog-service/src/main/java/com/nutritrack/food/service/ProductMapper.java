@@ -46,8 +46,10 @@ public class ProductMapper {
                         n.getNutrientCode(),
                         n.getAmountPer100g(),
                         n.getUnit(),
-                        n.getSource() == NutrientSource.USDA_BRANDED
-                            || n.getSource() == NutrientSource.USDA_PROXY))
+                        n.isEstimated()
+                            || n.getSource() == NutrientSource.USDA_BRANDED
+                            || n.getSource() == NutrientSource.USDA_PROXY
+                            || n.getSource() == NutrientSource.NEVO_ESTIMATE))
             .toList());
   }
 

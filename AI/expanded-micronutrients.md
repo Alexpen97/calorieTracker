@@ -36,3 +36,4 @@ selenium, copper, manganese, phosphorus, chromium, molybdenum
 - Redeploy `food-catalog-service` and `user-profile-service` for Flyway.
 - 2026-07-23: Diary + Analytics now use the same full checklist / grids as the
   dashboard (see `AI/fix-micros-diary-analytics.md`).
+- NEVO estimate enrichment: see `AI/nevo-micronutrient-estimates.md`.

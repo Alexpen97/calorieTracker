@@ -51,6 +51,16 @@ spring:
                 - Path=/api-docs/diary/**
               filters:
                 - RewritePath=/api-docs/diary(?<segment>/?.*), /v3/api-docs$\{segment}
+            - id: nevo-service
+              uri: ${NEVO_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/nevo/**
+            - id: nevo-api-docs
+              uri: ${NEVO_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api-docs/nevo/**
+              filters:
+                - RewritePath=/api-docs/nevo(?<segment>/?.*), /v3/api-docs$\{segment}
             # recommendation-service is Phase 6 — omit until RECO_SERVICE_URL is required
             # nutrient-enrichment-service is internal-only (no gateway route)
 
@@ -75,6 +85,8 @@ springdoc:
         url: /api-docs/food
       - name: diary-service
         url: /api-docs/diary
+      - name: nevo-service
+        url: /api-docs/nevo
   api-docs:
     enabled: false
 

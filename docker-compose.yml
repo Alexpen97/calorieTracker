@@ -70,6 +70,8 @@ services:
       FOOD_REDIS_ENABLED: "true"
       ENRICHMENT_ENABLED: ${ENRICHMENT_ENABLED:-true}
       ENRICHMENT_SERVICE_URL: http://nutrient-enrichment-service:8080
+      NEVO_SERVICE_URL: http://nevo-service:8080
+      NEVO_ESTIMATE_ENABLED: ${NEVO_ESTIMATE_ENABLED:-false}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
     depends_on:
       postgres:
@@ -79,6 +81,8 @@ services:
       auth-service:
         condition: service_started
       nutrient-enrichment-service:
+        condition: service_started
+      nevo-service:
         condition: service_started
 
   nutrient-enrichment-service:
@@ -91,6 +95,22 @@ services:
       SPRING_DATASOURCE_PASSWORD: nutritrack
       FDC_BASE_URL: ${FDC_BASE_URL:-https://api.nal.usda.gov/fdc/v1}
       FDC_API_KEY: ${FDC_API_KEY:-DEMO_KEY}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nevo-service:
+    profiles: ["full"]
+    build: ./services/nevo-service
+    environment:
+      PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nevo
+      SPRING_DATASOURCE_USERNAME: nutritrack
+      SPRING_DATASOURCE_PASSWORD: nutritrack
+      # Empty uses classpath:nevo/NEVO2025_v9.0.csv baked into the JAR.
+      NEVO_CSV_PATH: ${NEVO_CSV_PATH:-}
+      NEVO_VERSION: ${NEVO_VERSION:-2025/9.0}
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
     depends_on:
       postgres:
@@ -128,6 +148,7 @@ services:
       USER_SERVICE_URL: http://user-profile-service:8080
       FOOD_SERVICE_URL: http://food-catalog-service:8080
       DIARY_SERVICE_URL: http://diary-service:8080
+      NEVO_SERVICE_URL: http://nevo-service:8080
       RECO_SERVICE_URL: http://recommendation-service:8080
       JWKS_URI: http://auth-service:8080/.well-known/jwks.json
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost}
@@ -137,6 +158,8 @@ services:
       - user-profile-service
       - food-catalog-service
       - diary-service
+      - nevo-service
+      - nutrient-enrichment-service
 
   frontend:
     profiles: ["full"]

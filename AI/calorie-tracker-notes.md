@@ -82,6 +82,13 @@ expanded — see `AI/expanded-micronutrients.md`.
 2026-07-23: Diary and Analytics now show the same full vitamins/minerals grids
 (and Analytics averages the range) — see `AI/fix-micros-diary-analytics.md`.
 
+## NEVO micronutrient estimates (2026-07-24)
+
+Local NEVO CSV import microservice + food-catalog enrichment for missing
+micros (`NEVO_ESTIMATE`). Runs **after** USDA enrichment on barcode fetch:
+USDA fills first, NEVO only fills remaining gaps. See
+`AI/nevo-micronutrient-estimates.md`.
+
 - Roadmap phase 6 (design doc §14).
 - Persist refresh tokens (DB/Redis) before multi-instance auth deploys.
 - Restrict Swagger UI outside dev; wire Google OAuth credentials for prod.

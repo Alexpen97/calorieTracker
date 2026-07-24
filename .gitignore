@@ -23,3 +23,9 @@ frontend/android/*.keystore
 frontend/android/*.jks
 
 .superpowers/
+
+# Large NEVO companion files (keep the wide matrix + nutrient dictionary in git)
+services/nevo-service/src/main/resources/nevo/*_Details.csv
+services/nevo-service/src/main/resources/nevo/*_Recepten_Recipes.csv
+services/nevo-service/src/main/resources/nevo/*_Referenties_References.csv
+services/nevo-service/src/main/resources/nevo/*.xlsx

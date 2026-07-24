@@ -6,7 +6,6 @@ import com.nutritrack.food.domain.ProductNutrient;
 import com.nutritrack.food.domain.NutrientSource;
 import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSource;
-import com.nutritrack.food.domain.ProductSubmission;
 import com.nutritrack.food.domain.ProductSubmissionRepository;
 import com.nutritrack.food.domain.SubmissionStatus;
 import com.nutritrack.food.off.NormalizedOffProduct;
@@ -29,6 +28,7 @@ public class ProductLookupService {
   private final ProductMapper productMapper;
   private final OffProductUpsertService upsertService;
   private final ProductEnrichmentService enrichmentService;
+  private final NevoEnrichmentService nevoEnrichmentService;
 
   public ProductLookupService(
       ProductRepository productRepository,
@@ -37,7 +37,8 @@ public class ProductLookupService {
       OffClient offClient,
       ProductMapper productMapper,
       OffProductUpsertService upsertService,
-      ProductEnrichmentService enrichmentService) {
+      ProductEnrichmentService enrichmentService,
+      NevoEnrichmentService nevoEnrichmentService) {
     this.productRepository = productRepository;
     this.submissionRepository = submissionRepository;
     this.productCache = productCache;
@@ -45,6 +46,7 @@ public class ProductLookupService {
     this.productMapper = productMapper;
     this.upsertService = upsertService;
     this.enrichmentService = enrichmentService;
+    this.nevoEnrichmentService = nevoEnrichmentService;
   }
 
   @Transactional
@@ -112,7 +114,9 @@ public class ProductLookupService {
             .fetchByBarcode(barcode)
             .orElseThrow(() -> new ProductNotFoundException(barcode));
     Product saved = upsertService.upsertFromOff(offProduct);
+    // USDA first (branded/GTIN preferred), then NEVO for remaining gaps.
     saved = enrichmentService.enrichIfSparse(saved);
+    saved = nevoEnrichmentService.enrichMissingMicros(saved);
     ProductResponse response = productMapper.toResponse(saved);
     productCache.putByBarcode(barcode, response);
     return response;
@@ -140,6 +144,8 @@ public class ProductLookupService {
               pn.setAmountPer100g(n.amountPer100g());
               pn.setUnit(n.unit());
               pn.setSource(NutrientSource.OFF);
+              pn.setSourceRef(offProduct.barcode());
+              pn.setEstimated(false);
               return pn;
             })
         .toList();

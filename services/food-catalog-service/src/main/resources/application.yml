@@ -71,3 +71,7 @@ nutritrack:
       base-url: ${ENRICHMENT_SERVICE_URL:http://localhost:8086}
       internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
       timeout: ${ENRICHMENT_TIMEOUT:3s}
+    nevo:
+      enabled: ${NEVO_ESTIMATE_ENABLED:false}
+      service-url: ${NEVO_SERVICE_URL:http://localhost:8085}
+      internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}

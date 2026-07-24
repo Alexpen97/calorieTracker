@@ -61,6 +61,9 @@ public class OffProductUpsertService {
                   pn.setAmountPer100g(n.amountPer100g());
                   pn.setUnit(n.unit());
                   pn.setSource(NutrientSource.OFF);
+                  pn.setSourceRef(barcode);
+                  pn.setConfidence(null);
+                  pn.setEstimated(false);
                   return pn;
                 })
             .toList();

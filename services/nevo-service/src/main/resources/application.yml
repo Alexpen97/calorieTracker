@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: nevo-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nevo}
+    username: ${SPRING_DATASOURCE_USERNAME:nutritrack}
+    password: ${SPRING_DATASOURCE_PASSWORD:nutritrack}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8085}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+nutritrack:
+  nevo:
+    # Empty = classpath:nevo/NEVO2025_v9.0.csv (shipped RIVM export).
+    # Override with a filesystem path or classpath:… location.
+    csv-path: ${NEVO_CSV_PATH:}
+    version: ${NEVO_VERSION:2025/9.0}
+    internal-api-key: ${INTERNAL_API_KEY:dev-internal-key}
+    match:
+      high-threshold: ${NEVO_HIGH_THRESHOLD:0.72}
+      medium-threshold: ${NEVO_MEDIUM_THRESHOLD:0.48}
+      candidate-limit: ${NEVO_CANDIDATE_LIMIT:25}

@@ -33,8 +33,17 @@ public class ProductNutrient {
   private String unit;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 16)
+  @Column(nullable = false, length = 32)
   private NutrientSource source = NutrientSource.OFF;
+
+  @Column(name = "source_ref", length = 64)
+  private String sourceRef;
+
+  @Column(length = 16)
+  private String confidence;
+
+  @Column(nullable = false)
+  private boolean estimated;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id", insertable = false, updatable = false)
@@ -78,6 +87,30 @@ public class ProductNutrient {
 
   public void setSource(NutrientSource source) {
     this.source = source;
+  }
+
+  public String getSourceRef() {
+    return sourceRef;
+  }
+
+  public void setSourceRef(String sourceRef) {
+    this.sourceRef = sourceRef;
+  }
+
+  public String getConfidence() {
+    return confidence;
+  }
+
+  public void setConfidence(String confidence) {
+    this.confidence = confidence;
+  }
+
+  public boolean isEstimated() {
+    return estimated;
+  }
+
+  public void setEstimated(boolean estimated) {
+    this.estimated = estimated;
   }
 
   public Product getProduct() {

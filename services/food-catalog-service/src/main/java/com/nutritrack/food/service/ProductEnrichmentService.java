@@ -119,6 +119,10 @@ public class ProductEnrichmentService {
       pn.setAmountPer100g(n.amountPer100g());
       pn.setUnit(n.unit());
       pn.setSource(source);
+      pn.setSourceRef(result.fdcId() == null ? null : String.valueOf(result.fdcId()));
+      pn.setConfidence(
+          result.confidence() == null ? null : result.confidence().toPlainString());
+      pn.setEstimated(true);
       pn.setProduct(product);
       product.getNutrients().add(pn);
       existing.add(n.code());

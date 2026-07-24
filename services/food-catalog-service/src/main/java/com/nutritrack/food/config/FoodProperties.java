@@ -11,7 +11,8 @@ public record FoodProperties(
     @DefaultValue Resilience resilience,
     @DefaultValue Search search,
     @DefaultValue BulkImport bulkImport,
-    @DefaultValue Enrichment enrichment) {
+    @DefaultValue Enrichment enrichment,
+    @DefaultValue Nevo nevo) {
 
   public record Off(
       @DefaultValue("https://world.openfoodfacts.org") String baseUrl,
@@ -43,4 +44,9 @@ public record FoodProperties(
       @DefaultValue("http://localhost:8086") String baseUrl,
       @DefaultValue("dev-internal-key") String internalApiKey,
       @DefaultValue("3s") Duration timeout) {}
+
+  public record Nevo(
+      @DefaultValue("false") boolean enabled,
+      @DefaultValue("http://localhost:8085") String serviceUrl,
+      @DefaultValue("dev-internal-key") String internalApiKey) {}
 }
