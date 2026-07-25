@@ -3,6 +3,7 @@ import {
   averageMicronutrientRows,
   buildMacroSummaries,
   buildMicronutrientRows,
+  buildMicronutrientTrendSeries,
   buildWeightTrend,
   buildWeightTrendAxisLabels,
   buildWeightTrendSeries,
@@ -119,6 +120,66 @@ describe('nutrition dashboard helpers', () => {
     })
     expect(vitamins).toHaveLength(13)
     expect(minerals).toHaveLength(13)
+  })
+
+  it('builds micronutrient trend series with one point per day and zero gaps', () => {
+    const summaries = [
+      {
+        date: '2026-06-23',
+        totals: [{ code: 'vitamin_d', amount: 6, unit: 'ug', target: 15 }],
+      },
+      {
+        date: '2026-06-24',
+        totals: [] as NutrientTotalForDisplay[],
+      },
+      {
+        date: '2026-06-25',
+        totals: [{ code: 'vitamin_d', amount: 18, unit: 'ug', target: 15 }],
+      },
+    ]
+
+    const vitamins = buildMicronutrientTrendSeries(summaries, 'vitamin')
+    const vitaminD = vitamins.find((item) => item.code === 'vitamin_d')
+    const vitaminC = vitamins.find((item) => item.code === 'vitamin_c')
+
+    expect(vitamins).toHaveLength(13)
+    expect(vitaminD?.points).toEqual([
+      { date: '2026-06-23', amount: 6, percent: 40 },
+      { date: '2026-06-24', amount: 0, percent: 0 },
+      { date: '2026-06-25', amount: 18, percent: 100 },
+    ])
+    expect(vitaminD).toMatchObject({
+      label: 'Vitamin D',
+      unit: 'ug',
+      target: 15,
+      latestPercent: 100,
+      latestAmountLabel: '18 / 15 ug',
+    })
+    expect(vitaminC?.points).toHaveLength(3)
+    expect(vitaminC?.points.every((point) => point.amount === 0 && point.percent === 0)).toBe(true)
+  })
+
+  it('builds mineral trend series across a 30-day summary window', () => {
+    const summaries = Array.from({ length: 30 }, (_, index) => {
+      const day = index + 1
+      const date = `2026-06-${String(day).padStart(2, '0')}`
+      return {
+        date,
+        totals:
+          index === 29
+            ? [{ code: 'calcium', amount: 800, unit: 'mg', target: 1000 }]
+            : ([] as NutrientTotalForDisplay[]),
+      }
+    })
+
+    const minerals = buildMicronutrientTrendSeries(summaries, 'mineral')
+    const calcium = minerals.find((item) => item.code === 'calcium')
+
+    expect(minerals).toHaveLength(13)
+    expect(calcium?.points).toHaveLength(30)
+    expect(calcium?.points[0]).toEqual({ date: '2026-06-01', amount: 0, percent: 0 })
+    expect(calcium?.points[29]).toEqual({ date: '2026-06-30', amount: 800, percent: 80 })
+    expect(calcium?.latestPercent).toBe(80)
   })
 
   it('builds oldest-to-newest weight trend points for the last 30 days', () => {

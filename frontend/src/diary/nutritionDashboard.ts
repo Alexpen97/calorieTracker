@@ -78,6 +78,73 @@ export function buildMicronutrientRows(
   return [...labels.entries()].map(([code, label]) => progressRow(totals, code, label))
 }
 
+export type MicronutrientTrendPoint = {
+  date: string
+  amount: number
+  percent: number
+}
+
+export type MicronutrientTrend = {
+  code: string
+  label: string
+  unit: string
+  target: number | null
+  points: MicronutrientTrendPoint[]
+  latestPercent: number
+  latestAmountLabel: string
+}
+
+/** Daily micronutrient intake series across day summaries (amount vs shared target). */
+export function buildMicronutrientTrendSeries(
+  summaries: Array<{ date: string; totals: NutrientTotalForDisplay[] }>,
+  kind: MicronutrientKind,
+): MicronutrientTrend[] {
+  const labels = kind === 'vitamin' ? vitaminCodes : mineralCodes
+  const ordered = [...summaries].sort((left, right) => left.date.localeCompare(right.date))
+
+  return [...labels.entries()].map(([code, label]) => {
+    let target: number | null = null
+    let unit = ''
+    for (const summary of ordered) {
+      const total = summary.totals.find((item) => item.code === code)
+      if (!total) continue
+      if (total.target != null) target = total.target
+      if (total.unit) unit = total.unit
+    }
+
+    const points = ordered.map((summary) => {
+      const total = summary.totals.find((item) => item.code === code)
+      const amount = total?.amount ?? 0
+      const dayTarget = total?.target ?? target
+      return {
+        date: summary.date,
+        amount,
+        percent: dayTarget ? Math.min(100, Math.round((amount / dayTarget) * 100)) : 0,
+      }
+    })
+
+    const latest = points.at(-1)
+    const latestAmount = latest?.amount ?? 0
+    const latestPercent = latest?.percent ?? 0
+    const latestAmountLabel =
+      target != null
+        ? `${formatNumber(latestAmount)} / ${formatNumber(target)} ${unit}`.trim()
+        : unit
+          ? `${formatNumber(latestAmount)} ${unit}`
+          : formatNumber(latestAmount)
+
+    return {
+      code,
+      label,
+      unit,
+      target,
+      points,
+      latestPercent,
+      latestAmountLabel,
+    }
+  })
+}
+
 /** Average micronutrient intake across day summaries (amount mean vs shared target). */
 export function averageMicronutrientRows(
   summaries: Array<{ totals: NutrientTotalForDisplay[] }>,

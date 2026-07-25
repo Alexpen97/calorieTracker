@@ -1426,6 +1426,70 @@ button {
   height: 0.32rem;
 }
 
+.micro-trend-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.micro-trend-cell {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.micro-trend-cell > span {
+  font-size: 0.68rem;
+  line-height: 1.15;
+  color: #5d7166;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.micro-trend-meta {
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #3f574b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.micro-trend-chart {
+  display: block;
+  width: 100%;
+  height: 2.1rem;
+  overflow: visible;
+}
+
+.micro-trend-baseline {
+  stroke: rgba(31, 74, 55, 0.12);
+  stroke-width: 1;
+}
+
+.micro-trend-line {
+  fill: none;
+  stroke: var(--leaf);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.micro-trend-good .micro-trend-line {
+  stroke: #2f8f5b;
+}
+
+.micro-trend-mid .micro-trend-line {
+  stroke: #c48a1a;
+}
+
+.micro-trend-low .micro-trend-line {
+  stroke: #b4543c;
+}
+
 .preview-links {
   list-style: none;
   padding: 0;
