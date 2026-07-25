@@ -1499,11 +1499,9 @@ button {
 .shared-micro-trend-chart {
   display: block;
   width: 100%;
-  max-width: 34rem;
   height: auto;
   aspect-ratio: 360 / 112;
   overflow: visible;
-  margin-inline: auto;
 }
 
 .shared-micro-guide {
@@ -2170,8 +2168,8 @@ button {
     gap: 1rem;
   }
 
-  .analytics-page .mobile-hero,
-  .analytics-page > .dashboard-card:first-of-type {
+  .analytics-page > .analytics-header,
+  .analytics-page > .dashboard-span {
     grid-column: 1 / -1;
   }
 

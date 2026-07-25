@@ -18,6 +18,11 @@ and clearer markers — without adding a chart library.
 - Dashboard wires series + axis labels from `buildWeightTrendSeries`.
 - Analytics / Diary sparklines unchanged (out of scope).
 
+## Follow-up (2026-07-25)
+
+- Analytics Weight trend now uses the same `WeightTrendChart` (axes, markers,
+  hover) as the dashboard, fed by `buildWeightTrendSeries` over the last 30 days.
+
 ## Tests
 
 - `MiniCharts.test.tsx` — grid, y/x ticks, marker radius, hover tooltip
