@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   averageMicronutrientRows,
+  buildCalorieDisplayState,
   buildMacroSummaries,
   buildMicronutrientRows,
   buildMicronutrientTrendSeries,
@@ -232,5 +233,67 @@ describe('nutrition dashboard helpers', () => {
     expect(labels[0]).toMatch(/Jun/i)
     expect(labels[2]).toMatch(/22/)
     expect(labels[2]).toMatch(/Jul/i)
+  })
+
+  it('builds calorie display from base energy target when adjustment is absent', () => {
+    expect(
+      buildCalorieDisplayState(
+        { code: 'energy_kcal', amount: 1450, unit: 'kcal', target: 2100 },
+        null,
+      ),
+    ).toEqual({
+      consumed: 1450,
+      baseTarget: 2100,
+      burnedCalories: 0,
+      effectiveTarget: 2100,
+      caloriePercent: 69,
+      adjustmentPercent: 0,
+      amountLabel: '1,450 / 2,100',
+      burnedLabel: null,
+    })
+  })
+
+  it('uses effective target and burned label when energyAdjustment is present', () => {
+    expect(
+      buildCalorieDisplayState(
+        { code: 'energy_kcal', amount: 1450, unit: 'kcal', target: 2100 },
+        {
+          provider: 'SAMSUNG_HEALTH',
+          burnedCalories: 320,
+          baseTarget: 2100,
+          effectiveTarget: 2420,
+          syncedAt: '2026-07-25T16:30:00Z',
+        },
+      ),
+    ).toEqual({
+      consumed: 1450,
+      baseTarget: 2100,
+      burnedCalories: 320,
+      effectiveTarget: 2420,
+      caloriePercent: 60,
+      adjustmentPercent: 13,
+      amountLabel: '1,450 / 2,420',
+      burnedLabel: '+320 burned',
+    })
+  })
+
+  it('caps calorie and adjustment percents at 100 and ignores null burned', () => {
+    expect(
+      buildCalorieDisplayState(
+        { code: 'energy_kcal', amount: 3000, unit: 'kcal', target: 2100 },
+        {
+          provider: 'SAMSUNG_HEALTH',
+          burnedCalories: 0,
+          baseTarget: 2100,
+          effectiveTarget: 2100,
+          syncedAt: '2026-07-25T16:30:00Z',
+        },
+      ),
+    ).toMatchObject({
+      effectiveTarget: 2100,
+      caloriePercent: 100,
+      adjustmentPercent: 0,
+      burnedLabel: null,
+    })
   })
 })

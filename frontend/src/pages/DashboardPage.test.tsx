@@ -126,6 +126,51 @@ describe('DashboardPage', () => {
     expect(screen.getByLabelText('Carbs: 23 / 250 g')).toBeInTheDocument()
     expect(screen.getByLabelText('Fat: 223 / 70 g')).toBeInTheDocument()
   })
+
+  it('renders effective calorie target and burned label when energyAdjustment is present', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue({
+      id: 'u1',
+      email: 'alex@example.com',
+      displayName: 'Alex',
+      avatarUrl: null,
+      role: 'USER',
+      sex: null,
+      birthDate: null,
+      heightCm: null,
+      activityLevel: null,
+      objective: 'MAINTAIN',
+    })
+    vi.spyOn(client, 'fetchDiarySummary').mockResolvedValue({
+      date: '2026-07-22',
+      totals: [
+        { code: 'energy_kcal', amount: 1450, unit: 'kcal', target: 2100 },
+        { code: 'protein', amount: 82, unit: 'g', target: 100 },
+        { code: 'carbohydrates', amount: 180, unit: 'g', target: 250 },
+        { code: 'fat', amount: 48, unit: 'g', target: 70 },
+      ],
+      water: { amountMl: 1200, targetMl: 2500 },
+      energyAdjustment: {
+        provider: 'SAMSUNG_HEALTH',
+        burnedCalories: 320,
+        baseTarget: 2100,
+        effectiveTarget: 2420,
+        syncedAt: '2026-07-25T16:30:00Z',
+      },
+    })
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue([])
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue([])
+
+    renderWithClient(<DashboardPage />)
+
+    expect(
+      await screen.findByLabelText(
+        /^Calories: 1[.,]450 \/ 2[.,]420, \+320 burned$/,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText('+320 burned')).toBeInTheDocument()
+    expect(screen.getByTestId('nested-calorie-adjustment')).toBeInTheDocument()
+    expect(screen.getByText(/^1[.,]450 \/ 2[.,]420$/)).toBeInTheDocument()
+  })
 })
 
 function renderWithClient(children: React.ReactNode) {

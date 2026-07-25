@@ -58,26 +58,37 @@ export function NestedCalorieMacroRing({
   calorieLabel,
   caloriePercent,
   calorieAmountLabel,
+  adjustmentPercent,
+  burnedLabel,
   macros,
 }: {
   calorieLabel: string
   caloriePercent: number
   calorieAmountLabel: string
+  adjustmentPercent?: number
+  burnedLabel?: string | null
   macros: MacroSegment[]
 }) {
   const calorieBounded = clampPercent(caloriePercent)
   const calorieOffset = 100 * (1 - calorieBounded / 100)
+  const adjustmentBounded =
+    adjustmentPercent != null && adjustmentPercent > 0 ? clampPercent(adjustmentPercent) : 0
+  const adjustmentOffset = 100 * (1 - adjustmentBounded / 100)
+  const showBurned = Boolean(burnedLabel)
+  const ariaLabel = showBurned
+    ? `${calorieLabel}: ${calorieAmountLabel}, ${burnedLabel}`
+    : `${calorieLabel}: ${calorieAmountLabel}`
 
   return (
     <div className="nested-goal-ring">
       <div
         className="nested-goal-ring-chart"
-        aria-label={`${calorieLabel}: ${calorieAmountLabel}`}
+        aria-label={ariaLabel}
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={calorieBounded}
-        aria-valuetext={calorieAmountLabel}
+        aria-valuetext={showBurned ? `${calorieAmountLabel}, ${burnedLabel}` : calorieAmountLabel}
       >
         <svg className="nested-goal-ring-svg" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
           <circle
@@ -88,6 +99,18 @@ export function NestedCalorieMacroRing({
             r="38"
             pathLength={100}
           />
+          {adjustmentBounded > 0 ? (
+            <circle
+              className="nested-calorie-adjustment"
+              data-testid="nested-calorie-adjustment"
+              cx="50"
+              cy="50"
+              r="38"
+              pathLength={100}
+              strokeDasharray={100}
+              strokeDashoffset={adjustmentOffset}
+            />
+          ) : null}
           <circle
             className="nested-calorie-indicator"
             cx="50"
@@ -101,6 +124,7 @@ export function NestedCalorieMacroRing({
         <div className="nested-goal-ring-center" aria-hidden>
           <strong>{calorieAmountLabel}</strong>
           <span>{calorieLabel}</span>
+          {showBurned ? <em className="nested-calorie-burned">{burnedLabel}</em> : null}
         </div>
       </div>
       <ul className="nested-macro-legend">
