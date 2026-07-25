@@ -83,6 +83,17 @@ export function IconUser({ className = '' }: { className?: string }) {
   )
 }
 
+export function IconGear({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M19.1 12.9a7.5 7.5 0 0 0 0-1.8l2-1.5a.5.5 0 0 0 .1-.6l-1.9-3.3a.5.5 0 0 0-.6-.2l-2.3.9a7.2 7.2 0 0 0-1.6-.9l-.3-2.5a.5.5 0 0 0-.5-.4h-3.8a.5.5 0 0 0-.5.4l-.3 2.5c-.6.2-1.1.5-1.6.9l-2.3-.9a.5.5 0 0 0-.6.2L2.8 9a.5.5 0 0 0 .1.6l2 1.5a7.5 7.5 0 0 0 0 1.8l-2 1.5a.5.5 0 0 0-.1.6l1.9 3.3a.5.5 0 0 0 .6.2l2.3-.9c.5.4 1 .7 1.6.9l.3 2.5a.5.5 0 0 0 .5.4h3.8a.5.5 0 0 0 .5-.4l.3-2.5c.6-.2 1.1-.5 1.6-.9l2.3.9a.5.5 0 0 0 .6-.2l1.9-3.3a.5.5 0 0 0-.1-.6l-2-1.5zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"
+      />
+    </svg>
+  )
+}
+
 export function IconPlus({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">

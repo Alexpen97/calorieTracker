@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { IconBars, IconBook, IconHome, IconPlus, IconUser } from '../ui/Icons'
+import { IconBars, IconBook, IconGear, IconHome, IconPlus } from '../ui/Icons'
 
 export default function AppNavigation({
   loggedIn,
@@ -21,7 +21,7 @@ export default function AppNavigation({
             <NavLink to="/analytics">Analytics</NavLink>
             <NavLink to="/lookup">Lookup</NavLink>
             {canModerate && <NavLink to="/moderation">Moderation</NavLink>}
-            <NavLink to="/me">Profile</NavLink>
+            <NavLink to="/settings">Settings</NavLink>
           </nav>
         )}
       </header>
@@ -42,9 +42,9 @@ export default function AppNavigation({
             <IconBars className="tab-icon" />
             <span>Analytics</span>
           </NavLink>
-          <NavLink to="/me" className="tab-link">
-            <IconUser className="tab-icon" />
-            <span>Profile</span>
+          <NavLink to="/settings" className="tab-link">
+            <IconGear className="tab-icon" />
+            <span>Settings</span>
           </NavLink>
         </nav>
       )}

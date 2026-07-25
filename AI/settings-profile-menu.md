@@ -2,24 +2,38 @@
 
 ## Summary
 
-Wrote a design spec for replacing the current `Profile` destination with a real
-`Settings` area that is easier to use on mobile.
+Replaced the top-level `Profile` destination with a mobile-friendly `Settings`
+area. Profile remains available as one settings section.
 
 ## Decision
 
-- Default nav label becomes `Settings`, not `Profile`.
-- Default route becomes `/settings`, not `/me`.
-- `Profile` becomes one settings section instead of the top-level account concept.
-- The fifth mobile bottom-nav destination stays a direct `Settings` tab.
-- The mobile flow should use a lightweight settings hub plus focused subsections
-  for profile, goals, weight, and account.
+- Nav label is `Settings` on desktop and mobile.
+- Route is `/settings` (with `/me` redirecting to `/settings`).
+- Fifth mobile bottom-nav destination stays a direct `Settings` tab.
+- Settings home is a lightweight hub with rows for Profile, Goals, Weight, and
+  Account, plus a separated Sign out action.
+- Focused subsections live at:
+  - `/settings/profile`
+  - `/settings/goals`
+  - `/settings/weight`
+  - `/settings/account`
 
 ## Spec
 
 - `docs/superpowers/specs/2026-07-25-settings-profile-menu-design.md`
 
-## Notes
+## Implementation
 
-- This is a design/spec artifact only; implementation has not started yet.
-- If future secondary destinations grow, a later follow-up can evaluate a
-  `More` overflow destination, but that is not the default direction.
+- `frontend/src/navigation/AppNavigation.tsx` — Settings label/route + gear icon
+- `frontend/src/App.tsx` — settings routes + `/me` redirect
+- `frontend/src/pages/SettingsHomePage.tsx` — settings hub
+- `frontend/src/pages/settings/*` — focused Profile/Goals/Weight/Account sections
+- `frontend/src/index.css` — settings hub/row mobile-friendly styles
+- Removed monolithic `frontend/src/pages/ProfilePage.tsx`
+
+## Tests
+
+- Updated `AppNavigation.test.tsx`
+- Added `SettingsHomePage.test.tsx` covering hub, profile save, weight log,
+  goals save/recalculate, and account sign-out
+- Full frontend suite: 83 passing
