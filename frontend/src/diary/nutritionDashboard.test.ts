@@ -183,11 +183,11 @@ describe('nutrition dashboard helpers', () => {
     expect(calcium?.latestPercent).toBe(80)
   })
 
-  it('normalizes micronutrient amounts so RDI sits at chart center and 150% at the top', () => {
-    expect(micronutrientRdiNormalized(15, 15)).toBe(0.5)
-    expect(micronutrientRdiNormalized(22.5, 15)).toBe(1)
-    expect(micronutrientRdiNormalized(7.5, 15)).toBe(0)
+  it('normalizes micronutrient amounts on a 0–150% RDI scale with RDI at two-thirds height', () => {
     expect(micronutrientRdiNormalized(0, 15)).toBe(0)
+    expect(micronutrientRdiNormalized(7.5, 15)).toBeCloseTo(1 / 3)
+    expect(micronutrientRdiNormalized(15, 15)).toBeCloseTo(2 / 3)
+    expect(micronutrientRdiNormalized(22.5, 15)).toBe(1)
     expect(micronutrientRdiNormalized(30, 15)).toBe(1)
     expect(micronutrientRdiNormalized(1000, null)).toBeNull()
     expect(micronutrientRdiNormalized(500, 0)).toBeNull()
