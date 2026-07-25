@@ -5,24 +5,27 @@
 Show vitamins and minerals on Analytics as **one shared multi-line chart each**,
 instead of per-nutrient small multiples.
 
-## Scale
+## Scale (fixed 2026-07-25)
 
-Each line uses **its own RDI/target**:
+Each line uses **its own RDI/target** on a **0% → 150%** vertical scale:
 
 | Chart position | Amount |
 |---|---|
-| Bottom | 50% of RDI |
-| Center (dashed guide) | 100% RDI |
+| Bottom | 0% of RDI |
+| Dashed guide | 100% RDI (~⅔ up) |
 | Top | 150% of RDI |
 
-Values outside that band are clipped. Different nutrients (mg vs µg) can share
-one plot because each series is normalized independently.
+Earlier [50%–150%] mapping made every low/empty day sit on the bottom edge
+labeled “50%”, so limits looked wrong. Zero intake now sits at true 0%.
+
+Values above 150% RDI clip at the top. Different nutrients (mg vs µg) share one
+plot because each series is normalized independently.
 
 ## UI
 
-- Vitamins card → `SharedMicronutrientTrendChart`
-- Minerals card → `SharedMicronutrientTrendChart`
-- Color legend under each chart
+- Compact chart (`360×112` viewBox, thinner strokes)
+- Vitamins / Minerals cards → `SharedMicronutrientTrendChart`
+- Legend shows each nutrient’s RDI amount + unit
 - Cards span full analytics width
 
 ## Files

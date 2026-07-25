@@ -48,11 +48,11 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
         />
       </DashboardCard>
 
-      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days · RDI centered">
+      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days · 0–150% RDI">
         <SharedMicronutrientTrendChart label="Vitamin trends, last 30 days" series={vitamins} />
       </DashboardCard>
 
-      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days · RDI centered">
+      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days · 0–150% RDI">
         <SharedMicronutrientTrendChart label="Mineral trends, last 30 days" series={minerals} />
       </DashboardCard>
 

@@ -1492,16 +1492,18 @@ button {
 
 .shared-micro-trend {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
 }
 
 .shared-micro-trend-chart {
   display: block;
   width: 100%;
+  max-width: 34rem;
   height: auto;
-  aspect-ratio: 360 / 180;
+  aspect-ratio: 360 / 112;
   overflow: visible;
+  margin-inline: auto;
 }
 
 .shared-micro-guide {
@@ -1510,23 +1512,23 @@ button {
   stroke-width: 0.75;
 }
 
-.shared-micro-guide-center {
+.shared-micro-guide-rdi {
   stroke: rgba(31, 74, 55, 0.45);
   stroke-dasharray: 4 3;
 }
 
 .shared-micro-axis-label {
   fill: #5d7166;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
 }
 
 .shared-micro-line {
   fill: none;
-  stroke-width: 1.5;
+  stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .shared-micro-legend {
@@ -1535,21 +1537,31 @@ button {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.65rem;
+  gap: 0.25rem 0.55rem;
+  justify-content: center;
 }
 
 .shared-micro-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.72rem;
+  gap: 0.3rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #3f574b;
 }
 
+.shared-micro-legend li[data-missing-target='true'] {
+  opacity: 0.55;
+}
+
+.shared-micro-legend-target {
+  font-weight: 600;
+  color: #6a7f72;
+}
+
 .shared-micro-swatch {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: 999px;
   flex: none;
 }

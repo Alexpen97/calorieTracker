@@ -215,7 +215,7 @@ describe('mini chart primitives', () => {
     expect(document.querySelector('.micro-trend-mid')).toBeInTheDocument()
   })
 
-  it('renders a shared micronutrient chart with RDI-centered lines and legend', () => {
+  it('renders a shared micronutrient chart with RDI guide, 0–150% scale, and legend targets', () => {
     render(
       <SharedMicronutrientTrendChart
         label="Vitamin trends, last 30 days"
@@ -224,8 +224,9 @@ describe('mini chart primitives', () => {
             code: 'vitamin_d',
             label: 'Vitamin D',
             target: 15,
+            unit: 'ug',
             points: [
-              { date: '2026-07-01', amount: 7.5 },
+              { date: '2026-07-01', amount: 0 },
               { date: '2026-07-02', amount: 15 },
               { date: '2026-07-03', amount: 22.5 },
             ],
@@ -234,8 +235,9 @@ describe('mini chart primitives', () => {
             code: 'vitamin_c',
             label: 'Vitamin C',
             target: 80,
+            unit: 'mg',
             points: [
-              { date: '2026-07-01', amount: 40 },
+              { date: '2026-07-01', amount: 0 },
               { date: '2026-07-02', amount: 80 },
               { date: '2026-07-03', amount: 120 },
             ],
@@ -245,13 +247,18 @@ describe('mini chart primitives', () => {
     )
 
     expect(screen.getByLabelText('Vitamin trends, last 30 days')).toBeInTheDocument()
-    expect(screen.getByTestId('shared-micro-line-vitamin_d')).toBeInTheDocument()
-    expect(screen.getByTestId('shared-micro-line-vitamin_c')).toBeInTheDocument()
+    const vitaminD = screen.getByTestId('shared-micro-line-vitamin_d')
+    const vitaminC = screen.getByTestId('shared-micro-line-vitamin_c')
+    expect(vitaminD).toBeInTheDocument()
+    expect(vitaminC).toBeInTheDocument()
+    // 0% at bottom, RDI at 2/3, 150% at top of the compact plot (bottom=88, top=8, height=80)
+    expect(vitaminD.getAttribute('d')).toBe('M 28.00 88.00 L 190.00 34.67 L 352.00 8.00')
     expect(screen.getByText('RDI')).toBeInTheDocument()
     expect(screen.getByText('150%')).toBeInTheDocument()
-    expect(screen.getByText('50%')).toBeInTheDocument()
+    expect(screen.getByText('0%')).toBeInTheDocument()
+    expect(screen.queryByText('50%')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Vitamin trends, last 30 days legend')).toBeInTheDocument()
-    expect(screen.getAllByText('Vitamin D').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Vitamin C').length).toBeGreaterThan(0)
+    expect(screen.getByText('15 ug')).toBeInTheDocument()
+    expect(screen.getByText('80 mg')).toBeInTheDocument()
   })
 })

@@ -236,12 +236,15 @@ const MICRO_LINE_COLORS = [
 
 const SHARED_MICRO = {
   w: 360,
-  h: 180,
-  left: 36,
-  right: 348,
-  top: 14,
-  bottom: 150,
+  h: 112,
+  left: 28,
+  right: 352,
+  top: 8,
+  bottom: 88,
 } as const
+
+/** Y position of the RDI guide on the 0–150% scale (100 / 150). */
+const RDI_Y_RATIO = 2 / 3
 
 export function SharedMicronutrientTrendChart({
   label,
@@ -252,18 +255,19 @@ export function SharedMicronutrientTrendChart({
     code: string
     label: string
     target: number | null
+    unit?: string
     points: Array<{ date: string; amount: number }>
   }>
 }) {
   const dayCount = series[0]?.points.length ?? 0
   const plotWidth = SHARED_MICRO.right - SHARED_MICRO.left
   const plotHeight = SHARED_MICRO.bottom - SHARED_MICRO.top
-  const centerY = SHARED_MICRO.top + plotHeight / 2
+  const rdiY = SHARED_MICRO.bottom - RDI_Y_RATIO * plotHeight
 
   const paths = series.map((item, index) => {
     const color = MICRO_LINE_COLORS[index % MICRO_LINE_COLORS.length]
-    if (!item.target || item.points.length === 0) {
-      return { ...item, color, d: '' }
+    if (item.target == null || !(item.target > 0) || item.points.length === 0) {
+      return { ...item, color, d: '', hasTarget: false }
     }
     const d = item.points
       .map((point, pointIndex) => {
@@ -277,7 +281,7 @@ export function SharedMicronutrientTrendChart({
         return `${pointIndex === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
       })
       .join(' ')
-    return { ...item, color, d }
+    return { ...item, color, d, hasTarget: true }
   })
 
   return (
@@ -297,11 +301,11 @@ export function SharedMicronutrientTrendChart({
           y2={SHARED_MICRO.top}
         />
         <line
-          className="shared-micro-guide shared-micro-guide-center"
+          className="shared-micro-guide shared-micro-guide-rdi"
           x1={SHARED_MICRO.left}
           x2={SHARED_MICRO.right}
-          y1={centerY}
-          y2={centerY}
+          y1={rdiY}
+          y2={rdiY}
         />
         <line
           className="shared-micro-guide"
@@ -313,12 +317,12 @@ export function SharedMicronutrientTrendChart({
         <text
           className="shared-micro-axis-label"
           x={SHARED_MICRO.left - 4}
-          y={SHARED_MICRO.top + 4}
+          y={SHARED_MICRO.top + 3}
           textAnchor="end"
         >
           150%
         </text>
-        <text className="shared-micro-axis-label" x={SHARED_MICRO.left - 4} y={centerY + 3} textAnchor="end">
+        <text className="shared-micro-axis-label" x={SHARED_MICRO.left - 4} y={rdiY + 3} textAnchor="end">
           RDI
         </text>
         <text
@@ -327,15 +331,15 @@ export function SharedMicronutrientTrendChart({
           y={SHARED_MICRO.bottom + 3}
           textAnchor="end"
         >
-          50%
+          0%
         </text>
         {dayCount > 0 ? (
-          <text className="shared-micro-axis-label" x={SHARED_MICRO.left} y={SHARED_MICRO.h - 8} textAnchor="start">
+          <text className="shared-micro-axis-label" x={SHARED_MICRO.left} y={SHARED_MICRO.h - 4} textAnchor="start">
             {series[0]?.points[0]?.date.slice(5) ?? ''}
           </text>
         ) : null}
         {dayCount > 1 ? (
-          <text className="shared-micro-axis-label" x={SHARED_MICRO.right} y={SHARED_MICRO.h - 8} textAnchor="end">
+          <text className="shared-micro-axis-label" x={SHARED_MICRO.right} y={SHARED_MICRO.h - 4} textAnchor="end">
             {series[0]?.points[dayCount - 1]?.date.slice(5) ?? ''}
           </text>
         ) : null}
@@ -348,16 +352,31 @@ export function SharedMicronutrientTrendChart({
               d={item.d}
               stroke={item.color}
             >
-              <title>{item.label}</title>
+              <title>
+                {item.target != null
+                  ? `${item.label}: RDI ${item.target}${item.unit ? ` ${item.unit}` : ''}`
+                  : item.label}
+              </title>
             </path>
           ) : null,
         )}
       </svg>
       <ul className="shared-micro-legend" aria-label={`${label} legend`}>
         {paths.map((item) => (
-          <li key={item.code}>
+          <li key={item.code} data-missing-target={item.hasTarget ? undefined : 'true'}>
             <span className="shared-micro-swatch" style={{ background: item.color }} aria-hidden />
-            {item.label}
+            <span>
+              {item.label}
+              {item.target != null ? (
+                <span className="shared-micro-legend-target">
+                  {' '}
+                  {item.target}
+                  {item.unit ? ` ${item.unit}` : ''}
+                </span>
+              ) : (
+                <span className="shared-micro-legend-target"> no RDI</span>
+              )}
+            </span>
           </li>
         ))}
       </ul>
