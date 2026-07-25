@@ -7,6 +7,7 @@ import {
   ProgressRing,
   ProgressRow,
   SharedMicronutrientTrendChart,
+  SlimMacroBar,
   Sparkline,
   StackedBar,
   StackedFoodBars,
@@ -123,6 +124,25 @@ describe('mini chart primitives', () => {
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
     expect(screen.getByText('Macro balance')).toBeInTheDocument()
     expect(screen.getByText('Iron')).toBeInTheDocument()
+  })
+
+  it('renders a slim mixed macro bar with a shared track and legend', () => {
+    render(
+      <SlimMacroBar
+        label="Macro balance"
+        segments={[
+          { label: 'Protein', percent: 80 },
+          { label: 'Carbs', percent: 70 },
+          { label: 'Fat', percent: 60 },
+        ]}
+      />,
+    )
+
+    expect(screen.getByTestId('analytics-macro-bar')).toBeInTheDocument()
+    expect(screen.getByLabelText('Macro balance')).toBeInTheDocument()
+    expect(screen.getByText('Protein')).toBeInTheDocument()
+    expect(screen.getByText('Carbs')).toBeInTheDocument()
+    expect(screen.getByText('Fat')).toBeInTheDocument()
   })
 
   it('renders a timed weight chart with a marker per logged weigh-in', () => {

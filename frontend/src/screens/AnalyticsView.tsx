@@ -1,6 +1,6 @@
 import type { DaySummary, WeightLog } from '../api/client'
 import { DashboardCard, MetricPill } from '../ui/Card'
-import { SharedMicronutrientTrendChart, StackedBar, WeightTrendChart } from '../ui/MiniCharts'
+import { SharedMicronutrientTrendChart, SlimMacroBar, WeightTrendChart } from '../ui/MiniCharts'
 import {
   averageMicronutrientRows,
   buildMacroSummaries,
@@ -8,16 +8,28 @@ import {
   buildWeightTrendAxisLabels,
   buildWeightTrendSeries,
 } from '../diary/nutritionDashboard'
-import { IconBars, IconLeaf, IconScale } from '../ui/Icons'
+import { parseLocalDate } from '../diary/formatDay'
+import { IconLeaf, IconScale } from '../ui/Icons'
 
 type Props = {
-  from: string
   to: string
+  rangeLabel: string
   summaries: DaySummary[]
   weightHistory: WeightLog[]
+  canGoNext: boolean
+  onPreviousRange: () => void
+  onNextRange: () => void
 }
 
-export default function AnalyticsView({ from, to, summaries, weightHistory }: Props) {
+export default function AnalyticsView({
+  to,
+  rangeLabel,
+  summaries,
+  weightHistory,
+  canGoNext,
+  onPreviousRange,
+  onNextRange,
+}: Props) {
   const latest = summaries.at(-1)
   const macros = latest ? buildMacroSummaries(latest.totals) : []
   const vitamins = buildMicronutrientTrendSeries(summaries, 'vitamin')
@@ -27,18 +39,44 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
   const lowVitamin = vitaminAverages.find((item) => item.percent > 0 && item.percent < 60)
   const proteinPercent = macros.find((item) => item.code === 'protein')?.percent ?? 0
   const calcium = mineralAverages.find((item) => item.code === 'calcium')
-  const weightPoints = buildWeightTrendSeries(weightHistory)
+  const rangeClock = parseLocalDate(to)
+  const weightPoints = buildWeightTrendSeries(weightHistory, { days: 30, clock: rangeClock })
 
   return (
     <main className="mobile-page analytics-page mockup-analytics">
       <header className="analytics-header">
         <h1>Analytics</h1>
-        <div className="date-pill" aria-label="Date range">
-          {from} – {to}
-        </div>
       </header>
 
-      <DashboardCard className="dashboard-span" icon={<IconScale />} title="Weight trend" eyebrow="Last 30 days">
+      <div className="analytics-range-nav" data-testid="analytics-range-nav">
+        <button
+          className="btn btn-secondary btn-small diary-day-nav-btn"
+          type="button"
+          aria-label="Previous 30 days"
+          onClick={onPreviousRange}
+        >
+          ‹
+        </button>
+        <p className="analytics-range-nav-label" aria-label="Date range">
+          {rangeLabel}
+        </p>
+        <button
+          className="btn btn-secondary btn-small diary-day-nav-btn"
+          type="button"
+          aria-label="Next 30 days"
+          onClick={onNextRange}
+          disabled={!canGoNext}
+        >
+          ›
+        </button>
+      </div>
+
+      <SlimMacroBar
+        label="Macro balance"
+        segments={macros.map((macro) => ({ label: macro.label, percent: macro.percent }))}
+      />
+
+      <DashboardCard className="dashboard-span" icon={<IconScale />} title="Weight trend" eyebrow="30 days">
         <div className="weight-layout">
           <div className="weight-layout-meta">
             <p className="weight-value">{latestWeight(weightHistory)}</p>
@@ -48,28 +86,21 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
             <WeightTrendChart
               label="Weight trend"
               points={weightPoints}
-              xLabels={buildWeightTrendAxisLabels()}
+              xLabels={buildWeightTrendAxisLabels({ days: 30, clock: rangeClock })}
             />
           </div>
         </div>
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days · 0–150% RDI">
+      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="30 days · 0–150% RDI">
         <SharedMicronutrientTrendChart label="Vitamin trends, last 30 days" series={vitamins} />
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days · 0–150% RDI">
+      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="30 days · 0–150% RDI">
         <SharedMicronutrientTrendChart label="Mineral trends, last 30 days" series={minerals} />
       </DashboardCard>
 
-      <DashboardCard icon={<IconBars />} title="Macro balance" eyebrow="Latest day">
-        <StackedBar
-          label="Macro balance"
-          segments={macros.map((macro) => ({ label: macro.label, percent: macro.percent }))}
-        />
-      </DashboardCard>
-
-      <DashboardCard icon={<IconLeaf />} title="Insights" eyebrow="Signals">
+      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Insights" eyebrow="Signals">
         <div className="insight-grid">
           <MetricPill label="Protein on target" value={proteinPercent >= 80 ? 'Good' : 'Needs focus'} tone="green" />
           <MetricPill label={lowVitamin?.label ?? 'Vitamins'} value={lowVitamin ? 'Low' : 'Steady'} tone="amber" />

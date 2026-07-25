@@ -27,5 +27,15 @@ export default function PreviewAnalyticsPage() {
     { id: 'w2', weightKg: 71.9, measuredAt: '2026-07-22T08:00:00Z' },
   ]
 
-  return <AnalyticsView from="2026-06-23" to="2026-07-22" summaries={summaries} weightHistory={weights} />
+  return (
+    <AnalyticsView
+      to="2026-07-22"
+      rangeLabel="Jun 23 – Jul 22, 2026"
+      summaries={summaries}
+      weightHistory={weights}
+      canGoNext={false}
+      onPreviousRange={() => undefined}
+      onNextRange={() => undefined}
+    />
+  )
 }

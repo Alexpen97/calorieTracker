@@ -569,6 +569,29 @@ export function StackedBar({ label, segments }: { label: string; segments: Segme
   )
 }
 
+export function SlimMacroBar({
+  label,
+  segments,
+}: {
+  label: string
+  segments: Array<{ label: string; percent: number }>
+}) {
+  return (
+    <div className="slim-macro-bar" data-testid="analytics-macro-bar" aria-label={label}>
+      <div className="slim-macro-bar-track" aria-hidden>
+        {segments.map((segment) => (
+          <span key={segment.label} style={{ width: `${clampPercent(segment.percent)}%` }} />
+        ))}
+      </div>
+      <div className="slim-macro-bar-legend">
+        {segments.map((segment) => (
+          <span key={segment.label}>{segment.label}</span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function GroupedBars({ label, groups }: { label: string; groups: Segment[] }) {
   return (
     <div className="grouped-bars" aria-label={label}>

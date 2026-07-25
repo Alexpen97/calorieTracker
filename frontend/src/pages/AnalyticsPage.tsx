@@ -1,13 +1,21 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchDiarySummaryRange, fetchGoals, fetchWeightHistory } from '../api/client'
-import { dateDaysAgo } from '../diary/nutritionDashboard'
-import { formatLocalDate } from '../diary/formatDay'
+import {
+  analyticsRangeFromEnd,
+  formatAnalyticsRangeLabel,
+  formatLocalDate,
+  shiftAnalyticsRangeEnd,
+} from '../diary/formatDay'
 import { mergeSummaryWithGoals } from '../diary/mergeSummaryGoals'
 import AnalyticsView from '../screens/AnalyticsView'
 
 export default function AnalyticsPage() {
-  const to = formatLocalDate()
-  const from = dateDaysAgo(29)
+  const today = formatLocalDate()
+  const [rangeEnd, setRangeEnd] = useState(today)
+  const { from, to } = analyticsRangeFromEnd(rangeEnd)
+  const canGoNext = rangeEnd < today
+
   const rangeQuery = useQuery({
     queryKey: ['diary-summary-range', from, to],
     queryFn: () => fetchDiarySummaryRange(from, to),
@@ -32,7 +40,15 @@ export default function AnalyticsPage() {
         </p>
       ))}
       {summaries && (
-        <AnalyticsView from={from} to={to} summaries={summaries} weightHistory={weightQuery.data ?? []} />
+        <AnalyticsView
+          to={to}
+          rangeLabel={formatAnalyticsRangeLabel(from, to)}
+          summaries={summaries}
+          weightHistory={weightQuery.data ?? []}
+          canGoNext={canGoNext}
+          onPreviousRange={() => setRangeEnd((current) => shiftAnalyticsRangeEnd(current, -1, today))}
+          onNextRange={() => setRangeEnd((current) => shiftAnalyticsRangeEnd(current, 1, today))}
+        />
       )}
     </>
   )

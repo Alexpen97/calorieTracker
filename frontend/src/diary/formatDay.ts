@@ -92,6 +92,32 @@ export function formatDiaryDayLabel(dateStr: string, today = formatLocalDate()):
   }).format(parseLocalDate(dateStr))
 }
 
+/** Inclusive 30-day window ending on `rangeEnd` (`from` = end − 29 days). */
+export const ANALYTICS_RANGE_DAYS = 30
+
+export function analyticsRangeFromEnd(rangeEnd: string): { from: string; to: string } {
+  return {
+    from: shiftLocalDate(rangeEnd, -(ANALYTICS_RANGE_DAYS - 1)),
+    to: rangeEnd,
+  }
+}
+
+export function shiftAnalyticsRangeEnd(rangeEnd: string, direction: -1 | 1, today = formatLocalDate()): string {
+  const next = shiftLocalDate(rangeEnd, direction * ANALYTICS_RANGE_DAYS)
+  if (direction > 0 && next > today) return today
+  return next
+}
+
+export function formatAnalyticsRangeLabel(from: string, to: string): string {
+  const start = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(parseLocalDate(from))
+  const end = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(parseLocalDate(to))
+  return `${start} – ${end}`
+}
+
 export function groupEntriesByMeal<T extends DiaryEntryForDisplay>(entries: T[]): MealGroup<T>[] {
   return mealOrder.map((mealType) => ({
     mealType,

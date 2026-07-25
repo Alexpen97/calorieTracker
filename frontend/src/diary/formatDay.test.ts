@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  analyticsRangeFromEnd,
+  formatAnalyticsRangeLabel,
   formatDiaryDayLabel,
   formatLocalDate,
   getMacroProgress,
@@ -7,6 +9,7 @@ import {
   mealLookupPath,
   parseMealTypeParam,
   productPathWithMeal,
+  shiftAnalyticsRangeEnd,
   shiftLocalDate,
   waterProgress,
   type DiaryEntryForDisplay,
@@ -30,6 +33,18 @@ describe('diary day formatting helpers', () => {
     expect(formatDiaryDayLabel('2026-07-23', '2026-07-22')).toMatch(/^Tomorrow,/)
     expect(formatDiaryDayLabel('2026-07-20', '2026-07-22')).toMatch(/Jul/)
     expect(formatDiaryDayLabel('2026-07-20', '2026-07-22')).not.toMatch(/Today|Yesterday|Tomorrow/)
+  })
+
+  it('builds inclusive 30-day analytics windows and clamps forward navigation', () => {
+    expect(analyticsRangeFromEnd('2026-07-25')).toEqual({
+      from: '2026-06-26',
+      to: '2026-07-25',
+    })
+    expect(shiftAnalyticsRangeEnd('2026-07-25', -1, '2026-07-25')).toBe('2026-06-25')
+    expect(shiftAnalyticsRangeEnd('2026-06-25', 1, '2026-07-25')).toBe('2026-07-25')
+    expect(shiftAnalyticsRangeEnd('2026-07-25', 1, '2026-07-25')).toBe('2026-07-25')
+    expect(formatAnalyticsRangeLabel('2026-06-26', '2026-07-25')).toMatch(/Jun 26/)
+    expect(formatAnalyticsRangeLabel('2026-06-26', '2026-07-25')).toMatch(/Jul 25/)
   })
 
   it('groups entries by the fixed meal order', () => {
