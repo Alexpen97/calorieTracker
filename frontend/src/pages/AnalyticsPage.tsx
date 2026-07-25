@@ -7,7 +7,7 @@ import AnalyticsView from '../screens/AnalyticsView'
 
 export default function AnalyticsPage() {
   const to = formatLocalDate()
-  const from = dateDaysAgo(6)
+  const from = dateDaysAgo(29)
   const rangeQuery = useQuery({
     queryKey: ['diary-summary-range', from, to],
     queryFn: () => fetchDiarySummaryRange(from, to),

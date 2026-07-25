@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import {
   GroupedBars,
+  MicroTrendGrid,
   NestedCalorieMacroRing,
   ProgressRing,
   ProgressRow,
@@ -186,5 +187,30 @@ describe('mini chart primitives', () => {
 
     fireEvent.mouseEnter(first)
     expect(screen.getByTestId('weight-trend-tooltip')).toHaveTextContent(/^72[,.]3 kg/)
+  })
+
+  it('renders micronutrient trend lines with latest amount labels', () => {
+    render(
+      <MicroTrendGrid
+        rows={[
+          {
+            code: 'vitamin_d',
+            label: 'Vitamin D',
+            latestPercent: 60,
+            latestAmountLabel: '9 / 15 ug',
+            points: [
+              { percent: 20 },
+              { percent: 40 },
+              { percent: 60 },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByLabelText('Vitamin D trend, last 30 days')).toBeInTheDocument()
+    expect(screen.getByText('Vitamin D')).toBeInTheDocument()
+    expect(screen.getByText('9 / 15 ug')).toBeInTheDocument()
+    expect(document.querySelector('.micro-trend-mid')).toBeInTheDocument()
   })
 })

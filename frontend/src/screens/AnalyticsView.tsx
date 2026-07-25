@@ -1,9 +1,10 @@
 import type { DaySummary, WeightLog } from '../api/client'
 import { DashboardCard, MetricPill } from '../ui/Card'
-import { MicroProgressGrid, Sparkline, StackedBar } from '../ui/MiniCharts'
+import { MicroTrendGrid, Sparkline, StackedBar } from '../ui/MiniCharts'
 import {
   averageMicronutrientRows,
   buildMacroSummaries,
+  buildMicronutrientTrendSeries,
   buildWeightTrend,
 } from '../diary/nutritionDashboard'
 import { IconBars, IconLeaf, IconScale } from '../ui/Icons'
@@ -18,11 +19,13 @@ type Props = {
 export default function AnalyticsView({ from, to, summaries, weightHistory }: Props) {
   const latest = summaries.at(-1)
   const macros = latest ? buildMacroSummaries(latest.totals) : []
-  const vitamins = averageMicronutrientRows(summaries, 'vitamin')
-  const minerals = averageMicronutrientRows(summaries, 'mineral')
-  const lowVitamin = vitamins.find((item) => item.percent > 0 && item.percent < 60)
+  const vitamins = buildMicronutrientTrendSeries(summaries, 'vitamin')
+  const minerals = buildMicronutrientTrendSeries(summaries, 'mineral')
+  const vitaminAverages = averageMicronutrientRows(summaries, 'vitamin')
+  const mineralAverages = averageMicronutrientRows(summaries, 'mineral')
+  const lowVitamin = vitaminAverages.find((item) => item.percent > 0 && item.percent < 60)
   const proteinPercent = macros.find((item) => item.code === 'protein')?.percent ?? 0
-  const calcium = minerals.find((item) => item.code === 'calcium')
+  const calcium = mineralAverages.find((item) => item.code === 'calcium')
 
   return (
     <main className="mobile-page analytics-page mockup-analytics">
@@ -45,12 +48,12 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
         />
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="Intake (avg)">
-        <MicroProgressGrid rows={vitamins} />
+      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days">
+        <MicroTrendGrid rows={vitamins} />
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="Intake (avg)">
-        <MicroProgressGrid rows={minerals} />
+      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days">
+        <MicroTrendGrid rows={minerals} />
       </DashboardCard>
 
       <DashboardCard icon={<IconLeaf />} title="Insights" eyebrow="Signals">
@@ -67,4 +70,3 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
     </main>
   )
 }
-

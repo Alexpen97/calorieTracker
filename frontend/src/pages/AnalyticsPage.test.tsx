@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import AnalyticsPage from './AnalyticsPage'
 import * as client from '../api/client'
+import { dateDaysAgo } from '../diary/nutritionDashboard'
+import { formatLocalDate } from '../diary/formatDay'
 
 describe('AnalyticsPage', () => {
   afterEach(() => {
@@ -10,7 +12,7 @@ describe('AnalyticsPage', () => {
   })
 
   it('renders weight, macro, vitamin, mineral, and insight cards', async () => {
-    vi.spyOn(client, 'fetchDiarySummaryRange').mockResolvedValue([
+    const rangeSpy = vi.spyOn(client, 'fetchDiarySummaryRange').mockResolvedValue([
       {
         date: '2026-07-21',
         totals: [
@@ -57,19 +59,21 @@ describe('AnalyticsPage', () => {
 
     renderWithClient(<AnalyticsPage />)
 
-    expect(await screen.findByLabelText('Vitamin D')).toHaveAttribute('aria-valuenow', '40')
-    expect(screen.getByLabelText('Calcium')).toHaveAttribute('aria-valuenow', '60')
-    expect(screen.getByLabelText('Vitamin C')).toBeInTheDocument()
-    expect(screen.getByLabelText('Iron')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Vitamin D trend, last 30 days')).toBeInTheDocument()
+    expect(screen.getByLabelText('Calcium trend, last 30 days')).toBeInTheDocument()
+    expect(screen.getByLabelText('Vitamin C trend, last 30 days')).toBeInTheDocument()
+    expect(screen.getByLabelText('Iron trend, last 30 days')).toBeInTheDocument()
+    expect(rangeSpy).toHaveBeenCalledWith(dateDaysAgo(29), formatLocalDate())
     expect(weightSpy).toHaveBeenCalledWith({
-      from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-      to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      from: dateDaysAgo(29),
+      to: formatLocalDate(),
     })
     expect(screen.getByRole('heading', { name: 'Weight trend' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
+    expect(screen.getAllByText('Last 30 days').length).toBeGreaterThan(0)
   })
 })
 

@@ -28,3 +28,8 @@ Analytics looked empty or wrong:
 - `frontend/src/screens/AnalyticsView.tsx`
 - `frontend/src/pages/AnalyticsPage.tsx` (+ tests)
 - `frontend/src/pages/DiaryPage.test.tsx`
+
+## Follow-up
+
+- 2026-07-25: Analytics vitamins/minerals are now 30-day line trends
+  (`AI/analytics-micronutrient-trends.md`); dashboard still uses today bars.

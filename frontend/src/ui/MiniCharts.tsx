@@ -174,6 +174,49 @@ export function MicroProgressGrid({
   )
 }
 
+export function NutrientTrendLineChart({
+  label,
+  points,
+}: {
+  label: string
+  points: Array<{ percent: number }>
+}) {
+  const path = nutrientTrendPath(points.map((point) => clampPercent(point.percent)))
+  return (
+    <svg className="micro-trend-chart" viewBox="0 0 100 36" role="img" aria-label={label}>
+      <line className="micro-trend-baseline" x1="0" y1="34" x2="100" y2="34" />
+      {path ? <path className="micro-trend-line" d={path} /> : null}
+    </svg>
+  )
+}
+
+export function MicroTrendGrid({
+  rows,
+}: {
+  rows: Array<{
+    code: string
+    label: string
+    latestPercent: number
+    latestAmountLabel: string
+    points: Array<{ percent: number }>
+  }>
+}) {
+  return (
+    <div className="micro-trend-grid">
+      {rows.map((row) => (
+        <div
+          className={`micro-trend-cell micro-trend-${progressTone(row.latestPercent)}`}
+          key={row.code}
+        >
+          <span>{row.label}</span>
+          <NutrientTrendLineChart label={`${row.label} trend, last 30 days`} points={row.points} />
+          <strong className="micro-trend-meta">{row.latestAmountLabel}</strong>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function Sparkline({ label, points }: { label: string; points: ChartPoint[] }) {
   const path = sparklinePath(points)
   return (
@@ -386,6 +429,24 @@ function sparklinePath(points: ChartPoint[]): string {
       return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
     })
     .join(' ')
+}
+
+function nutrientTrendPath(points: number[]): string {
+  if (points.length === 0) return ''
+  return points
+    .map((point, index) => {
+      const x = points.length === 1 ? 50 : (index / (points.length - 1)) * 100
+      const y = 34 - (point / 100) * 30
+      return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
+    })
+    .join(' ')
+}
+
+function progressTone(percent: number): 'good' | 'mid' | 'low' {
+  const bounded = clampPercent(percent)
+  if (bounded >= 80) return 'good'
+  if (bounded >= 40) return 'mid'
+  return 'low'
 }
 
 const VIEW = { w: 360, h: 140 } as const

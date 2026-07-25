@@ -36,4 +36,6 @@ selenium, copper, manganese, phosphorus, chromium, molybdenum
 - Redeploy `food-catalog-service` and `user-profile-service` for Flyway.
 - 2026-07-23: Diary + Analytics now use the same full checklist / grids as the
   dashboard (see `AI/fix-micros-diary-analytics.md`).
+- 2026-07-25: Analytics vitamins/minerals switched from average bars to 30-day
+  line trends (see `AI/analytics-micronutrient-trends.md`).
 - NEVO estimate enrichment: see `AI/nevo-micronutrient-estimates.md`.
