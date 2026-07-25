@@ -94,6 +94,15 @@ export type MicronutrientTrend = {
   latestAmountLabel: string
 }
 
+/**
+ * Map amount onto a shared chart Y scale where each nutrient uses its own RDI:
+ * 50% RDI → bottom (0), 100% RDI → center (0.5), 150% RDI → top (1).
+ */
+export function micronutrientRdiNormalized(amount: number, target: number | null): number | null {
+  if (target == null || !(target > 0) || !Number.isFinite(amount)) return null
+  return Math.max(0, Math.min(1, amount / target - 0.5))
+}
+
 /** Daily micronutrient intake series across day summaries (amount vs shared target). */
 export function buildMicronutrientTrendSeries(
   summaries: Array<{ date: string; totals: NutrientTotalForDisplay[] }>,

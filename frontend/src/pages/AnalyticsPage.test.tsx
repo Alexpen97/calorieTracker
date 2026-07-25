@@ -59,10 +59,11 @@ describe('AnalyticsPage', () => {
 
     renderWithClient(<AnalyticsPage />)
 
-    expect(await screen.findByLabelText('Vitamin D trend, last 30 days')).toBeInTheDocument()
-    expect(screen.getByLabelText('Calcium trend, last 30 days')).toBeInTheDocument()
-    expect(screen.getByLabelText('Vitamin C trend, last 30 days')).toBeInTheDocument()
-    expect(screen.getByLabelText('Iron trend, last 30 days')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Vitamin trends, last 30 days')).toBeInTheDocument()
+    expect(screen.getByLabelText('Mineral trends, last 30 days')).toBeInTheDocument()
+    expect(screen.getByTestId('shared-micro-line-vitamin_d')).toBeInTheDocument()
+    expect(screen.getByTestId('shared-micro-line-calcium')).toBeInTheDocument()
+    expect(screen.getByLabelText('Vitamin trends, last 30 days legend')).toBeInTheDocument()
     expect(rangeSpy).toHaveBeenCalledWith(dateDaysAgo(29), formatLocalDate())
     expect(weightSpy).toHaveBeenCalledWith({
       from: dateDaysAgo(29),
@@ -73,7 +74,7 @@ describe('AnalyticsPage', () => {
     expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
-    expect(screen.getAllByText('Last 30 days').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Last 30 days/).length).toBeGreaterThan(0)
   })
 })
 

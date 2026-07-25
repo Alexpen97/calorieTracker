@@ -6,6 +6,7 @@ import {
   NestedCalorieMacroRing,
   ProgressRing,
   ProgressRow,
+  SharedMicronutrientTrendChart,
   Sparkline,
   StackedBar,
   StackedFoodBars,
@@ -212,5 +213,45 @@ describe('mini chart primitives', () => {
     expect(screen.getByText('Vitamin D')).toBeInTheDocument()
     expect(screen.getByText('9 / 15 ug')).toBeInTheDocument()
     expect(document.querySelector('.micro-trend-mid')).toBeInTheDocument()
+  })
+
+  it('renders a shared micronutrient chart with RDI-centered lines and legend', () => {
+    render(
+      <SharedMicronutrientTrendChart
+        label="Vitamin trends, last 30 days"
+        series={[
+          {
+            code: 'vitamin_d',
+            label: 'Vitamin D',
+            target: 15,
+            points: [
+              { date: '2026-07-01', amount: 7.5 },
+              { date: '2026-07-02', amount: 15 },
+              { date: '2026-07-03', amount: 22.5 },
+            ],
+          },
+          {
+            code: 'vitamin_c',
+            label: 'Vitamin C',
+            target: 80,
+            points: [
+              { date: '2026-07-01', amount: 40 },
+              { date: '2026-07-02', amount: 80 },
+              { date: '2026-07-03', amount: 120 },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByLabelText('Vitamin trends, last 30 days')).toBeInTheDocument()
+    expect(screen.getByTestId('shared-micro-line-vitamin_d')).toBeInTheDocument()
+    expect(screen.getByTestId('shared-micro-line-vitamin_c')).toBeInTheDocument()
+    expect(screen.getByText('RDI')).toBeInTheDocument()
+    expect(screen.getByText('150%')).toBeInTheDocument()
+    expect(screen.getByText('50%')).toBeInTheDocument()
+    expect(screen.getByLabelText('Vitamin trends, last 30 days legend')).toBeInTheDocument()
+    expect(screen.getAllByText('Vitamin D').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Vitamin C').length).toBeGreaterThan(0)
   })
 })

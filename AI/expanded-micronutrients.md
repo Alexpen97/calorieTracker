@@ -38,4 +38,6 @@ selenium, copper, manganese, phosphorus, chromium, molybdenum
   dashboard (see `AI/fix-micros-diary-analytics.md`).
 - 2026-07-25: Analytics vitamins/minerals switched from average bars to 30-day
   line trends (see `AI/analytics-micronutrient-trends.md`).
+- 2026-07-25: Trends became shared multi-line charts with RDI at center and
+  top at 150% RDI (see `AI/analytics-shared-micronutrient-graphs.md`).
 - NEVO estimate enrichment: see `AI/nevo-micronutrient-estimates.md`.

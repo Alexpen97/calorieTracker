@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { micronutrientRdiNormalized } from '../diary/nutritionDashboard'
 
 type Segment = { label: string; percent: number }
 type MacroSegment = Segment & { amountLabel: string }
@@ -213,6 +214,153 @@ export function MicroTrendGrid({
           <strong className="micro-trend-meta">{row.latestAmountLabel}</strong>
         </div>
       ))}
+    </div>
+  )
+}
+
+const MICRO_LINE_COLORS = [
+  '#2f6b4f',
+  '#c48a1a',
+  '#3d7ea6',
+  '#b4543c',
+  '#6b5b95',
+  '#2f8f5b',
+  '#8d6e4c',
+  '#4a90a4',
+  '#a65d7b',
+  '#5a7d4a',
+  '#d08a3e',
+  '#3f6f8f',
+  '#7a5c45',
+]
+
+const SHARED_MICRO = {
+  w: 360,
+  h: 180,
+  left: 36,
+  right: 348,
+  top: 14,
+  bottom: 150,
+} as const
+
+export function SharedMicronutrientTrendChart({
+  label,
+  series,
+}: {
+  label: string
+  series: Array<{
+    code: string
+    label: string
+    target: number | null
+    points: Array<{ date: string; amount: number }>
+  }>
+}) {
+  const dayCount = series[0]?.points.length ?? 0
+  const plotWidth = SHARED_MICRO.right - SHARED_MICRO.left
+  const plotHeight = SHARED_MICRO.bottom - SHARED_MICRO.top
+  const centerY = SHARED_MICRO.top + plotHeight / 2
+
+  const paths = series.map((item, index) => {
+    const color = MICRO_LINE_COLORS[index % MICRO_LINE_COLORS.length]
+    if (!item.target || item.points.length === 0) {
+      return { ...item, color, d: '' }
+    }
+    const d = item.points
+      .map((point, pointIndex) => {
+        const normalized = micronutrientRdiNormalized(point.amount, item.target)
+        const yRatio = normalized ?? 0
+        const x =
+          item.points.length === 1
+            ? SHARED_MICRO.left + plotWidth / 2
+            : SHARED_MICRO.left + (pointIndex / (item.points.length - 1)) * plotWidth
+        const y = SHARED_MICRO.bottom - yRatio * plotHeight
+        return `${pointIndex === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
+      })
+      .join(' ')
+    return { ...item, color, d }
+  })
+
+  return (
+    <div className="shared-micro-trend">
+      <svg
+        className="shared-micro-trend-chart"
+        viewBox={`0 0 ${SHARED_MICRO.w} ${SHARED_MICRO.h}`}
+        role="img"
+        aria-label={label}
+        data-testid="shared-micro-trend-chart"
+      >
+        <line
+          className="shared-micro-guide"
+          x1={SHARED_MICRO.left}
+          x2={SHARED_MICRO.right}
+          y1={SHARED_MICRO.top}
+          y2={SHARED_MICRO.top}
+        />
+        <line
+          className="shared-micro-guide shared-micro-guide-center"
+          x1={SHARED_MICRO.left}
+          x2={SHARED_MICRO.right}
+          y1={centerY}
+          y2={centerY}
+        />
+        <line
+          className="shared-micro-guide"
+          x1={SHARED_MICRO.left}
+          x2={SHARED_MICRO.right}
+          y1={SHARED_MICRO.bottom}
+          y2={SHARED_MICRO.bottom}
+        />
+        <text
+          className="shared-micro-axis-label"
+          x={SHARED_MICRO.left - 4}
+          y={SHARED_MICRO.top + 4}
+          textAnchor="end"
+        >
+          150%
+        </text>
+        <text className="shared-micro-axis-label" x={SHARED_MICRO.left - 4} y={centerY + 3} textAnchor="end">
+          RDI
+        </text>
+        <text
+          className="shared-micro-axis-label"
+          x={SHARED_MICRO.left - 4}
+          y={SHARED_MICRO.bottom + 3}
+          textAnchor="end"
+        >
+          50%
+        </text>
+        {dayCount > 0 ? (
+          <text className="shared-micro-axis-label" x={SHARED_MICRO.left} y={SHARED_MICRO.h - 8} textAnchor="start">
+            {series[0]?.points[0]?.date.slice(5) ?? ''}
+          </text>
+        ) : null}
+        {dayCount > 1 ? (
+          <text className="shared-micro-axis-label" x={SHARED_MICRO.right} y={SHARED_MICRO.h - 8} textAnchor="end">
+            {series[0]?.points[dayCount - 1]?.date.slice(5) ?? ''}
+          </text>
+        ) : null}
+        {paths.map((item) =>
+          item.d ? (
+            <path
+              key={item.code}
+              className="shared-micro-line"
+              data-testid={`shared-micro-line-${item.code}`}
+              d={item.d}
+              stroke={item.color}
+            >
+              <title>{item.label}</title>
+            </path>
+          ) : null,
+        )}
+      </svg>
+      <ul className="shared-micro-legend" aria-label={`${label} legend`}>
+        {paths.map((item) => (
+          <li key={item.code}>
+            <span className="shared-micro-swatch" style={{ background: item.color }} aria-hidden />
+            {item.label}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
