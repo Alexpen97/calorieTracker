@@ -36,6 +36,7 @@ class GatewayApplicationTest {
             "user-profile-service",
             "food-catalog-service",
             "diary-service",
+            "diary-integrations",
             "diary-api-docs",
             "nevo-service",
             "nevo-api-docs");

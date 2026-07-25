@@ -33,7 +33,9 @@ public class UpstreamHostGuardFilter implements GlobalFilter, Ordered {
     URI requestUrl = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR);
     String path = exchange.getRequest().getURI().getRawPath();
 
-    if (route != null && path != null && path.startsWith("/api/diary")) {
+    if (route != null
+        && path != null
+        && (path.startsWith("/api/diary") || path.startsWith("/api/integrations"))) {
       log.info(
           "Proxying {} {} via route {} -> requestUrl={} routeUri={}",
           exchange.getRequest().getMethod(),

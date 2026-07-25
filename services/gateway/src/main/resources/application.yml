@@ -45,6 +45,10 @@ spring:
               uri: ${DIARY_SERVICE_URL:http://localhost:8084}
               predicates:
                 - Path=/api/diary/**
+            - id: diary-integrations
+              uri: ${DIARY_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/integrations/**
             - id: diary-api-docs
               uri: ${DIARY_SERVICE_URL:http://localhost:8084}
               predicates:

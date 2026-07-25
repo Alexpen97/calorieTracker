@@ -11,8 +11,12 @@ import { isNativePlatform, nativePlatform } from './native'
 export type SamsungHealthPermissionState = string
 
 export type SamsungHealthPluginStatus = {
-  available: boolean
+  /** Legacy/web mock field. Prefer supported + sdkLinked from the Android plugin. */
+  available?: boolean
+  supported?: boolean
+  sdkLinked?: boolean
   permissionState: SamsungHealthPermissionState
+  message?: string
 }
 
 export type SamsungHealthPluginDay = {
@@ -57,10 +61,17 @@ export async function getConnectionState(): Promise<SamsungHealthConnectionState
 
   try {
     const status = await SamsungHealth.getStatus()
-    if (!status?.available) {
-      return { status: 'unavailable', reason: 'Samsung Health is not available on this device' }
+    const permissionState = status?.permissionState ?? 'UNKNOWN'
+    if (!isPluginReady(status)) {
+      return {
+        status: 'unavailable',
+        reason:
+          status?.message ||
+          (permissionState === 'SDK_NOT_LINKED'
+            ? 'Samsung Health SDK is not linked in this build'
+            : 'Samsung Health is not available on this device'),
+      }
     }
-    const permissionState = status.permissionState ?? 'UNKNOWN'
     if (isDenied(permissionState)) {
       return { status: 'permission_denied', permissionState }
     }
@@ -144,6 +155,17 @@ export async function collectAndSyncSamsungHealth(
     permissionState: permission.permissionState || 'GRANTED',
     days,
   })
+}
+
+function isPluginReady(status: SamsungHealthPluginStatus | null | undefined): boolean {
+  if (!status) return false
+  if (typeof status.available === 'boolean') {
+    return status.available
+  }
+  if (status.supported === false) return false
+  if (status.sdkLinked === false) return false
+  if ((status.permissionState ?? '').toUpperCase() === 'SDK_NOT_LINKED') return false
+  return status.supported !== false
 }
 
 function isDenied(permissionState: string): boolean {

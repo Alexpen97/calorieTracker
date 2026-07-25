@@ -89,6 +89,25 @@ describe('samsungHealth platform adapter', () => {
     })
   })
 
+  it('maps Android SDK_NOT_LINKED status to unavailable', async () => {
+    vi.doMock('./native', () => ({
+      isNativePlatform: () => true,
+      nativePlatform: () => 'android',
+    }))
+    getStatus.mockResolvedValue({
+      supported: true,
+      sdkLinked: false,
+      permissionState: 'SDK_NOT_LINKED',
+      message: 'Add the Samsung Health SDK AAR to enable live reads',
+    })
+
+    const { getConnectionState } = await import('./samsungHealth')
+    await expect(getConnectionState()).resolves.toEqual({
+      status: 'unavailable',
+      reason: 'Add the Samsung Health SDK AAR to enable live reads',
+    })
+  })
+
   it('collects daily burns and posts them through syncSamsungHealth', async () => {
     vi.doMock('./native', () => ({
       isNativePlatform: () => true,

@@ -124,71 +124,71 @@ decision explicitly recalculates macros from exercise burn.
 
 ### Task 1: Samsung Health spike and native adapter
 
-- [ ] Confirm Samsung Health SDK setup requirements, partner approval status,
+- [x] Confirm Samsung Health SDK setup requirements, partner approval status,
       Gradle dependency, manifest metadata, and ProGuard/R8 rules.
-- [ ] Confirm the exact burned-calorie field mapping and units.
-- [ ] Add `frontend/src/platform/samsungHealth.ts` with web no-op and Android
+- [x] Confirm the exact burned-calorie field mapping and units.
+- [x] Add `frontend/src/platform/samsungHealth.ts` with web no-op and Android
       native implementation shape.
-- [ ] Add Android native plugin/bridge code under `frontend/android/app` or a
+- [x] Add Android native plugin/bridge code under `frontend/android/app` or a
       local Capacitor plugin module, matching the current platform-adapter
       pattern.
-- [ ] Add Vitest coverage for unsupported web, permission-denied, and successful
+- [x] Add Vitest coverage for unsupported web, permission-denied, and successful
       sync adapter behavior.
 
 ### Task 2: Integration service boundary
 
-- [ ] Add a small integration service or package that owns Samsung Health daily
+- [x] Add a small integration service or package that owns Samsung Health daily
       activity persistence.
-- [ ] Add Flyway migration for `health_activity_daily`.
-- [ ] Add controller endpoints for status, sync, and disconnect.
-- [ ] Validate that synced records belong to the authenticated user and dates
+- [x] Add Flyway migration for `health_activity_daily`.
+- [x] Add controller endpoints for status, sync, and disconnect.
+- [x] Validate that synced records belong to the authenticated user and dates
       are local dates with explicit `zone`.
-- [ ] Add JUnit/MockMvc tests for sync upsert, status, disconnect, auth, and
+- [x] Add JUnit/MockMvc tests for sync upsert, status, disconnect, auth, and
       invalid payloads.
 
 ### Task 3: Diary summary calorie adjustment
 
-- [ ] Add an `ActivityEnergyClient` for diary-service to load daily burn totals.
-- [ ] Extend `SummaryService.DailySummary` with `energyAdjustment`.
-- [ ] Compute `baseTarget` from `energy_kcal.target`, `burnedCalories` from the
+- [x] Add an `ActivityEnergyClient` for diary-service to load daily burn totals.
+- [x] Extend `SummaryService.DailySummary` with `energyAdjustment`.
+- [x] Compute `baseTarget` from `energy_kcal.target`, `burnedCalories` from the
       activity client, and `effectiveTarget = baseTarget + burnedCalories`.
-- [ ] On activity-client failure, log and return the current summary with no
+- [x] On activity-client failure, log and return the current summary with no
       adjustment, mirroring current null-target behavior.
-- [ ] Add diary-service tests for adjusted target, no burn, no energy target,
+- [x] Add diary-service tests for adjusted target, no burn, no energy target,
       range summaries, and integration failure.
 
 ### Task 4: Frontend data and dashboard UI
 
-- [ ] Extend `DaySummary` in `frontend/src/api/client.ts`.
-- [ ] Add a helper in `nutritionDashboard.ts` to derive calorie display state:
+- [x] Extend `DaySummary` in `frontend/src/api/client.ts`.
+- [x] Add a helper in `nutritionDashboard.ts` to derive calorie display state:
       consumed, base target, burned adjustment, effective target, primary
       percent, adjustment percent.
-- [ ] Extend `NestedCalorieMacroRing` props with optional adjustment segment and
+- [x] Extend `NestedCalorieMacroRing` props with optional adjustment segment and
       adjustment label.
-- [ ] Render the adjustment as a faded distinct-color background arc on the same
+- [x] Render the adjustment as a faded distinct-color background arc on the same
       SVG donut, behind the consumed indicator.
-- [ ] Show the separate burn number near the donut center or immediately under
+- [x] Show the separate burn number near the donut center or immediately under
       it, e.g. `+320 burned`, without replacing `1,450 / 2,420`.
-- [ ] Preserve current behavior when `energyAdjustment` is absent.
-- [ ] Add `MiniCharts`, `nutritionDashboard`, and `DashboardPage` tests.
+- [x] Preserve current behavior when `energyAdjustment` is absent.
+- [x] Add `MiniCharts`, `nutritionDashboard`, and `DashboardPage` tests.
 
 ### Task 5: Settings and sync UX
 
-- [ ] Add a Samsung Health row under settings/profile integrations.
-- [ ] Show unsupported, disconnected, permission required, connected, syncing,
+- [x] Add a Samsung Health row under settings/profile integrations.
+- [x] Show unsupported, disconnected, permission required, connected, syncing,
       and last synced states.
-- [ ] On Android, guide the user through Samsung permission request, then sync
+- [x] On Android, guide the user through Samsung permission request, then sync
       today's and recent days' activity.
-- [ ] On web, explain that Samsung Health sync requires the Android app.
-- [ ] Add tests for settings integration states.
+- [x] On web, explain that Samsung Health sync requires the Android app.
+- [x] Add tests for settings integration states.
 
 ### Task 6: Documentation and rollout
 
-- [ ] Update `AI/samsung-health-calorie-adjustment.md` as work progresses.
-- [ ] Update Android setup docs with Samsung Health SDK setup, partner approval,
+- [x] Update `AI/samsung-health-calorie-adjustment.md` as work progresses.
+- [x] Update Android setup docs with Samsung Health SDK setup, partner approval,
       manifest permissions, and test-device requirements.
-- [ ] Add production notes for privacy, consent, data retention, and disconnect.
-- [ ] Gate the feature with `VITE_SAMSUNG_HEALTH_ENABLED` and backend config
+- [x] Add production notes for privacy, consent, data retention, and disconnect.
+- [x] Gate the feature with `VITE_SAMSUNG_HEALTH_ENABLED` and backend config
       until Samsung field mapping and partner approval are verified.
 
 ## Testing plan

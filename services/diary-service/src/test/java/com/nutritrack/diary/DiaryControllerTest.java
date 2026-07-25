@@ -404,6 +404,102 @@ class DiaryControllerTest {
         .andExpect(jsonPath("$[2].water.targetMl").value(2600.00));
   }
 
+  @Test
+  void samsungHealthSyncUpsertsStatusAndAdjustsDailySummaryTarget() throws Exception {
+    Jwt jwt = jwtForUser("00000000-0000-0000-0000-000000001101");
+    when(userGoalsClient.getGoals(eq("Bearer caller-token")))
+        .thenReturn(List.of(goal("energy_kcal", "2100.00", "kcal"), goal("water_ml", "2500.00", "ml")));
+    when(jwtDecoder.decode("caller-token")).thenReturn(jwt);
+
+    mockMvc
+        .perform(
+            get("/api/integrations/samsung-health/status")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled").value(true))
+        .andExpect(jsonPath("$.connected").value(false))
+        .andExpect(jsonPath("$.permissionState").value("DISCONNECTED"));
+
+    mockMvc
+        .perform(
+            post("/api/integrations/samsung-health/sync")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "zone":"Europe/Amsterdam",
+                      "permissionState":"GRANTED",
+                      "days":[
+                        {
+                          "localDate":"2026-07-21",
+                          "activeEnergyKcal":320,
+                          "totalEnergyKcal":450,
+                          "selectedBurnKcal":320,
+                          "sourceRecordCount":3
+                        }
+                      ]
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.provider").value("SAMSUNG_HEALTH"))
+        .andExpect(jsonPath("$.days[0].localDate").value("2026-07-21"))
+        .andExpect(jsonPath("$.days[0].selectedBurnKcal").value(320));
+
+    mockMvc
+        .perform(
+            get("/api/integrations/samsung-health/status")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.connected").value(true))
+        .andExpect(jsonPath("$.permissionState").value("GRANTED"))
+        .andExpect(jsonPath("$.lastSyncedAt").exists());
+
+    mockMvc
+        .perform(
+            get("/api/diary/summary")
+                .header("Authorization", "Bearer caller-token")
+                .queryParam("date", "2026-07-21")
+                .queryParam("zone", "Europe/Amsterdam"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totals[?(@.code == 'energy_kcal')].target").value(2100.00))
+        .andExpect(jsonPath("$.energyAdjustment.provider").value("SAMSUNG_HEALTH"))
+        .andExpect(jsonPath("$.energyAdjustment.burnedCalories").value(320))
+        .andExpect(jsonPath("$.energyAdjustment.baseTarget").value(2100.00))
+        .andExpect(jsonPath("$.energyAdjustment.effectiveTarget").value(2420.00))
+        .andExpect(jsonPath("$.energyAdjustment.syncedAt").exists());
+
+    mockMvc
+        .perform(
+            delete("/api/integrations/samsung-health")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get("/api/diary/summary")
+                .header("Authorization", "Bearer caller-token")
+                .queryParam("date", "2026-07-21")
+                .queryParam("zone", "Europe/Amsterdam"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.energyAdjustment").value((Object) null));
+  }
+
+  @Test
+  void samsungHealthSyncRejectsEmptyDays() throws Exception {
+    Jwt jwt = jwtForUser("00000000-0000-0000-0000-000000001102");
+    mockMvc
+        .perform(
+            post("/api/integrations/samsung-health/sync")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"zone":"UTC","permissionState":"GRANTED","days":[]}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   private MvcResult createEntry(
       Jwt jwt, UUID productId, String mealType, String consumedAt, String weightG) throws Exception {
     when(jwtDecoder.decode("caller-token")).thenReturn(jwt);
