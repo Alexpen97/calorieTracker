@@ -1,6 +1,6 @@
 import type { DaySummary, WeightLog } from '../api/client'
 import { DashboardCard, MetricPill } from '../ui/Card'
-import { MicroTrendGrid, Sparkline, StackedBar } from '../ui/MiniCharts'
+import { SharedMicronutrientTrendChart, Sparkline, StackedBar } from '../ui/MiniCharts'
 import {
   averageMicronutrientRows,
   buildMacroSummaries,
@@ -48,12 +48,12 @@ export default function AnalyticsView({ from, to, summaries, weightHistory }: Pr
         />
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days">
-        <MicroTrendGrid rows={vitamins} />
+      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Vitamins" eyebrow="Last 30 days · RDI centered">
+        <SharedMicronutrientTrendChart label="Vitamin trends, last 30 days" series={vitamins} />
       </DashboardCard>
 
-      <DashboardCard icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days">
-        <MicroTrendGrid rows={minerals} />
+      <DashboardCard className="dashboard-span" icon={<IconLeaf />} title="Minerals" eyebrow="Last 30 days · RDI centered">
+        <SharedMicronutrientTrendChart label="Mineral trends, last 30 days" series={minerals} />
       </DashboardCard>
 
       <DashboardCard icon={<IconLeaf />} title="Insights" eyebrow="Signals">

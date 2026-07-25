@@ -8,6 +8,7 @@ import {
   buildWeightTrendAxisLabels,
   buildWeightTrendSeries,
   dateDaysAgo,
+  micronutrientRdiNormalized,
 } from './nutritionDashboard'
 import type { NutrientTotalForDisplay } from './formatDay'
 import type { WeightLog } from '../api/client'
@@ -180,6 +181,16 @@ describe('nutrition dashboard helpers', () => {
     expect(calcium?.points[0]).toEqual({ date: '2026-06-01', amount: 0, percent: 0 })
     expect(calcium?.points[29]).toEqual({ date: '2026-06-30', amount: 800, percent: 80 })
     expect(calcium?.latestPercent).toBe(80)
+  })
+
+  it('normalizes micronutrient amounts so RDI sits at chart center and 150% at the top', () => {
+    expect(micronutrientRdiNormalized(15, 15)).toBe(0.5)
+    expect(micronutrientRdiNormalized(22.5, 15)).toBe(1)
+    expect(micronutrientRdiNormalized(7.5, 15)).toBe(0)
+    expect(micronutrientRdiNormalized(0, 15)).toBe(0)
+    expect(micronutrientRdiNormalized(30, 15)).toBe(1)
+    expect(micronutrientRdiNormalized(1000, null)).toBeNull()
+    expect(micronutrientRdiNormalized(500, 0)).toBeNull()
   })
 
   it('builds oldest-to-newest weight trend points for the last 30 days', () => {
