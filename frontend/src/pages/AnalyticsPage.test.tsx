@@ -70,6 +70,9 @@ describe('AnalyticsPage', () => {
       to: formatLocalDate(),
     })
     expect(screen.getByRole('heading', { name: 'Weight trend' })).toBeInTheDocument()
+    expect(screen.getByTestId('weight-trend-path')).toBeInTheDocument()
+    expect(screen.getAllByTestId('weight-trend-point')).toHaveLength(2)
+    expect(screen.getByText(/^71[,.]9 kg$/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Macro balance' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
