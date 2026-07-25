@@ -2,6 +2,9 @@
 
 ## Completed
 
+- 2026-07-25: Replaced top-level Profile with a Settings hub and focused
+  subsections (profile, goals, weight, account). Notes:
+  `AI/settings-profile-menu.md`.
 - 2026-07-23: Web deep links (`/analytics`, etc.) blanked because Capacitor
   `base: './'` made assets resolve under the route; web builds now use `/`.
   Notes: `AI/analytics-deep-link-assets.md`.

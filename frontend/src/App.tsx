@@ -4,7 +4,11 @@ import { isLoggedIn } from './auth/tokenStorage'
 import { fetchMe, fetchWeightHistory } from './api/client'
 import { needsOnboarding } from './onboarding/needsOnboarding'
 import LoginPage from './pages/LoginPage'
-import ProfilePage from './pages/ProfilePage'
+import SettingsHomePage from './pages/SettingsHomePage'
+import SettingsProfileSection from './pages/settings/SettingsProfileSection'
+import SettingsGoalsSection from './pages/settings/SettingsGoalsSection'
+import SettingsWeightSection from './pages/settings/SettingsWeightSection'
+import SettingsAccountSection from './pages/settings/SettingsAccountSection'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import LookupPage from './pages/LookupPage'
 import ProductPage from './pages/ProductPage'
@@ -193,15 +197,56 @@ export default function App() {
           }
         />
         <Route
-          path="/me"
+          path="/settings"
           element={
             <RequireAuth>
               <RequireOnboardingComplete>
-                <ProfilePage />
+                <SettingsHomePage />
               </RequireOnboardingComplete>
             </RequireAuth>
           }
         />
+        <Route
+          path="/settings/profile"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <SettingsProfileSection />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings/goals"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <SettingsGoalsSection />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings/weight"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <SettingsWeightSection />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings/account"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <SettingsAccountSection />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route path="/me" element={<Navigate to="/settings" replace />} />
       </Routes>
     </div>
   )

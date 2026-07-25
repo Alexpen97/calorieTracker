@@ -18,7 +18,10 @@ describe('AppNavigation', () => {
       'href',
       '/analytics',
     )
-    expect(screen.getAllByRole('link', { name: 'Profile' })[0]).toHaveAttribute('href', '/me')
+    expect(screen.getAllByRole('link', { name: 'Settings' })[0]).toHaveAttribute(
+      'href',
+      '/settings',
+    )
   })
 
   it('keeps moderation available only for moderators and admins', () => {
