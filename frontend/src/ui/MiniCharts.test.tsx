@@ -126,21 +126,23 @@ describe('mini chart primitives', () => {
     expect(screen.getByText('Iron')).toBeInTheDocument()
   })
 
-  it('renders a slim horizontal macro bar with amount labels', () => {
+  it('renders a slim mixed macro bar with a shared track and legend', () => {
     render(
       <SlimMacroBar
-        rows={[
-          { label: 'Protein', percent: 80, amountLabel: '80 / 100 g' },
-          { label: 'Carbs', percent: 70, amountLabel: '175 / 250 g' },
-          { label: 'Fat', percent: 60, amountLabel: '42 / 70 g' },
+        label="Macro balance"
+        segments={[
+          { label: 'Protein', percent: 80 },
+          { label: 'Carbs', percent: 70 },
+          { label: 'Fat', percent: 60 },
         ]}
       />,
     )
 
     expect(screen.getByTestId('analytics-macro-bar')).toBeInTheDocument()
-    expect(screen.getByLabelText('Protein: 80 / 100 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 175 / 250 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 42 / 70 g')).toBeInTheDocument()
+    expect(screen.getByLabelText('Macro balance')).toBeInTheDocument()
+    expect(screen.getByText('Protein')).toBeInTheDocument()
+    expect(screen.getByText('Carbs')).toBeInTheDocument()
+    expect(screen.getByText('Fat')).toBeInTheDocument()
   })
 
   it('renders a timed weight chart with a marker per logged weigh-in', () => {

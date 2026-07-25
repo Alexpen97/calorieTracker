@@ -72,11 +72,8 @@ export default function AnalyticsView({
       </div>
 
       <SlimMacroBar
-        rows={macros.map((macro) => ({
-          label: macro.label,
-          percent: macro.percent,
-          amountLabel: macro.amountLabel,
-        }))}
+        label="Macro balance"
+        segments={macros.map((macro) => ({ label: macro.label, percent: macro.percent }))}
       />
 
       <DashboardCard className="dashboard-span" icon={<IconScale />} title="Weight trend" eyebrow="30 days">

@@ -85,7 +85,7 @@ describe('AnalyticsPage', () => {
     expect(screen.getByRole('heading', { name: 'Analytics' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Macro balance' })).not.toBeInTheDocument()
     expect(screen.getByTestId('analytics-macro-bar')).toBeInTheDocument()
-    expect(screen.getByLabelText(/Protein:/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Macro balance')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
     expect(screen.getAllByText(/30 days/).length).toBeGreaterThan(0)

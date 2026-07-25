@@ -570,37 +570,25 @@ export function StackedBar({ label, segments }: { label: string; segments: Segme
 }
 
 export function SlimMacroBar({
-  rows,
+  label,
+  segments,
 }: {
-  rows: Array<{ label: string; percent: number; amountLabel: string }>
+  label: string
+  segments: Array<{ label: string; percent: number }>
 }) {
   return (
-    <ul className="slim-macro-bar" data-testid="analytics-macro-bar">
-      {rows.map((row, index) => {
-        const bounded = clampPercent(row.percent)
-        const tone = MACRO_RING_TONES[index % MACRO_RING_TONES.length]
-        return (
-          <li
-            key={row.label}
-            className={`slim-macro-bar-item slim-macro-bar-${tone}`}
-            aria-label={`${row.label}: ${row.amountLabel}`}
-          >
-            <span className="slim-macro-bar-name">{row.label}</span>
-            <div
-              className="slim-macro-bar-track"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={bounded}
-              aria-valuetext={row.amountLabel}
-            >
-              <div className="slim-macro-bar-fill" style={{ width: `${bounded}%` }} />
-            </div>
-            <span className="slim-macro-bar-amount">{row.amountLabel}</span>
-          </li>
-        )
-      })}
-    </ul>
+    <div className="slim-macro-bar" data-testid="analytics-macro-bar" aria-label={label}>
+      <div className="slim-macro-bar-track" aria-hidden>
+        {segments.map((segment) => (
+          <span key={segment.label} style={{ width: `${clampPercent(segment.percent)}%` }} />
+        ))}
+      </div>
+      <div className="slim-macro-bar-legend">
+        {segments.map((segment) => (
+          <span key={segment.label}>{segment.label}</span>
+        ))}
+      </div>
+    </div>
   )
 }
 

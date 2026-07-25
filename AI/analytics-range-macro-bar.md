@@ -6,9 +6,9 @@
    diary day nav. The window is always 30 inclusive days ending on `rangeEnd`
    (default today). Previous jumps back 30 days; next jumps forward 30 days and
    clamps to today.
-2. **Slim macro bar** — Protein / Carbs / Fat sit in a slim horizontal bar under
-   the range nav (latest day in the selected window). The old Macro balance card
-   is removed.
+2. **Slim macro bar** — Protein / Carbs / Fat use the original mixed stacked
+   bar (one shared track + legend) under the range nav, without a Macro balance
+   card. Values are from the latest day in the selected window.
 3. **Weight chart** — Axis/filter clock follows the selected range end so past
    windows plot correctly.
 
