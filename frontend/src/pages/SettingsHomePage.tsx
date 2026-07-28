@@ -2,10 +2,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { fetchGoals, fetchMe, fetchWeightHistory } from '../api/client'
 import { clearTokens } from '../auth/tokenStorage'
+import { isSamsungHealthFeatureEnabled } from '../platform/samsungHealth'
 import { objectiveLabel } from './settings/SettingsSectionShell'
 
 export default function SettingsHomePage() {
   const navigate = useNavigate()
+  const showIntegrations = isSamsungHealthFeatureEnabled()
   const meQuery = useQuery({
     queryKey: ['me'],
     queryFn: fetchMe,
@@ -89,6 +91,18 @@ export default function SettingsHomePage() {
             ›
           </span>
         </Link>
+
+        {showIntegrations ? (
+          <Link className="settings-row" to="/settings/integrations">
+            <span className="settings-row-copy">
+              <span className="settings-row-title">Integrations</span>
+              <span className="settings-row-summary">Samsung Health and activity sync</span>
+            </span>
+            <span className="settings-row-chevron" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+        ) : null}
 
         <Link className="settings-row" to="/settings/account">
           <span className="settings-row-copy">

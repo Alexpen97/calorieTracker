@@ -1288,6 +1288,14 @@ button {
   stroke-width: 5.5;
 }
 
+.nested-calorie-adjustment {
+  fill: none;
+  stroke: rgba(45, 158, 170, 0.45);
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 250ms ease;
+}
+
 .nested-calorie-indicator {
   fill: none;
   stroke: var(--leaf-deep);
@@ -1318,6 +1326,15 @@ button {
   margin-top: 0.2rem;
   font-size: 0.72rem;
   color: #5d7166;
+}
+
+.nested-goal-ring-center .nested-calorie-burned {
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 600;
+  color: #2a7f88;
+  font-variant-numeric: tabular-nums;
 }
 
 .nested-macro-legend {

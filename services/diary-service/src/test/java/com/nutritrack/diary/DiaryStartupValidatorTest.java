@@ -54,6 +54,6 @@ class DiaryStartupValidatorTest {
 
   private static DiaryProperties properties() {
     return new DiaryProperties(
-        "http://food.railway.internal:8080", "http://user.railway.internal:8080");
+        "http://food.railway.internal:8080", "http://user.railway.internal:8080", true);
   }
 }

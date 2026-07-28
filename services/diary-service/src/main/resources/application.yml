@@ -41,3 +41,4 @@ nutritrack:
   diary:
     food-service-url: ${FOOD_SERVICE_URL:http://localhost:8083}
     user-service-url: ${USER_SERVICE_URL:http://localhost:8082}
+    samsung-health-enabled: ${SAMSUNG_HEALTH_ENABLED:true}

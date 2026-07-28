@@ -99,6 +99,48 @@ describe('mini chart primitives', () => {
     expect(screen.getByLabelText('Fat: 0 / 70 g')).toBeInTheDocument()
   })
 
+  it('renders a faded adjustment arc behind calories and shows burned label', () => {
+    const { container } = render(
+      <NestedCalorieMacroRing
+        calorieLabel="Calories"
+        caloriePercent={60}
+        calorieAmountLabel="1,450 / 2,420"
+        adjustmentPercent={13}
+        burnedLabel="+320 burned"
+        macros={[
+          { label: 'Protein', percent: 82, amountLabel: '82 / 100 g' },
+          { label: 'Carbs', percent: 72, amountLabel: '180 / 250 g' },
+          { label: 'Fat', percent: 69, amountLabel: '48 / 70 g' },
+        ]}
+      />,
+    )
+
+    const adjustment = screen.getByTestId('nested-calorie-adjustment')
+    const indicator = container.querySelector('.nested-calorie-indicator')
+    expect(adjustment).toBeInTheDocument()
+    expect(adjustment).toHaveClass('nested-calorie-adjustment')
+    expect(adjustment.compareDocumentPosition(indicator!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText('+320 burned')).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Calories: 1,450 / 2,420, +320 burned'),
+    ).toBeInTheDocument()
+  })
+
+  it('omits adjustment arc and burned label when adjustment is absent', () => {
+    render(
+      <NestedCalorieMacroRing
+        calorieLabel="Calories"
+        caloriePercent={69}
+        calorieAmountLabel="1,450 / 2,100"
+        macros={[{ label: 'Protein', percent: 80, amountLabel: '80 / 100 g' }]}
+      />,
+    )
+
+    expect(screen.queryByTestId('nested-calorie-adjustment')).not.toBeInTheDocument()
+    expect(screen.queryByText(/burned/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Calories: 1,450 / 2,100')).toBeInTheDocument()
+  })
+
   it('renders sparkline, stacked, and grouped chart labels', () => {
     render(
       <>

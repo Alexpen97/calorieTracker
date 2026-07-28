@@ -7,8 +7,10 @@ import SettingsProfileSection from './settings/SettingsProfileSection'
 import SettingsGoalsSection from './settings/SettingsGoalsSection'
 import SettingsWeightSection from './settings/SettingsWeightSection'
 import SettingsAccountSection from './settings/SettingsAccountSection'
+import SettingsIntegrationsSection from './settings/SettingsIntegrationsSection'
 import * as client from '../api/client'
 import * as tokenStorage from '../auth/tokenStorage'
+import * as samsungHealth from '../platform/samsungHealth'
 
 const profile: client.UserProfile = {
   id: 'u1',
@@ -46,6 +48,7 @@ describe('SettingsHomePage', () => {
     vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
     vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
     vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(samsungHealth, 'isSamsungHealthFeatureEnabled').mockReturnValue(true)
 
     renderSettings('/settings')
 
@@ -53,6 +56,10 @@ describe('SettingsHomePage', () => {
     expect(screen.getByRole('link', { name: /Profile/i })).toHaveAttribute('href', '/settings/profile')
     expect(screen.getByRole('link', { name: /Goals/i })).toHaveAttribute('href', '/settings/goals')
     expect(screen.getByRole('link', { name: /Weight/i })).toHaveAttribute('href', '/settings/weight')
+    expect(screen.getByRole('link', { name: /Integrations/i })).toHaveAttribute(
+      'href',
+      '/settings/integrations',
+    )
     expect(screen.getByRole('link', { name: /Account/i })).toHaveAttribute('href', '/settings/account')
     expect(screen.getByRole('button', { name: /Sign out/i })).toBeInTheDocument()
 
@@ -61,6 +68,95 @@ describe('SettingsHomePage', () => {
     expect(screen.getByText(/computed/i)).toBeInTheDocument()
     expect(screen.getByText(/80\.5 kg/i)).toBeInTheDocument()
     expect(screen.getByText(/alex@example.com/i)).toBeInTheDocument()
+  })
+
+  it('hides integrations when the Samsung Health feature flag is off', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(samsungHealth, 'isSamsungHealthFeatureEnabled').mockReturnValue(false)
+
+    renderSettings('/settings')
+
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Integrations/i })).not.toBeInTheDocument()
+  })
+
+  it('shows unsupported Samsung Health state on web integrations page', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(samsungHealth, 'isSamsungHealthFeatureEnabled').mockReturnValue(true)
+    vi.spyOn(samsungHealth, 'isSamsungHealthSupported').mockReturnValue(false)
+    vi.spyOn(samsungHealth, 'getConnectionState').mockResolvedValue({ status: 'unsupported' })
+    vi.spyOn(client, 'fetchSamsungHealthStatus').mockResolvedValue({
+      enabled: true,
+      connected: false,
+      permissionState: 'DISCONNECTED',
+      lastSyncedAt: null,
+      lastError: null,
+    })
+
+    renderSettings('/settings/integrations')
+
+    expect(await screen.findByRole('heading', { name: 'Integrations' })).toBeInTheDocument()
+    expect(screen.getByText(/requires the Android app/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Connect/i })).not.toBeInTheDocument()
+  })
+
+  it('connects Samsung Health on Android and can disconnect', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(samsungHealth, 'isSamsungHealthFeatureEnabled').mockReturnValue(true)
+    vi.spyOn(samsungHealth, 'isSamsungHealthSupported').mockReturnValue(true)
+    const connectionSpy = vi.spyOn(samsungHealth, 'getConnectionState').mockResolvedValue({
+      status: 'ready',
+      permissionState: 'DISCONNECTED',
+    })
+    const statusSpy = vi.spyOn(client, 'fetchSamsungHealthStatus').mockResolvedValue({
+      enabled: true,
+      connected: false,
+      permissionState: 'DISCONNECTED',
+      lastSyncedAt: null,
+      lastError: null,
+    })
+    const collectSpy = vi.spyOn(samsungHealth, 'collectAndSyncSamsungHealth').mockImplementation(async () => {
+      statusSpy.mockResolvedValue({
+        enabled: true,
+        connected: true,
+        permissionState: 'GRANTED',
+        lastSyncedAt: '2026-07-25T16:30:00Z',
+        lastError: null,
+      })
+      connectionSpy.mockResolvedValue({
+        status: 'connected',
+        permissionState: 'GRANTED',
+      })
+      return {
+        provider: 'SAMSUNG_HEALTH',
+        syncedAt: '2026-07-25T16:30:00Z',
+        days: [{ localDate: '2026-07-25', selectedBurnKcal: 320 }],
+      }
+    })
+    const disconnectSpy = vi.spyOn(client, 'disconnectSamsungHealth').mockResolvedValue()
+
+    renderSettings('/settings/integrations')
+
+    expect(await screen.findByRole('heading', { name: 'Integrations' })).toBeInTheDocument()
+    expect(screen.getByText(/Not connected/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Connect/i }))
+
+    await waitFor(() => {
+      expect(collectSpy).toHaveBeenCalled()
+    })
+    expect(await screen.findByRole('button', { name: /Disconnect/i })).toBeInTheDocument()
+    expect(screen.getByText(/Connected/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Disconnect/i }))
+    await waitFor(() => {
+      expect(disconnectSpy).toHaveBeenCalled()
+    })
   })
 
   it('opens the profile section and saves profile details', async () => {
@@ -183,6 +279,7 @@ function renderSettings(path: string) {
           <Route path="/settings/goals" element={<SettingsGoalsSection />} />
           <Route path="/settings/weight" element={<SettingsWeightSection />} />
           <Route path="/settings/account" element={<SettingsAccountSection />} />
+          <Route path="/settings/integrations" element={<SettingsIntegrationsSection />} />
           <Route path="/" element={<div>Signed out</div>} />
         </Routes>
       </QueryClientProvider>

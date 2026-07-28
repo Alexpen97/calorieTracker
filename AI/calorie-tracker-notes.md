@@ -159,6 +159,17 @@ Implemented on `cursor/phase-5-android-7d17`:
 - Play Store checklist: `docs/android-play-store.md`
 - Notes: `AI/phase-5-android.md`
 
+## Samsung Health calorie adjustment (2026-07-25)
+
+Implemented on `cursor/samsung-health-calorie-adjustment-c394`:
+
+- diary-service stores daily Samsung Health burn totals and exposes
+  `/api/integrations/samsung-health/*`
+- Daily summary includes optional `energyAdjustment` (`base + burned`)
+- Today Summary donut shows faded burn arc + `+N burned` label
+- Android Capacitor plugin reads `Exercise.CALORIE` when the SDK AAR is linked
+- Notes: `AI/samsung-health-calorie-adjustment.md`
+
 ## Planned: USDA micronutrient enrichment (2026-07-23)
 
 Separate `nutrient-enrichment-service` fills missing vitamins/minerals on OFF

@@ -1,5 +1,11 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
-import { buildMacroSummaries, buildMicronutrientRows, buildWeightTrendAxisLabels, buildWeightTrendSeries } from '../diary/nutritionDashboard'
+import {
+  buildCalorieDisplayState,
+  buildMacroSummaries,
+  buildMicronutrientRows,
+  buildWeightTrendAxisLabels,
+  buildWeightTrendSeries,
+} from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
 import { DashboardCard } from '../ui/Card'
 import { MicroProgressGrid, NestedCalorieMacroRing, WeightTrendChart } from '../ui/MiniCharts'
@@ -17,7 +23,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
   const vitamins = buildMicronutrientRows(summary.totals, 'vitamin')
   const minerals = buildMicronutrientRows(summary.totals, 'mineral')
   const energy = summary.totals.find((item) => item.code === 'energy_kcal')
-  const percent = energy?.target ? Math.min(100, Math.round((energy.amount / energy.target) * 100)) : 0
+  const calorieDisplay = buildCalorieDisplayState(energy, summary.energyAdjustment)
 
   return (
     <main className="mobile-page dashboard-page mockup-dashboard">
@@ -35,12 +41,10 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         <div className="summary-layout summary-layout-nutrients">
           <NestedCalorieMacroRing
             calorieLabel="Calories"
-            caloriePercent={percent}
-            calorieAmountLabel={
-              energy?.target
-                ? `${formatNumber(energy.amount)} / ${formatNumber(energy.target)}`
-                : formatNumber(energy?.amount ?? 0)
-            }
+            caloriePercent={calorieDisplay.caloriePercent}
+            calorieAmountLabel={calorieDisplay.amountLabel}
+            adjustmentPercent={calorieDisplay.adjustmentPercent}
+            burnedLabel={calorieDisplay.burnedLabel}
             macros={macros.map((macro) => ({
               label: macro.label,
               percent: macro.percent,

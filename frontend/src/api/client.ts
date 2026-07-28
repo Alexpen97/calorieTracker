@@ -176,6 +176,14 @@ export type NutrientTotal = {
   target: number | null
 }
 
+export type EnergyAdjustment = {
+  provider: string
+  burnedCalories: number
+  baseTarget: number
+  effectiveTarget: number
+  syncedAt: string
+}
+
 export type DaySummary = {
   date: string
   totals: NutrientTotal[]
@@ -183,6 +191,35 @@ export type DaySummary = {
     amountMl: number
     targetMl: number | null
   }
+  energyAdjustment?: EnergyAdjustment | null
+}
+
+export type SamsungHealthStatus = {
+  enabled: boolean
+  connected: boolean
+  permissionState: string
+  lastSyncedAt: string | null
+  lastError: string | null
+}
+
+export type SamsungHealthSyncDay = {
+  localDate: string
+  activeEnergyKcal?: number
+  totalEnergyKcal?: number
+  selectedBurnKcal?: number
+  sourceRecordCount?: number
+}
+
+export type SamsungHealthSyncBody = {
+  zone: string
+  permissionState?: string
+  days: SamsungHealthSyncDay[]
+}
+
+export type SamsungHealthSyncResponse = {
+  provider: string
+  syncedAt: string
+  days: Array<{ localDate: string; selectedBurnKcal: number }>
 }
 
 
@@ -511,4 +548,27 @@ export async function fetchDiarySummaryRange(from: string, to: string): Promise<
   const params = new URLSearchParams({ from, to, zone: browserTimeZone() })
   const response = await authenticatedFetch(`${apiBase}/api/diary/summary/range?${params}`)
   return parseJson<DaySummary[]>(response)
+}
+
+export async function fetchSamsungHealthStatus(): Promise<SamsungHealthStatus> {
+  const response = await authenticatedFetch(`${apiBase}/api/integrations/samsung-health/status`)
+  return parseJson<SamsungHealthStatus>(response)
+}
+
+export async function syncSamsungHealth(
+  body: SamsungHealthSyncBody,
+): Promise<SamsungHealthSyncResponse> {
+  const response = await authenticatedFetch(`${apiBase}/api/integrations/samsung-health/sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  return parseJson<SamsungHealthSyncResponse>(response)
+}
+
+export async function disconnectSamsungHealth(): Promise<void> {
+  const response = await authenticatedFetch(`${apiBase}/api/integrations/samsung-health`, {
+    method: 'DELETE',
+  })
+  return parseNoContent(response)
 }

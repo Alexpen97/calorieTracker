@@ -5,6 +5,7 @@ import com.nutritrack.diary.client.UserGoalsClient;
 import com.nutritrack.diary.domain.DiaryEntry;
 import com.nutritrack.diary.domain.DiaryEntryNutrient;
 import com.nutritrack.diary.domain.DiaryEntryRepository;
+import com.nutritrack.diary.domain.HealthActivityProvider;
 import com.nutritrack.diary.domain.WaterIntake;
 import com.nutritrack.diary.domain.WaterIntakeRepository;
 import java.math.BigDecimal;
@@ -28,18 +29,22 @@ public class SummaryService {
 
   private static final Logger log = LoggerFactory.getLogger(SummaryService.class);
   private static final String WATER_NUTRIENT_CODE = "water_ml";
+  private static final String ENERGY_NUTRIENT_CODE = "energy_kcal";
 
   private final DiaryEntryRepository entryRepository;
   private final WaterIntakeRepository waterRepository;
   private final UserGoalsClient userGoalsClient;
+  private final ActivityEnergyService activityEnergyService;
 
   public SummaryService(
       DiaryEntryRepository entryRepository,
       WaterIntakeRepository waterRepository,
-      UserGoalsClient userGoalsClient) {
+      UserGoalsClient userGoalsClient,
+      ActivityEnergyService activityEnergyService) {
     this.entryRepository = entryRepository;
     this.waterRepository = waterRepository;
     this.userGoalsClient = userGoalsClient;
+    this.activityEnergyService = activityEnergyService;
   }
 
   @Transactional(readOnly = true)
@@ -54,7 +59,8 @@ public class SummaryService {
         waterRepository
             .findByUserIdAndLoggedAtGreaterThanEqualAndLoggedAtLessThanOrderByLoggedAtDesc(
                 userId, from, to);
-    return summarizeDate(date, entries, waterLogs, loadTargets(bearerToken));
+    return summarizeDate(
+        userId, date, zone, entries, waterLogs, loadTargets(bearerToken), Map.of());
   }
 
   @Transactional(readOnly = true)
@@ -78,20 +84,31 @@ public class SummaryService {
             .stream()
             .collect(Collectors.groupingBy(water -> DayBounds.localDate(water.getLoggedAt(), zone)));
     GoalTargets targets = loadTargets(bearerToken);
+    Map<LocalDate, ActivityEnergyService.BurnedEnergy> burnedByDate =
+        loadBurnedRange(userId, fromDate, toDate);
     List<DailySummary> summaries = new ArrayList<>();
     for (LocalDate date = fromDate; !date.isAfter(toDate); date = date.plusDays(1)) {
       summaries.add(
           summarizeDate(
+              userId,
               date,
+              zone,
               entriesByDate.getOrDefault(date, List.of()),
               waterByDate.getOrDefault(date, List.of()),
-              targets));
+              targets,
+              burnedByDate));
     }
     return summaries;
   }
 
   private DailySummary summarizeDate(
-      LocalDate date, List<DiaryEntry> entries, List<WaterIntake> waterLogs, GoalTargets targets) {
+      UUID userId,
+      LocalDate date,
+      ZoneId zone,
+      List<DiaryEntry> entries,
+      List<WaterIntake> waterLogs,
+      GoalTargets targets,
+      Map<LocalDate, ActivityEnergyService.BurnedEnergy> burnedPrefetch) {
     Map<String, MutableNutrientTotal> totals = new HashMap<>();
     for (DiaryEntry entry : entries) {
       for (DiaryEntryNutrient nutrient : entry.getNutrients()) {
@@ -118,8 +135,62 @@ public class SummaryService {
             .toList();
     BigDecimal waterAmount =
         waterLogs.stream().map(WaterIntake::getAmountMl).reduce(BigDecimal.ZERO, BigDecimal::add);
+    EnergyAdjustment energyAdjustment =
+        buildEnergyAdjustment(userId, date, zone, targets, burnedPrefetch);
     return new DailySummary(
-        date, nutrientTotals, new WaterSummary(waterAmount, targets.waterTargetMl()));
+        date,
+        nutrientTotals,
+        new WaterSummary(waterAmount, targets.waterTargetMl()),
+        energyAdjustment);
+  }
+
+  private EnergyAdjustment buildEnergyAdjustment(
+      UUID userId,
+      LocalDate date,
+      ZoneId zone,
+      GoalTargets targets,
+      Map<LocalDate, ActivityEnergyService.BurnedEnergy> burnedPrefetch) {
+    GoalNutrient energyGoal = targets.nutrients().get(ENERGY_NUTRIENT_CODE);
+    if (energyGoal == null || energyGoal.target() == null) {
+      return null;
+    }
+    ActivityEnergyService.BurnedEnergy burned = burnedPrefetch.get(date);
+    if (burned == null && burnedPrefetch.isEmpty()) {
+      burned = loadBurned(userId, date, zone.getId());
+    }
+    if (burned == null || burned.burnedCalories() == null) {
+      return null;
+    }
+    BigDecimal baseTarget = energyGoal.target();
+    BigDecimal burnedCalories = burned.burnedCalories();
+    return new EnergyAdjustment(
+        burned.provider(),
+        burnedCalories,
+        baseTarget,
+        baseTarget.add(burnedCalories),
+        burned.syncedAt());
+  }
+
+  private ActivityEnergyService.BurnedEnergy loadBurned(UUID userId, LocalDate date, String zoneId) {
+    try {
+      return activityEnergyService
+          .findBurnedEnergy(userId, date, zoneId, HealthActivityProvider.SAMSUNG_HEALTH)
+          .orElse(null);
+    } catch (RuntimeException ex) {
+      log.warn("Diary summary could not load activity energy; omitting adjustment", ex);
+      return null;
+    }
+  }
+
+  private Map<LocalDate, ActivityEnergyService.BurnedEnergy> loadBurnedRange(
+      UUID userId, LocalDate from, LocalDate to) {
+    try {
+      return activityEnergyService.findBurnedEnergyRange(
+          userId, from, to, HealthActivityProvider.SAMSUNG_HEALTH);
+    } catch (RuntimeException ex) {
+      log.warn("Diary range summary could not load activity energy; omitting adjustments", ex);
+      return Map.of();
+    }
   }
 
   private GoalTargets loadTargets(String bearerToken) {
@@ -141,11 +212,22 @@ public class SummaryService {
     }
   }
 
-  public record DailySummary(LocalDate date, List<NutrientTotal> totals, WaterSummary water) {}
+  public record DailySummary(
+      LocalDate date,
+      List<NutrientTotal> totals,
+      WaterSummary water,
+      EnergyAdjustment energyAdjustment) {}
 
   public record NutrientTotal(String code, BigDecimal amount, String unit, BigDecimal target) {}
 
   public record WaterSummary(BigDecimal amountMl, BigDecimal targetMl) {}
+
+  public record EnergyAdjustment(
+      String provider,
+      BigDecimal burnedCalories,
+      BigDecimal baseTarget,
+      BigDecimal effectiveTarget,
+      Instant syncedAt) {}
 
   private record GoalNutrient(BigDecimal target, String unit) {}
 

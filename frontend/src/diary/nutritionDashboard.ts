@@ -1,7 +1,64 @@
-import type { WeightLog } from '../api/client'
+import type { EnergyAdjustment, WeightLog } from '../api/client'
 import type { NutrientTotalForDisplay } from './formatDay'
 
 export type MicronutrientKind = 'vitamin' | 'mineral'
+
+export type CalorieDisplayState = {
+  consumed: number
+  baseTarget: number | null
+  burnedCalories: number
+  effectiveTarget: number | null
+  caloriePercent: number
+  adjustmentPercent: number
+  amountLabel: string
+  burnedLabel: string | null
+}
+
+/** Derive calorie ring labels/percents from diary energy totals + optional burn adjustment. */
+export function buildCalorieDisplayState(
+  energy: Pick<NutrientTotalForDisplay, 'amount' | 'target'> | NutrientTotalForDisplay | undefined,
+  energyAdjustment?: EnergyAdjustment | null,
+): CalorieDisplayState {
+  const consumed = energy?.amount ?? 0
+  const hasBurn =
+    energyAdjustment != null &&
+    energyAdjustment.burnedCalories != null &&
+    energyAdjustment.burnedCalories > 0
+
+  const baseTarget = hasBurn
+    ? energyAdjustment.baseTarget
+    : (energy?.target ?? null)
+  const burnedCalories = hasBurn ? energyAdjustment.burnedCalories : 0
+  const effectiveTarget = hasBurn
+    ? energyAdjustment.effectiveTarget
+    : baseTarget
+
+  const caloriePercent =
+    effectiveTarget && effectiveTarget > 0
+      ? Math.min(100, Math.round((consumed / effectiveTarget) * 100))
+      : 0
+  const adjustmentPercent =
+    hasBurn && effectiveTarget && effectiveTarget > 0
+      ? Math.min(100, Math.round((burnedCalories / effectiveTarget) * 100))
+      : 0
+
+  const amountLabel =
+    effectiveTarget != null
+      ? `${formatCalorieNumber(consumed)} / ${formatCalorieNumber(effectiveTarget)}`
+      : formatCalorieNumber(consumed)
+  const burnedLabel = hasBurn ? `+${formatCalorieNumber(burnedCalories)} burned` : null
+
+  return {
+    consumed,
+    baseTarget,
+    burnedCalories,
+    effectiveTarget,
+    caloriePercent,
+    adjustmentPercent,
+    amountLabel,
+    burnedLabel,
+  }
+}
 
 export type NutritionProgressRow = {
   code: string
@@ -287,4 +344,8 @@ function progressRow(
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value)
+}
+
+function formatCalorieNumber(value: number): string {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
 }

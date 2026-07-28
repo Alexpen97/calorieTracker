@@ -53,7 +53,28 @@ cd frontend/android
    - Google Sign-In (native account picker)
    - Barcode scan (ML Kit Google Code Scanner module may prompt install once)
    - Token persistence across process death (Secure Storage / Keystore)
+   - Samsung Health Integrations (optional; requires SDK AAR + partner approval)
 5. Promote to closed → production when smoke checks pass
+
+## Samsung Health (optional)
+
+NutriTrack can raise the daily calorie target from Samsung Health exercise burn
+(`Exercise.CALORIE`). The Capacitor plugin is shipped, but live reads need:
+
+1. Samsung Health partner / data-access approval for `com.nutritrack.app`
+2. Samsung Health SDK AAR on the Android classpath (e.g. `app/libs`)
+3. Manifest metadata already declares
+   `com.samsung.android.health.permission.read=com.samsung.health.exercise`
+4. User consent through Samsung’s permission UI on device
+
+Without the AAR the plugin reports `SDK_NOT_LINKED` and the web/settings UI stays
+safe. Feature flags:
+
+- Frontend: `VITE_SAMSUNG_HEALTH_ENABLED` (enabled unless `false`)
+- Backend: `SAMSUNG_HEALTH_ENABLED` on diary-service (default `true`)
+
+Privacy: Settings → Integrations → Disconnect deletes synced daily burn rows for
+that user.
 
 ## Gateway CORS
 
