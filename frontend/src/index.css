@@ -1482,6 +1482,12 @@ button {
   font-weight: 800;
 }
 
+@media (max-width: 759px) {
+  .dashboard-page > .dashboard-card:not(.dashboard-span) .card-action {
+    display: none;
+  }
+}
+
 .summary-layout {
   display: grid;
   grid-template-columns: auto 1fr;
