@@ -157,6 +157,15 @@ Implementation consequence:
 - Update settings styles after the shared primitives land.
 - Avoid changing form behavior or route structure.
 
+## Implementation status
+
+- Branch: `cursor/ui-rework-inspiration-board`
+- Worktree: `.worktrees/ui-rework-inspiration-board`
+- Phase 1 complete: tokens + shared card/chart primitives
+- Phase 2 complete: floating bottom nav with orange Track food FAB
+- Phase 3 started/complete for first pass: `/today` daily command center
+- Remaining: diary, analytics, lookup/settings polish, visual QA
+
 ## Implementation Phases
 
 ### Phase 1: Design Tokens And Shared Primitives
@@ -171,11 +180,11 @@ Implementation consequence:
 
 **Tasks:**
 
-- [ ] Define the new palette, spacing, card radius, shadow, and macro tone variables in `index.css`.
-- [ ] Extend `DashboardCard` into a more general card primitive that supports hero, metric, list, and insight densities.
-- [ ] Add or adapt chart primitives for calorie rings, macro mini-rings, thin progress bars, compact sparklines, and range-band charts.
-- [ ] Keep chart components accessible with `role="progressbar"` or `role="img"` and useful labels.
-- [ ] Update component tests for accessible labels, bounded percentages, and tone/class behavior.
+- [x] Define the new palette, spacing, card radius, shadow, and macro tone variables in `index.css`.
+- [x] Extend `DashboardCard` into a more general card primitive that supports hero, metric, list, and insight densities.
+- [x] Add or adapt chart primitives for calorie rings, macro mini-rings, thin progress bars, compact sparklines, and range-band charts.
+- [x] Keep chart components accessible with `role="progressbar"` or `role="img"` and useful labels.
+- [x] Update component tests for accessible labels, bounded percentages, and tone/class behavior.
 
 **Acceptance:**
 
@@ -193,11 +202,11 @@ Implementation consequence:
 
 **Tasks:**
 
-- [ ] Tune the bottom nav into a floating capsule matching the inspiration board.
-- [ ] Keep the centered `/lookup` action with accessible name `Track food`.
+- [x] Tune the bottom nav into a floating capsule matching the inspiration board.
+- [x] Keep the centered `/lookup` action with accessible name `Track food`.
 - [ ] Consider shortening visible mobile labels from `Dashboard` to `Home` and `Analytics` to `Insights` only if tests and UX copy are updated together.
-- [ ] Preserve desktop navigation behavior.
-- [ ] Test the active state and `/lookup` FAB target.
+- [x] Preserve desktop navigation behavior.
+- [x] Test the active state and `/lookup` FAB target.
 
 **Acceptance:**
 
@@ -216,12 +225,12 @@ Implementation consequence:
 
 **Tasks:**
 
-- [ ] Convert the top section into a date-aware daily command center.
-- [ ] Show calories left as the primary value when a target exists; fall back to calories consumed when it does not.
-- [ ] Add three macro-left cards for protein, carbs, and fat.
+- [x] Convert the top section into a date-aware daily command center.
+- [x] Show calories left as the primary value when a target exists; fall back to calories consumed when it does not.
+- [x] Add three macro-left cards for protein, carbs, and fat.
 - [ ] Add a recently logged section if current-day entries are made available to this screen; otherwise keep this as a future integration note in the plan and do not fake data in production.
-- [ ] Keep weight or micronutrient insight as a secondary card.
-- [ ] Update preview data to cover normal, low-progress, and over-target states.
+- [x] Keep weight or micronutrient insight as a secondary card.
+- [x] Update preview data to cover normal, low-progress, and over-target states.
 
 **Acceptance:**
 
