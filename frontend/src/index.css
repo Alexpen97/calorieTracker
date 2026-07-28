@@ -1740,10 +1740,24 @@ button {
   gap: 0.15rem;
   justify-items: center;
   padding: 0.4rem 0.15rem;
+  border: 0;
   border-radius: 0.9rem;
   color: var(--muted);
   background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
+
+.day-strip-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.day-strip-item:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
+
 
 .day-strip-weekday {
   font-size: 0.68rem;

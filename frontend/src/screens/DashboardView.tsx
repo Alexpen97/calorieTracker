@@ -1,4 +1,5 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
+import { formatDiaryDayLabel, formatLocalDate } from '../diary/formatDay'
 import { buildWeightTrendAxisLabels, buildWeightTrendSeries } from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
 import { DashboardCard, MetricCard } from '../ui/Card'
@@ -9,6 +10,8 @@ type Props = {
   me: Pick<UserProfile, 'displayName' | 'avatarUrl'> | null
   summary: DaySummary
   weightHistory: WeightLog[]
+  selectedDate: string
+  onSelectDate: (isoDate: string) => void
 }
 
 const MACRO_CARDS = [
@@ -17,15 +20,23 @@ const MACRO_CARDS = [
   { code: 'fat', label: 'Fat', tone: 'fat' as const },
 ]
 
-export default function DashboardView({ me, summary, weightHistory }: Props) {
+export default function DashboardView({
+  me,
+  summary,
+  weightHistory,
+  selectedDate,
+  onSelectDate,
+}: Props) {
   const name = me?.displayName?.trim() || 'there'
+  const today = formatLocalDate()
   const energy = summary.totals.find((item) => item.code === 'energy_kcal')
   const remaining =
     energy?.target != null ? Math.max(0, energy.target - energy.amount) : null
   const caloriePercent = energy?.target
     ? Math.min(100, Math.round((energy.amount / energy.target) * 100))
     : 0
-  const weekDays = buildWeekStrip(summary.date)
+  const weekDays = buildWeekStrip(selectedDate, today)
+  const dayTitle = selectedDate === today ? 'Today' : formatDiaryDayLabel(selectedDate, today)
 
   return (
     <main className="mobile-page dashboard-page mockup-dashboard">
@@ -39,20 +50,25 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
         </div>
       </header>
 
-      <div className="day-strip dashboard-span" aria-label="This week">
+      <div className="day-strip dashboard-span" role="group" aria-label="This week">
         {weekDays.map((day) => (
-          <div
+          <button
             key={day.iso}
+            type="button"
             className={`day-strip-item${day.active ? ' is-active' : ''}`}
             aria-current={day.active ? 'date' : undefined}
+            aria-label={day.accessibleLabel}
+            aria-pressed={day.active}
+            disabled={day.disabled}
+            onClick={() => onSelectDate(day.iso)}
           >
             <span className="day-strip-weekday">{day.weekday}</span>
             <span className="day-strip-date">{day.day}</span>
-          </div>
+          </button>
         ))}
       </div>
 
-      <DashboardCard className="dashboard-span" density="hero" title="Today" eyebrow="Energy">
+      <DashboardCard className="dashboard-span" density="hero" title={dayTitle} eyebrow="Energy">
         <CalorieHeroRing
           valueLabel={
             remaining != null
@@ -117,7 +133,7 @@ export default function DashboardView({ me, summary, weightHistory }: Props) {
   )
 }
 
-function buildWeekStrip(activeIso: string) {
+function buildWeekStrip(activeIso: string, todayIso: string) {
   const active = parseIsoDate(activeIso)
   const weekday = active.getDay()
   const mondayOffset = weekday === 0 ? -6 : 1 - weekday
@@ -132,7 +148,9 @@ function buildWeekStrip(activeIso: string) {
       iso,
       day: String(date.getDate()),
       weekday: date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2),
+      accessibleLabel: formatDiaryDayLabel(iso, todayIso),
       active: iso === activeIso,
+      disabled: iso > todayIso,
     }
   })
 }

@@ -36,6 +36,8 @@ export default function PreviewDashboardPage() {
       me={{ displayName: 'Alex', avatarUrl: null }}
       summary={summary}
       weightHistory={weights}
+      selectedDate={summary.date}
+      onSelectDate={() => undefined}
     />
   )
 }

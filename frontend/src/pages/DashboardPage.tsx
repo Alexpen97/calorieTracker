@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchDiarySummary, fetchGoals, fetchMe, fetchWeightHistory } from '../api/client'
 import { formatLocalDate } from '../diary/formatDay'
@@ -5,14 +6,14 @@ import { mergeSummaryWithGoals } from '../diary/mergeSummaryGoals'
 import DashboardView from '../screens/DashboardView'
 
 export default function DashboardPage() {
-  const today = formatLocalDate()
+  const [selectedDate, setSelectedDate] = useState(() => formatLocalDate())
   const meQuery = useQuery({
     queryKey: ['me'],
     queryFn: fetchMe,
   })
   const summaryQuery = useQuery({
-    queryKey: ['diary-summary', today],
-    queryFn: () => fetchDiarySummary(today),
+    queryKey: ['diary-summary', selectedDate],
+    queryFn: () => fetchDiarySummary(selectedDate),
   })
   const goalsQuery = useQuery({
     queryKey: ['goals'],
@@ -38,8 +39,13 @@ export default function DashboardPage() {
       {summaryQuery.data && !goalsQuery.isLoading && (
         <DashboardView
           me={meQuery.data ?? null}
-          summary={mergeSummaryWithGoals(summaryQuery.data, goalsQuery.data)}
+          summary={mergeSummaryWithGoals(
+            { ...summaryQuery.data, date: selectedDate },
+            goalsQuery.data,
+          )}
           weightHistory={weightQuery.data ?? []}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
         />
       )}
     </>
