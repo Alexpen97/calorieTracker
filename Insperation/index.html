@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriTrack Inspiration Reference Board</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: rgba(18, 24, 43, 0.88);
+      --panel-strong: rgba(26, 33, 58, 0.96);
+      --border: rgba(152, 168, 206, 0.2);
+      --text: #eef2ff;
+      --muted: #aeb7d6;
+      --accent: #76e4b3;
+      --accent-2: #8fb4ff;
+      --accent-3: #ff9d66;
+      --shadow: 0 24px 60px rgba(3, 8, 20, 0.45);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(118, 228, 179, 0.16), transparent 26%),
+        radial-gradient(circle at top right, rgba(143, 180, 255, 0.18), transparent 30%),
+        linear-gradient(180deg, #0b1020 0%, #111833 42%, #0a1020 100%);
+      color: var(--text);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero,
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(118, 228, 179, 0.12);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(34px, 6vw, 52px);
+      line-height: 1.05;
+    }
+
+    .hero-copy {
+      margin-top: 16px;
+      max-width: 800px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .hero-grid,
+    .section-grid,
+    .card-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-grid {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      margin-top: 26px;
+    }
+
+    .section {
+      padding: 26px;
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-header p {
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .info-card,
+    .shot-card {
+      background: var(--panel-strong);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+    }
+
+    .info-card {
+      padding: 20px;
+    }
+
+    .info-card h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .info-card p,
+    .info-card li,
+    .shot-meta p,
+    .shot-meta li {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .info-card ul,
+    .shot-meta ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .shot-card {
+      overflow: hidden;
+    }
+
+    .shot-card img {
+      display: block;
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .shot-meta {
+      padding: 18px 18px 20px;
+    }
+
+    .shot-meta h3 {
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    .label-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .label {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .label.visual { background: rgba(143, 180, 255, 0.16); color: #c2d7ff; }
+    .label.product { background: rgba(118, 228, 179, 0.16); color: #b8ffd8; }
+    .label.risk { background: rgba(255, 157, 102, 0.15); color: #ffc6a4; }
+
+    .meta-title {
+      display: inline-block;
+      margin-top: 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .footer-note {
+      padding: 18px 22px;
+      border-radius: 20px;
+      background: rgba(118, 228, 179, 0.08);
+      border: 1px solid rgba(118, 228, 179, 0.16);
+      color: #d8ffee;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100% - 20px, 1280px);
+        padding-top: 20px;
+      }
+
+      .hero,
+      .section {
+        padding: 20px;
+      }
+
+      .shot-card img {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">AI Styling Reference</span>
+      <h1>NutriTrack Frontend Inspiration Board</h1>
+      <p class="hero-copy">
+        This page is a structured reference sheet for future AI-assisted frontend styling work.
+        Use it as a visual target for layout, card hierarchy, metric presentation, and mobile
+        nutrition UX direction. Borrow the patterns, not the brands.
+      </p>
+
+      <div class="hero-grid">
+        <article class="info-card">
+          <h3>Core Style Direction</h3>
+          <ul>
+            <li>Mobile-first nutrition UI with strong dashboard hierarchy.</li>
+            <li>Rounded cards, generous spacing, and large headline metrics.</li>
+            <li>Clear macro rings, chips, and summary widgets over dense tables.</li>
+            <li>Bottom-navigation-centered flows with obvious daily progress.</li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h3>Use This Board For</h3>
+          <ul>
+            <li>Choosing visual hierarchy for dashboard and diary screens.</li>
+            <li>Styling metric cards, ring charts, summaries, and biometrics.</li>
+            <li>Aligning spacing, corner radius, section rhythm, and information density.</li>
+            <li>Guiding dark and light mode compositions without copying a single app verbatim.</li>
+          </ul>
+        </article>
+
+        <article class="info-card">
+          <h3>Avoid</h3>
+          <ul>
+            <li>Brand-specific logos, icons, and copy from reference products.</li>
+            <li>Overly clinical visuals that lose warmth or game-like energy.</li>
+            <li>Screens overloaded with text before the core metrics are understood.</li>
+            <li>Mixing too many visual languages on the same screen.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="pill-row">
+        <span class="pill">Dark analytics</span>
+        <span class="pill">Light wellness cards</span>
+        <span class="pill">Macro rings</span>
+        <span class="pill">Insights tiles</span>
+        <span class="pill">Biometric dashboards</span>
+        <span class="pill">Cleaner card hierarchy</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Dark Analytics and Logging</h2>
+          <p>
+            Use this cluster when styling screens that need to feel data-rich, goal-oriented, and
+            immediately actionable. The standout traits are high contrast, vivid accent colors, and
+            strong grouping around daily progress, food actions, and targets.
+          </p>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 113702.png" alt="Dark dashboard app screens with streak card, actions, and macro charts" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Dark dashboard</span>
+              <span class="label product">Quick actions</span>
+              <span class="label product">Macro rings</span>
+            </div>
+            <h3>High-Contrast Dashboard Hub</h3>
+            <p>Large dashboard modules, bright metric accents, and a central add action create an immediate sense of daily control.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Daily overview screens with calorie, macro, and streak summaries.</li>
+              <li>Action clusters for logging food, exercise, biometrics, or notes.</li>
+              <li>Showing one hero stat above secondary charts.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Copying the exact visual identity or tab naming from Cronometer.</li>
+              <li>Overfilling the screen with too many equal-weight cards.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 113734.png" alt="Dark nutrition screens for foods, diary, and macro target settings" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Dark utility flow</span>
+              <span class="label product">Diary</span>
+              <span class="label product">Targets</span>
+            </div>
+            <h3>Structured Logging and Goal Setup</h3>
+            <p>This set is useful for screens that need to balance progress rings with long, scrollable lists of meals or settings.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Diary lists where each logged item should remain readable at speed.</li>
+              <li>Macro target configuration with visible ratios and supporting explanations.</li>
+              <li>Food library and custom item flows.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Dense settings copy without spacing relief or grouping.</li>
+              <li>Dark-on-dark contrasts that flatten important call-to-action buttons.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Light Wellness and Summary Screens</h2>
+          <p>
+            These references show a softer, more approachable wellness language. They are best for
+            onboarding, daily check-in, or summary views where calm, clarity, and positive momentum
+            matter more than dense analytics.
+          </p>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 113815.png" alt="Light wellness app screens with green charts, nutrition cards, and food plan tabs" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Light wellness</span>
+              <span class="label product">Daily summary</span>
+              <span class="label product">Food planning</span>
+            </div>
+            <h3>Friendly Habit-Builder Aesthetic</h3>
+            <p>Soft greens, rounded modules, and low-pressure information density make this a good model for gentle daily motivation.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Home or today screens that should feel healthy, calm, and encouraging.</li>
+              <li>Combining simple charts with a food plan or schedule.</li>
+              <li>Color-coding nutrition values without making the UI feel clinical.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Overusing pastel tones where stronger contrast is needed for accessibility.</li>
+              <li>Reducing the nutrition data so much that power users lose detail.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 114038.png" alt="Clean white daily dashboard with calories left, macro rings, and recent food log cards" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Clean white cards</span>
+              <span class="label product">Recent logs</span>
+              <span class="label product">Macro summary</span>
+            </div>
+            <h3>Minimal Daily Summary Layout</h3>
+            <p>Strong whitespace, one big headline number, and tidy log cards make this ideal for a readable daily progress screen.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Top-of-screen calorie summary with supporting macros beneath.</li>
+              <li>Recent food or activity cards that need quick scanability.</li>
+              <li>Clean transitions between summary widgets and list content.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Making the page so airy that important actions feel disconnected.</li>
+              <li>Letting white surfaces become visually flat without subtle elevation.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 114106.png" alt="Minimal nutrition dashboard with big calorie progress ring and meal list" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Minimal dashboard</span>
+              <span class="label product">Meals</span>
+              <span class="label product">Progress ring</span>
+            </div>
+            <h3>Focused Macro-First Meal Screen</h3>
+            <p>The hero ring and compact macro cards create a simple structure that still leaves room for meal history below.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Daily meal tracking screens with one dominant progress indicator.</li>
+              <li>Compact protein, carb, and fat cards that support quick interpretation.</li>
+              <li>Clear handoff from summary metrics into meal rows.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Localized copy or food iconography that is too specific to the reference app.</li>
+              <li>Overly literal copies of the carrot-based calorie metaphor.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Cards, Widgets, and Insight Modules</h2>
+          <p>
+            These examples are most useful when designing reusable building blocks. They show
+            how to package health metrics into tiles, rings, and lightweight comparative panels
+            that can scale across dashboards and profile-style screens.
+          </p>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 113842.png" alt="Insights screen with streak card, weight card, macro chart, and calorie balance tiles" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Insight tiles</span>
+              <span class="label product">Trend cards</span>
+              <span class="label product">Dashboard grid</span>
+            </div>
+            <h3>Modular Insights Grid</h3>
+            <p>This is the clearest reference for turning many health signals into a cohesive, glanceable card system.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Reusable metric cards with mixed chart types in the same layout.</li>
+              <li>Highlighting streaks, balance, weight, and weekly trend snapshots.</li>
+              <li>Building an insights or progress tab with modular content blocks.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Too many cards per screen without hierarchy between primary and secondary metrics.</li>
+              <li>Using colors that break semantic meaning across cards.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 114052.png" alt="Small widget concepts for glucose and nutrient summary cards" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Widgets</span>
+              <span class="label product">Compact summaries</span>
+              <span class="label product">Wearable feel</span>
+            </div>
+            <h3>Compact Health Widgets</h3>
+            <p>These micro-components are useful references when a full card would be too large and a tiny summary needs to stay expressive.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Home screen widgets or compact dashboard rows.</li>
+              <li>Secondary glanceable summaries for glucose, calories, or macros.</li>
+              <li>Reusable small cards that still include directional feedback.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Cramping too many values into a tiny footprint without visual prioritization.</li>
+              <li>Using detailed labels where icon-plus-metric would read faster.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 114125.png" alt="Biology screen with white cards for VO2 max, HRV, RHR, weight, and body composition" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Biometrics</span>
+              <span class="label product">Health signals</span>
+              <span class="label product">Soft metrics</span>
+            </div>
+            <h3>Biometric Dashboard Language</h3>
+            <p>Soft cards, restrained color, and precise charts make this the best reference for deeper health metrics beyond food logging.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Weight, body composition, recovery, or long-term wellness panels.</li>
+              <li>Profile or biology screens that need to feel credible and calm.</li>
+              <li>Blending line charts, gauges, and numeric readouts in one system.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Making food-centric screens feel too medical unless that is intentional.</li>
+              <li>Copying exact card arrangements without adapting to our data model.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Layout Cleanup and Hierarchy Lessons</h2>
+          <p>
+            This reference is less about overall aesthetic and more about interaction between spacing,
+            alignment, and card order. Use it when refining an existing screen that feels almost right
+            but not yet polished.
+          </p>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <article class="shot-card">
+          <img src="Screenshot 2026-07-28 114025.png" alt="Before and after comparison showing improved card spacing and hierarchy for a calorie summary screen" />
+          <div class="shot-meta">
+            <div class="label-row">
+              <span class="label visual">Hierarchy polish</span>
+              <span class="label product">Spacing</span>
+              <span class="label risk">Refinement reference</span>
+            </div>
+            <h3>Before/After Card Hierarchy Fix</h3>
+            <p>This is the strongest reminder that small spacing and content-order changes can make a nutrition dashboard feel significantly more premium.</p>
+            <span class="meta-title">Use For</span>
+            <ul>
+              <li>Refining layouts where all the right data exists but the rhythm feels off.</li>
+              <li>Improving perceived polish with better grouping and alignment.</li>
+              <li>Teaching an AI to prefer cleaner visual hierarchy over extra decoration.</li>
+            </ul>
+            <span class="meta-title">Avoid</span>
+            <ul>
+              <li>Changing structure just to be different when the current hierarchy already works.</li>
+              <li>Focusing on small polish before the information architecture is correct.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>How an AI Should Read This Board</h2>
+      <div class="footer-note">
+        Prefer a hybrid direction: use the dark references for data-heavy tracking screens and the
+        lighter references for insights, wellness, and biometrics. Reuse patterns like rounded cards,
+        clear hero metrics, compact macro summaries, and bottom-nav mobile framing. When in doubt,
+        prioritize readable hierarchy, daily progress visibility, and a polished card system over
+        novelty.
+      </div>
+    </section>
+  </main>
+</body>
+</html>
