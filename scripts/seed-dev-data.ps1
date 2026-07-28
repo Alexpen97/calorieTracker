@@ -5,8 +5,9 @@
 .DESCRIPTION
   Talks only to the gateway. Requires AUTH_MODE=dev on auth-service.
   Seeds both frontend Dev login (code "dev") and agent-debug by default.
+  Demo foods include full vitamin + mineral panels (catalog codes/units).
   Skips accounts that already have diary + weight history (persistent DB).
-  Pass -Force to wipe and reseed.
+  Pass -Force to wipe and reseed (also recreates demo foods with micros).
 
 .EXAMPLE
   ./scripts/seed-dev-data.ps1
@@ -51,7 +52,71 @@ $Persona = @{
   objective     = "LOSE"
 }
 
+# Catalog default_unit for micros (µg as U+00B5 so the file stays ASCII-safe).
+$Ug = ([char]0x00B5).ToString() + "g"
+$MicroUnitByCode = [ordered]@{
+  vitamin_a   = $Ug
+  vitamin_b1  = "mg"
+  vitamin_b2  = "mg"
+  vitamin_b3  = "mg"
+  vitamin_b5  = "mg"
+  vitamin_b6  = "mg"
+  vitamin_b7  = $Ug
+  vitamin_b9  = $Ug
+  vitamin_b12 = $Ug
+  vitamin_c   = "mg"
+  vitamin_d   = $Ug
+  vitamin_e   = "mg"
+  vitamin_k   = $Ug
+  calcium     = "mg"
+  iron        = "mg"
+  magnesium   = "mg"
+  potassium   = "mg"
+  sodium      = "mg"
+  zinc        = "mg"
+  iodine      = $Ug
+  selenium    = $Ug
+  copper      = "mg"
+  manganese   = "mg"
+  phosphorus  = "mg"
+  chromium    = $Ug
+  molybdenum  = $Ug
+}
+$SeedMicroProbeCodes = @("vitamin_a", "vitamin_c", "calcium", "iron", "potassium", "magnesium")
+
+function New-SeedNutrient([string]$Code, $Amount, [string]$Unit) {
+  @{ code = $Code; amountPer100g = [double]$Amount; unit = $Unit }
+}
+
+function New-SeedMicros([hashtable]$Amounts) {
+  $list = [System.Collections.Generic.List[object]]::new()
+  foreach ($code in $MicroUnitByCode.Keys) {
+    if (-not $Amounts.ContainsKey($code)) {
+      throw "Demo food micros missing required code: $code"
+    }
+    $amount = [double]$Amounts[$code]
+    # CreateSubmissionRequest requires @Positive amountPer100g — omit zeros.
+    if ($amount -le 0) { continue }
+    $list.Add((New-SeedNutrient $code $amount $MicroUnitByCode[$code])) | Out-Null
+  }
+  return , $list.ToArray()
+}
+
+function Join-SeedNutrients {
+  param([object[]]$Macros, [object[]]$Micros)
+  return @($Macros) + @($Micros)
+}
+
+function Test-HasSeedMicros($FoodOrSubmission) {
+  $nutrients = @($FoodOrSubmission.nutrients)
+  if ($nutrients.Count -eq 0) { return $false }
+  $codes = @($nutrients | ForEach-Object { $_.code })
+  $hits = @($SeedMicroProbeCodes | Where-Object { $codes -contains $_ }).Count
+  return $hits -ge 4
+}
+
 # Well-known OFF barcodes (best effort). Fallbacks are created as submissions.
+# Only kept when the catalog product already carries micronutrients.
 $BarcodeFoods = @(
   @{ barcode = "3017620422003"; role = "SNACK"; grams = 20 }   # Nutella-ish
   @{ barcode = "5449000000996"; role = "SNACK"; grams = 330 }  # Coke
@@ -61,100 +126,170 @@ $BarcodeFoods = @(
 $DemoFoods = @(
   @{
     name = "Seed Oat Porridge"; brand = "NutriTrack Demo"; role = "BREAKFAST"; grams = 250
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 88; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 3.5; unit = "g" }
-      @{ code = "fat"; amountPer100g = 1.8; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 14.5; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 2.0; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 88 "kcal")
+      (New-SeedNutrient "protein" 3.5 "g")
+      (New-SeedNutrient "fat" 1.8 "g")
+      (New-SeedNutrient "carbohydrates" 14.5 "g")
+      (New-SeedNutrient "fiber" 2.0 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 2; vitamin_b1 = 0.12; vitamin_b2 = 0.05; vitamin_b3 = 0.4; vitamin_b5 = 0.3
+      vitamin_b6 = 0.06; vitamin_b7 = 2; vitamin_b9 = 12; vitamin_b12 = 0; vitamin_c = 0
+      vitamin_d = 0; vitamin_e = 0.3; vitamin_k = 1.2
+      calcium = 20; iron = 1.2; magnesium = 35; potassium = 120; sodium = 5; zinc = 0.8
+      iodine = 1; selenium = 4; copper = 0.12; manganese = 1.1; phosphorus = 110
+      chromium = 2; molybdenum = 8
+    })
   }
   @{
     name = "Seed Greek Yogurt"; brand = "NutriTrack Demo"; role = "BREAKFAST"; grams = 150
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 97; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 9.0; unit = "g" }
-      @{ code = "fat"; amountPer100g = 5.0; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 3.6; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 97 "kcal")
+      (New-SeedNutrient "protein" 9.0 "g")
+      (New-SeedNutrient "fat" 5.0 "g")
+      (New-SeedNutrient "carbohydrates" 3.6 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 45; vitamin_b1 = 0.04; vitamin_b2 = 0.22; vitamin_b3 = 0.2; vitamin_b5 = 0.4
+      vitamin_b6 = 0.05; vitamin_b7 = 2.5; vitamin_b9 = 12; vitamin_b12 = 0.6; vitamin_c = 0.5
+      vitamin_d = 0.1; vitamin_e = 0.1; vitamin_k = 0.4
+      calcium = 120; iron = 0.1; magnesium = 12; potassium = 150; sodium = 45; zinc = 0.5
+      iodine = 25; selenium = 6; copper = 0.02; manganese = 0.01; phosphorus = 140
+      chromium = 1; molybdenum = 3
+    })
   }
   @{
     name = "Seed Scrambled Eggs"; brand = "NutriTrack Demo"; role = "BREAKFAST"; grams = 120
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 155; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 13; unit = "g" }
-      @{ code = "fat"; amountPer100g = 11; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 1.1; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 155 "kcal")
+      (New-SeedNutrient "protein" 13 "g")
+      (New-SeedNutrient "fat" 11 "g")
+      (New-SeedNutrient "carbohydrates" 1.1 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 160; vitamin_b1 = 0.04; vitamin_b2 = 0.45; vitamin_b3 = 0.1; vitamin_b5 = 1.4
+      vitamin_b6 = 0.14; vitamin_b7 = 16; vitamin_b9 = 44; vitamin_b12 = 1.1; vitamin_c = 0
+      vitamin_d = 2.0; vitamin_e = 1.0; vitamin_k = 0.3
+      calcium = 50; iron = 1.8; magnesium = 12; potassium = 140; sodium = 150; zinc = 1.2
+      iodine = 25; selenium = 30; copper = 0.07; manganese = 0.03; phosphorus = 200
+      chromium = 1; molybdenum = 4
+    })
   }
   @{
     name = "Seed Chicken Rice Bowl"; brand = "NutriTrack Demo"; role = "LUNCH"; grams = 380
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 142; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 12; unit = "g" }
-      @{ code = "fat"; amountPer100g = 4.2; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 14; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 1.5; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 142 "kcal")
+      (New-SeedNutrient "protein" 12 "g")
+      (New-SeedNutrient "fat" 4.2 "g")
+      (New-SeedNutrient "carbohydrates" 14 "g")
+      (New-SeedNutrient "fiber" 1.5 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 35; vitamin_b1 = 0.08; vitamin_b2 = 0.1; vitamin_b3 = 5.5; vitamin_b5 = 0.9
+      vitamin_b6 = 0.35; vitamin_b7 = 3; vitamin_b9 = 18; vitamin_b12 = 0.25; vitamin_c = 4
+      vitamin_d = 0.2; vitamin_e = 0.4; vitamin_k = 8
+      calcium = 25; iron = 0.9; magnesium = 28; potassium = 220; sodium = 280; zinc = 0.9
+      iodine = 8; selenium = 18; copper = 0.08; manganese = 0.3; phosphorus = 130
+      chromium = 3; molybdenum = 10
+    })
   }
   @{
     name = "Seed Turkey Sandwich"; brand = "NutriTrack Demo"; role = "LUNCH"; grams = 220
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 210; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 14; unit = "g" }
-      @{ code = "fat"; amountPer100g = 7; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 22; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 2.2; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 210 "kcal")
+      (New-SeedNutrient "protein" 14 "g")
+      (New-SeedNutrient "fat" 7 "g")
+      (New-SeedNutrient "carbohydrates" 22 "g")
+      (New-SeedNutrient "fiber" 2.2 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 25; vitamin_b1 = 0.15; vitamin_b2 = 0.12; vitamin_b3 = 4.2; vitamin_b5 = 0.6
+      vitamin_b6 = 0.28; vitamin_b7 = 2; vitamin_b9 = 30; vitamin_b12 = 0.35; vitamin_c = 2
+      vitamin_d = 0.1; vitamin_e = 0.6; vitamin_k = 4
+      calcium = 60; iron = 1.5; magnesium = 30; potassium = 240; sodium = 420; zinc = 1.4
+      iodine = 12; selenium = 16; copper = 0.1; manganese = 0.4; phosphorus = 150
+      chromium = 4; molybdenum = 12
+    })
   }
   @{
     name = "Seed Salmon Potatoes"; brand = "NutriTrack Demo"; role = "DINNER"; grams = 400
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 160; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 13; unit = "g" }
-      @{ code = "fat"; amountPer100g = 7.5; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 11; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 160 "kcal")
+      (New-SeedNutrient "protein" 13 "g")
+      (New-SeedNutrient "fat" 7.5 "g")
+      (New-SeedNutrient "carbohydrates" 11 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 40; vitamin_b1 = 0.12; vitamin_b2 = 0.18; vitamin_b3 = 6.0; vitamin_b5 = 1.1
+      vitamin_b6 = 0.55; vitamin_b7 = 4; vitamin_b9 = 25; vitamin_b12 = 2.4; vitamin_c = 8
+      vitamin_d = 8.0; vitamin_e = 1.5; vitamin_k = 3
+      calcium = 30; iron = 0.8; magnesium = 32; potassium = 420; sodium = 90; zinc = 0.7
+      iodine = 18; selenium = 28; copper = 0.12; manganese = 0.2; phosphorus = 200
+      chromium = 2; molybdenum = 6
+    })
   }
   @{
     name = "Seed Veggie Pasta"; brand = "NutriTrack Demo"; role = "DINNER"; grams = 350
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 130; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 5; unit = "g" }
-      @{ code = "fat"; amountPer100g = 3.5; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 20; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 3.0; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 130 "kcal")
+      (New-SeedNutrient "protein" 5 "g")
+      (New-SeedNutrient "fat" 3.5 "g")
+      (New-SeedNutrient "carbohydrates" 20 "g")
+      (New-SeedNutrient "fiber" 3.0 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 220; vitamin_b1 = 0.1; vitamin_b2 = 0.08; vitamin_b3 = 1.2; vitamin_b5 = 0.4
+      vitamin_b6 = 0.15; vitamin_b7 = 2; vitamin_b9 = 55; vitamin_b12 = 0; vitamin_c = 18
+      vitamin_d = 0; vitamin_e = 1.2; vitamin_k = 45
+      calcium = 45; iron = 1.4; magnesium = 40; potassium = 280; sodium = 210; zinc = 0.8
+      iodine = 5; selenium = 4; copper = 0.15; manganese = 0.6; phosphorus = 90
+      chromium = 5; molybdenum = 15
+    })
   }
   @{
     name = "Seed Banana"; brand = "NutriTrack Demo"; role = "SNACK"; grams = 120
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 89; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 1.1; unit = "g" }
-      @{ code = "fat"; amountPer100g = 0.3; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 23; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 2.6; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 89 "kcal")
+      (New-SeedNutrient "protein" 1.1 "g")
+      (New-SeedNutrient "fat" 0.3 "g")
+      (New-SeedNutrient "carbohydrates" 23 "g")
+      (New-SeedNutrient "fiber" 2.6 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 3; vitamin_b1 = 0.03; vitamin_b2 = 0.07; vitamin_b3 = 0.7; vitamin_b5 = 0.3
+      vitamin_b6 = 0.4; vitamin_b7 = 0.5; vitamin_b9 = 20; vitamin_b12 = 0; vitamin_c = 8.7
+      vitamin_d = 0; vitamin_e = 0.1; vitamin_k = 0.5
+      calcium = 5; iron = 0.3; magnesium = 27; potassium = 358; sodium = 1; zinc = 0.15
+      iodine = 1; selenium = 1; copper = 0.08; manganese = 0.3; phosphorus = 22
+      chromium = 1; molybdenum = 2
+    })
   }
   @{
     name = "Seed Protein Bar"; brand = "NutriTrack Demo"; role = "SNACK"; grams = 60
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 380; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 30; unit = "g" }
-      @{ code = "fat"; amountPer100g = 12; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 35; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 8; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 380 "kcal")
+      (New-SeedNutrient "protein" 30 "g")
+      (New-SeedNutrient "fat" 12 "g")
+      (New-SeedNutrient "carbohydrates" 35 "g")
+      (New-SeedNutrient "fiber" 8 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 200; vitamin_b1 = 0.4; vitamin_b2 = 0.4; vitamin_b3 = 5; vitamin_b5 = 2
+      vitamin_b6 = 0.5; vitamin_b7 = 15; vitamin_b9 = 100; vitamin_b12 = 1.0; vitamin_c = 20
+      vitamin_d = 2.5; vitamin_e = 4; vitamin_k = 12
+      calcium = 200; iron = 4; magnesium = 80; potassium = 250; sodium = 220; zinc = 3
+      iodine = 40; selenium = 20; copper = 0.3; manganese = 0.8; phosphorus = 180
+      chromium = 15; molybdenum = 20
+    })
   }
   @{
     name = "Seed Mixed Nuts"; brand = "NutriTrack Demo"; role = "SNACK"; grams = 40
-    nutrients = @(
-      @{ code = "energy_kcal"; amountPer100g = 607; unit = "kcal" }
-      @{ code = "protein"; amountPer100g = 20; unit = "g" }
-      @{ code = "fat"; amountPer100g = 54; unit = "g" }
-      @{ code = "carbohydrates"; amountPer100g = 15; unit = "g" }
-      @{ code = "fiber"; amountPer100g = 7; unit = "g" }
-    )
+    nutrients = Join-SeedNutrients -Macros @(
+      (New-SeedNutrient "energy_kcal" 607 "kcal")
+      (New-SeedNutrient "protein" 20 "g")
+      (New-SeedNutrient "fat" 54 "g")
+      (New-SeedNutrient "carbohydrates" 15 "g")
+      (New-SeedNutrient "fiber" 7 "g")
+    ) -Micros (New-SeedMicros @{
+      vitamin_a = 1; vitamin_b1 = 0.3; vitamin_b2 = 0.2; vitamin_b3 = 2.5; vitamin_b5 = 0.6
+      vitamin_b6 = 0.25; vitamin_b7 = 8; vitamin_b9 = 50; vitamin_b12 = 0; vitamin_c = 0.5
+      vitamin_d = 0; vitamin_e = 12; vitamin_k = 8
+      calcium = 80; iron = 3.5; magnesium = 180; potassium = 600; sodium = 5; zinc = 3.5
+      iodine = 2; selenium = 120; copper = 1.2; manganese = 2.5; phosphorus = 400
+      chromium = 8; molybdenum = 25
+    })
   }
 )
 
@@ -176,10 +311,12 @@ function Invoke-Api {
     Method      = $Method
     Uri         = $uri
     Headers     = $Headers
-    ContentType = "application/json"
+    ContentType = "application/json; charset=utf-8"
   }
   if ($null -ne $Body) {
-    $params.Body = ($Body | ConvertTo-Json -Depth 10 -Compress)
+    $json = ($Body | ConvertTo-Json -Depth 10 -Compress)
+    # PowerShell string bodies can mojibake µg; send explicit UTF-8 bytes.
+    $params.Body = [System.Text.Encoding]::UTF8.GetBytes($json)
   }
 
   try {
@@ -411,7 +548,7 @@ function Resolve-Foods([ref]$Tokens) {
       Invoke-Api -Method GET -Path "/api/products/barcode/$($item.barcode)" `
         -Headers (Get-AuthHeaders $access) -AllowError
     }
-    if ($product -and $product.id) {
+    if ($product -and $product.id -and (Test-HasSeedMicros $product)) {
       $foods.Add([pscustomobject]@{
           kind   = "product"
           id     = $product.id
@@ -419,7 +556,10 @@ function Resolve-Foods([ref]$Tokens) {
           role   = $item.role
           grams  = $item.grams
         }) | Out-Null
-      Write-Ok "  Catalog: $($product.name)"
+      Write-Ok "  Catalog (with micros): $($product.name)"
+    }
+    elseif ($product -and $product.id) {
+      Write-Warn "  Catalog $($product.name) lacks vitamins/minerals — skipping barcode food"
     }
     else {
       Write-Warn "  Barcode $($item.barcode) unavailable — will use demo foods"
@@ -432,14 +572,19 @@ function Resolve-Foods([ref]$Tokens) {
   }
   if ($null -eq $mine) { $mine = @() }
   elseif ($mine -isnot [System.Array]) { $mine = @($mine) }
+  # Prefer newest submission per name (API returns submittedAt desc).
   $byName = @{}
   foreach ($s in $mine) {
-    if ($s.name) { $byName[$s.name] = $s }
+    if ($s.name -and -not $byName.ContainsKey($s.name)) { $byName[$s.name] = $s }
   }
 
   foreach ($demo in $DemoFoods) {
     $existing = $byName[$demo.name]
-    if (-not $existing) {
+    $reuse = $existing -and (-not $Force) -and (Test-HasSeedMicros $existing)
+    if ($reuse) {
+      Write-Info "  Reusing demo food: $($demo.name)"
+    }
+    else {
       $created = Update-TokensOn401 -Tokens $Tokens -Action {
         param($access)
         Invoke-Api -Method POST -Path "/api/products/submissions" -Headers (Get-AuthHeaders $access) -Body @{
@@ -451,10 +596,15 @@ function Resolve-Foods([ref]$Tokens) {
         }
       }
       $existing = $created
-      Write-Ok "  Created demo food: $($demo.name)"
-    }
-    else {
-      Write-Info "  Reusing demo food: $($demo.name)"
+      if ($Force) {
+        Write-Ok "  Recreated demo food (force): $($demo.name)"
+      }
+      elseif ($byName.ContainsKey($demo.name)) {
+        Write-Ok "  Recreated demo food (added micros): $($demo.name)"
+      }
+      else {
+        Write-Ok "  Created demo food: $($demo.name)"
+      }
     }
 
     $foods.Add([pscustomobject]@{

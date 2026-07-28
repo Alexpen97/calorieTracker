@@ -1,6 +1,6 @@
 # Dev account data seeder
 
-Recorded 2026-07-22. Updated same day for skip-if-seeded.
+Recorded 2026-07-22. Updated 2026-07-28 for vitamin/mineral demo panels.
 
 ## What it does
 
@@ -12,8 +12,20 @@ Recorded 2026-07-22. Updated same day for skip-if-seeded.
 3. Onboarding / profile → demo persona (male, 178 cm, lose weight, moderate activity)
 4. Delete existing diary entries + water for the last `max(Days, 120)` days
 5. Delete all weight logs (`DELETE /api/users/me/weight/{id}`)
-6. Resolve foods (OFF barcodes when available + NutriTrack Demo submissions)
+6. Resolve foods (OFF barcodes **only if they already have micros** + NutriTrack
+   Demo submissions with full vitamin/mineral panels)
 7. Write ~30 days of meals, water, and weight trend (override with `-Days`)
+
+## Micronutrients
+
+Each `Seed …` demo food submits the full checklist (A, B1–B7/B9/B12, C, D, E, K
++ calcium/iron/magnesium/potassium/sodium/zinc/iodine/selenium/copper/manganese/
+phosphorus/chromium/molybdenum) with catalog default units (`mg` / `µg`).
+
+- Reuses an existing submission only when it already has enough micros and
+  `-Force` is not set.
+- `-Force` (or a macros-only leftover submission) recreates the demo food so
+  diary snapshots pick up vitamins/minerals.
 
 ## Accounts
 
@@ -58,6 +70,7 @@ Shipped in user-profile-service with the seeder. Redeploy that service before se
 
 - Default runs are safe on a persistent DB: no wipe unless `-Force`.
 - Diary `zone` must be IANA (default `Europe/Berlin`), not a Windows timezone id.
-- Demo foods are product submissions (`force: true`) named `Seed …` under the seeding user; reused on later runs via `/api/products/submissions/mine`.
+- Demo foods are product submissions (`force: true`) named `Seed …` under the seeding user; reused on later runs via `/api/products/submissions/mine` when they already include vitamins/minerals.
+- OFF barcode meals are skipped when the catalog product has no micronutrient panel (keeps dashboard vit/min charts populated).
 - If `DELETE /api/users/me/weight/{id}` is not deployed yet, the script warns and still writes a new weight series (old points remain until the endpoint ships).
 - Expect a couple of minutes for 30 days × 2 accounts when forcing a full reseed.
