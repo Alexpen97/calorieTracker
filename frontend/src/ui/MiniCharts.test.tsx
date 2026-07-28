@@ -1,11 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import {
+  CalorieHeroRing,
   GroupedBars,
+  MacroMiniRing,
   MicroTrendGrid,
   NestedCalorieMacroRing,
   ProgressRing,
   ProgressRow,
+  RangeBandBar,
   SharedMicronutrientTrendChart,
   SlimMacroBar,
   Sparkline,
@@ -280,5 +283,49 @@ describe('mini chart primitives', () => {
     expect(screen.getByLabelText('Vitamin trends, last 30 days legend')).toBeInTheDocument()
     expect(screen.getByText('15 ug')).toBeInTheDocument()
     expect(screen.getByText('80 mg')).toBeInTheDocument()
+  })
+
+  it('renders a calorie hero ring with primary remaining value', () => {
+    render(
+      <CalorieHeroRing
+        valueLabel="1505"
+        detailLabel="Calories left"
+        percent={72}
+      />,
+    )
+
+    expect(screen.getByText('1505')).toBeInTheDocument()
+    expect(screen.getByText('Calories left')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: /Calories left: 1505/i })).toHaveAttribute(
+      'aria-valuenow',
+      '72',
+    )
+  })
+
+  it('renders macro mini rings with tone and bounded progress', () => {
+    render(<MacroMiniRing label="Protein left" value="129g" percent={140} tone="protein" />)
+
+    expect(screen.getByText('129g')).toBeInTheDocument()
+    expect(screen.getByText('Protein left')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: /Protein left: 129g/i })).toHaveAttribute(
+      'aria-valuenow',
+      '100',
+    )
+  })
+
+  it('renders a range-band bar with accessible value text', () => {
+    render(
+      <RangeBandBar
+        label="Daily glucose"
+        valueLabel="6 / 10"
+        percent={60}
+      />,
+    )
+
+    expect(screen.getByText('6 / 10')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: /Daily glucose: 6 \/ 10/i })).toHaveAttribute(
+      'aria-valuenow',
+      '60',
+    )
   })
 })

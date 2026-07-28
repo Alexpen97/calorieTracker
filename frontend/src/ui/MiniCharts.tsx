@@ -52,6 +52,125 @@ export function ProgressRing({
   )
 }
 
+export function CalorieHeroRing({
+  valueLabel,
+  detailLabel,
+  percent,
+}: {
+  valueLabel: string
+  detailLabel: string
+  percent: number
+}) {
+  const bounded = clampPercent(percent)
+  const dashoffset = 100 * (1 - bounded / 100)
+  return (
+    <div className="calorie-hero-ring">
+      <div className="calorie-hero-copy">
+        <strong className="calorie-hero-value">{valueLabel}</strong>
+        <span className="calorie-hero-detail">{detailLabel}</span>
+      </div>
+      <div
+        className="calorie-hero-chart"
+        aria-label={`${detailLabel}: ${valueLabel}`}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={bounded}
+        aria-valuetext={valueLabel}
+      >
+        <svg className="calorie-hero-svg" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+          <circle className="calorie-hero-track" cx="18" cy="18" r="15.9155" />
+          <circle
+            className="calorie-hero-indicator"
+            cx="18"
+            cy="18"
+            r="15.9155"
+            strokeDasharray={100}
+            strokeDashoffset={dashoffset}
+          />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+const MACRO_MINI_TONES = ['protein', 'carbs', 'fat', 'calories', 'neutral'] as const
+export type MacroMiniTone = (typeof MACRO_MINI_TONES)[number]
+
+export function MacroMiniRing({
+  label,
+  value,
+  percent,
+  tone = 'neutral',
+}: {
+  label: string
+  value: string
+  percent: number
+  tone?: MacroMiniTone
+}) {
+  const bounded = clampPercent(percent)
+  const dashoffset = 100 * (1 - bounded / 100)
+  return (
+    <div className={`macro-mini-ring macro-mini-ring-${tone}`}>
+      <div
+        className="macro-mini-chart"
+        aria-label={`${label}: ${value}`}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={bounded}
+        aria-valuetext={value}
+      >
+        <svg className="macro-mini-svg" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+          <circle className="macro-mini-track" cx="18" cy="18" r="15.9155" />
+          <circle
+            className="macro-mini-indicator"
+            cx="18"
+            cy="18"
+            r="15.9155"
+            strokeDasharray={100}
+            strokeDashoffset={dashoffset}
+          />
+        </svg>
+      </div>
+      <strong className="macro-mini-value">{value}</strong>
+      <span className="macro-mini-label">{label}</span>
+    </div>
+  )
+}
+
+export function RangeBandBar({
+  label,
+  valueLabel,
+  percent,
+}: {
+  label: string
+  valueLabel: string
+  percent: number
+}) {
+  const bounded = clampPercent(percent)
+  return (
+    <div className="range-band">
+      <div className="range-band-copy">
+        <span className="range-band-label">{label}</span>
+        <strong className="range-band-value">{valueLabel}</strong>
+      </div>
+      <div
+        className="range-band-track"
+        role="progressbar"
+        aria-label={`${label}: ${valueLabel}`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={bounded}
+        aria-valuetext={valueLabel}
+      >
+        <div className="range-band-fill" style={{ width: `${bounded}%` }} />
+        <span className="range-band-thumb" style={{ left: `${bounded}%` }} aria-hidden />
+      </div>
+    </div>
+  )
+}
+
 const MACRO_RING_TONES = ['protein', 'carbs', 'fat'] as const
 
 export function NestedCalorieMacroRing({

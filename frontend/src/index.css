@@ -1,18 +1,36 @@
 :root {
-  --ink: #1c2a22;
+  --ink: #171717;
+  --muted: #6b7280;
   --leaf: #2f6b4f;
   --leaf-deep: #1f4a37;
   --cream: #f3efe4;
-  --mist: #d7e4da;
+  --mist: #e8edeb;
   --sun: #e2b04a;
-  --paper: rgba(255, 252, 245, 0.88);
+  --paper: #ffffff;
+  --canvas: #f3f4f6;
+  --card: #ffffff;
+  --accent: #f97316;
+  --accent-deep: #ea580c;
+  --macro-protein: #16a34a;
+  --macro-carbs: #f59e0b;
+  --macro-fat: #ef4444;
+  --macro-calories: #f97316;
+  --radius-card: 1.35rem;
+  --radius-pill: 999px;
+  --shadow-card: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --shadow-nav: 0 14px 34px rgba(15, 23, 42, 0.14);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
   --font-display: 'Source Sans 3', 'Segoe UI', sans-serif;
   --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
   color: var(--ink);
   font-family: var(--font-body);
   line-height: 1.45;
   font-weight: 400;
-  background: #f7f7f6;
+  background: var(--canvas);
   min-height: 100%;
 }
 
@@ -816,11 +834,233 @@ button {
 
 .dashboard-card {
   margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(20, 20, 20, 0.06);
-  border-radius: 1.1rem;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 28px rgba(10, 10, 10, 0.06);
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-card-hero {
+  padding: var(--space-5);
+}
+
+.dashboard-card-metric {
+  padding: var(--space-3) var(--space-4);
+}
+
+.dashboard-card-list {
+  padding: var(--space-3) var(--space-4);
+}
+
+.dashboard-card-insight {
+  padding: var(--space-4);
+}
+
+.metric-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+.metric-card-copy {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.metric-card-value {
+  font-size: 1.45rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.metric-card-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric-card-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--muted);
+}
+
+.metric-card-track {
+  height: 0.45rem;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.metric-card-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+}
+
+.metric-card-protein {
+  color: var(--macro-protein);
+}
+
+.metric-card-carbs {
+  color: var(--macro-carbs);
+}
+
+.metric-card-fat {
+  color: var(--macro-fat);
+}
+
+.metric-card-calories {
+  color: var(--macro-calories);
+}
+
+.metric-card-neutral {
+  color: var(--ink);
+}
+
+.calorie-hero-ring {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.calorie-hero-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.calorie-hero-value {
+  font-size: clamp(2rem, 8vw, 2.6rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.calorie-hero-detail {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.calorie-hero-chart {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.calorie-hero-svg,
+.macro-mini-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.calorie-hero-track,
+.macro-mini-track {
+  fill: none;
+  stroke: rgba(15, 23, 42, 0.08);
+  stroke-width: 3.2;
+}
+
+.calorie-hero-indicator {
+  fill: none;
+  stroke: var(--macro-calories);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+.macro-mini-ring {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.macro-mini-chart {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.macro-mini-indicator {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+.macro-mini-value {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.macro-mini-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.macro-mini-ring-protein {
+  color: var(--macro-protein);
+}
+
+.macro-mini-ring-carbs {
+  color: var(--macro-carbs);
+}
+
+.macro-mini-ring-fat {
+  color: var(--macro-fat);
+}
+
+.macro-mini-ring-calories {
+  color: var(--macro-calories);
+}
+
+.macro-mini-ring-neutral {
+  color: var(--ink);
+}
+
+.range-band {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.range-band-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.range-band-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.range-band-value {
+  font-size: 1.15rem;
+}
+
+.range-band-track {
+  position: relative;
+  height: 0.7rem;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #16a34a 100%);
+}
+
+.range-band-fill {
+  display: none;
+}
+
+.range-band-thumb {
+  position: absolute;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #111827;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+  transform: translate(-50%, -50%);
 }
 
 .card-heading,
