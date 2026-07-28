@@ -10,7 +10,7 @@ describe('DashboardPage', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders today summary, macros, vitamins, minerals, and weight cards', async () => {
+  it('renders calorie left hero, macro cards, week strip, and weight insight', async () => {
     vi.spyOn(client, 'fetchMe').mockResolvedValue({
       id: 'u1',
       email: 'alex@example.com',
@@ -43,22 +43,20 @@ describe('DashboardPage', () => {
 
     renderWithClient(<DashboardPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Today Summary' })).toBeInTheDocument()
-    expect(screen.getByLabelText(/^Calories: 1.450 \/ 2.100$|^Calories: 1,450 \/ 2,100$/)).toBeInTheDocument()
-    expect(screen.getByText(/^1.450 \/ 2.100$|^1,450 \/ 2,100$/)).toBeInTheDocument()
-    expect(screen.getByLabelText('Protein: 82 / 100 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 180 / 250 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 48 / 70 g')).toBeInTheDocument()
-    expect(screen.queryByTestId('nested-macro-track')).not.toBeInTheDocument()
-    expect(screen.getAllByTestId('nested-macro-bar-track')).toHaveLength(3)
-    expect(screen.queryByRole('link', { name: 'View Diary' })).not.toBeInTheDocument()
-    expect(screen.queryByText('Meals')).not.toBeInTheDocument()
-    expect(screen.queryByText('Goal')).not.toBeInTheDocument()
-    expect(screen.queryByText('Consumed')).not.toBeInTheDocument()
-    expect(screen.queryByText(/water/i)).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Vitamins' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Minerals' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Weight Progress' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Calories left: 650$|^Calories left: 650$/)).toBeInTheDocument()
+    expect(screen.getByText('Calories left')).toBeInTheDocument()
+    expect(screen.getByLabelText('This week')).toBeInTheDocument()
+    expect(screen.getByLabelText('Macros left')).toBeInTheDocument()
+    expect(screen.getByText('Protein left')).toBeInTheDocument()
+    expect(screen.getByText('18g')).toBeInTheDocument()
+    expect(screen.getByText('Carbs left')).toBeInTheDocument()
+    expect(screen.getByText('70g')).toBeInTheDocument()
+    expect(screen.getByText('Fat left')).toBeInTheDocument()
+    expect(screen.getByText('22g')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Vitamins' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Minerals' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Weight' })).toBeInTheDocument()
     expect(screen.getByText('Last 30 days')).toBeInTheDocument()
     expect(screen.getByLabelText('Weight trend')).toBeInTheDocument()
     expect(screen.getAllByTestId('weight-trend-point')).toHaveLength(2)
@@ -121,10 +119,12 @@ describe('DashboardPage', () => {
 
     renderWithClient(<DashboardPage />)
 
-    expect(await screen.findByLabelText(/^Calories: 2.333 \/ 2.100$|^Calories: 2,333 \/ 2,100$/)).toBeInTheDocument()
-    expect(screen.getByLabelText('Protein: 233 / 100 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Carbs: 23 / 250 g')).toBeInTheDocument()
-    expect(screen.getByLabelText('Fat: 223 / 70 g')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/Calories left: 0/)).toBeInTheDocument()
+    expect(screen.getAllByText('0g').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('Protein left')).toBeInTheDocument()
+    expect(screen.getByText('Carbs left')).toBeInTheDocument()
+    expect(screen.getByText(/^227g$/)).toBeInTheDocument()
+    expect(screen.getByText('Fat left')).toBeInTheDocument()
   })
 })
 
