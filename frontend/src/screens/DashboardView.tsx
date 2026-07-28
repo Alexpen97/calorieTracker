@@ -1,10 +1,14 @@
 import type { DaySummary, UserProfile, WeightLog } from '../api/client'
 import { formatDiaryDayLabel, formatLocalDate } from '../diary/formatDay'
-import { buildWeightTrendAxisLabels, buildWeightTrendSeries } from '../diary/nutritionDashboard'
+import {
+  buildMicronutrientRows,
+  buildWeightTrendAxisLabels,
+  buildWeightTrendSeries,
+} from '../diary/nutritionDashboard'
 import { Link } from 'react-router-dom'
 import { DashboardCard, MetricCard } from '../ui/Card'
-import { CalorieHeroRing, WeightTrendChart } from '../ui/MiniCharts'
-import { IconScale } from '../ui/Icons'
+import { CalorieHeroRing, MicroProgressGrid, WeightTrendChart } from '../ui/MiniCharts'
+import { IconLeaf, IconScale } from '../ui/Icons'
 
 type Props = {
   me: Pick<UserProfile, 'displayName' | 'avatarUrl'> | null
@@ -35,6 +39,8 @@ export default function DashboardView({
   const caloriePercent = energy?.target
     ? Math.min(100, Math.round((energy.amount / energy.target) * 100))
     : 0
+  const vitamins = buildMicronutrientRows(summary.totals, 'vitamin')
+  const minerals = buildMicronutrientRows(summary.totals, 'mineral')
   const weekDays = buildWeekStrip(selectedDate, today)
   const dayTitle = selectedDate === today ? 'Today' : formatDiaryDayLabel(selectedDate, today)
 
@@ -102,6 +108,30 @@ export default function DashboardView({
           )
         })}
       </div>
+
+      <DashboardCard
+        icon={<IconLeaf />}
+        title="Vitamins"
+        action={
+          <Link className="card-action" to="/analytics">
+            Details
+          </Link>
+        }
+      >
+        <MicroProgressGrid rows={vitamins} />
+      </DashboardCard>
+
+      <DashboardCard
+        icon={<IconLeaf />}
+        title="Minerals"
+        action={
+          <Link className="card-action" to="/analytics">
+            Details
+          </Link>
+        }
+      >
+        <MicroProgressGrid rows={minerals} />
+      </DashboardCard>
 
       <DashboardCard
         className="dashboard-span"
