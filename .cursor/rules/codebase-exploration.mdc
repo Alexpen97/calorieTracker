@@ -1,0 +1,50 @@
+---
+description: Layered codebase exploration — Memory then Graphify, Grep last
+alwaysApply: true
+---
+
+# Codebase exploration (layered)
+
+Prefer graph tools over `Grep`, `Glob`, and broad `Read` sweeps. Do **not** start exploration with Grep/Glob “just to be safe.” Apply this layering to you and to every subagent that explores code.
+
+## Decision tree (pick the layer, then act)
+
+| Question type | Use first | Then |
+|---|---|---|
+| Where is symbol X? Who calls Y? What implements Z? | **Codebase Memory** | `get_code_snippet` / `Read` that path |
+| Callers, callees, impact, data flow | **Memory** `trace_path` | `calls` / `data_flow` / `cross_service` |
+| HTTP/async path across services | **Memory** `trace_path` `cross_service` | Memory `get_architecture` if needed |
+| Exact string / error / env key / unindexed file | **Memory** `search_code` | raw `Grep` only if still missing |
+| How is the system shaped? Communities? Doc↔code links? | **Graphify** `query` / `explain` | `GRAPH_REPORT.md` or `graph.html` if needed |
+| Shortest link between two named concepts | **Graphify** `path "A" "B"` | Memory if both are code symbols and path is noisy |
+| “Why did we decide…?” / AI notes / mockups | **Graphify** | `Read` the cited doc/image path |
+| User already gave a file path | **Read** that file | Memory/Graphify only for neighbors |
+
+**Default for coding tasks:** Memory → targeted Read → Graphify only if architecture/docs context is missing → Grep/Glob last.
+
+## Hard rules
+
+1. **Never** open with workspace Grep/Glob for discovery when Memory or Graphify can answer.
+2. **Never** treat Graphify as mandatory before every code lookup — that fights Memory’s strengths.
+3. **Never** treat Memory as sufficient for doc/rationale questions when `graphify-out/graph.json` exists — use Graphify.
+4. After Memory/Graphify returns a concrete path or `qualified_name`, **Read** (or `get_code_snippet`) — do not re-search with Grep.
+5. If both graphs disagree, trust **Memory for code structure**; trust **Graphify for docs/inferred narrative**, then verify in source.
+
+## Fallback order (when a layer fails)
+
+1. Retry with a narrower query / different tool in the **same** layer.
+2. If Memory looks empty/stale → `index_repository` (`mode: "fast"`), then retry.
+3. If Graphify missing → `graphify-out/graph.json` absent: skip Graphify; use Memory. If present but stale after big edits → `graphify update .`.
+4. Only then: `Grep` / `Glob` / Task explore.
+5. Broad `Read` of unknown trees is last resort.
+
+## Subagents
+
+Any subagent that explores this repo must follow this layering. Put in its prompt:
+
+> Use Codebase Memory (`project: "D-repos-calorieTracker"`) for symbols/calls/routes; Graphify (`graphify query/path/explain`) for architecture/docs; Grep only as last resort.
+
+## Details
+
+- Memory tools & project id → `.cursor/rules/codebase-memory.mdc`
+- Graphify CLI & outputs → `.cursor/rules/graphify.mdc`

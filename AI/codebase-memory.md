@@ -3,10 +3,12 @@
 ## Purpose
 
 The `user-codebase-memory-mcp` server indexes this monorepo into a knowledge graph
-(functions, classes, routes, CALLS/IMPORTS/USAGE edges). Agents should use it
-**before** Grep/Glob for discovery.
+(functions, classes, routes, CALLS/IMPORTS/USAGE edges).
 
-Cursor rule: `.cursor/rules/codebase-memory.mdc` (alwaysApply).
+**Routing:** see `AI/codebase-exploration.md` and `.cursor/rules/codebase-exploration.mdc`.
+Memory is the **primary** tool for symbol/call/route exploration; Graphify covers architecture/docs; Grep is last.
+
+Cursor rule: `.cursor/rules/codebase-memory.mdc` (alwaysApply tool map).
 
 ## Project id
 
@@ -17,11 +19,7 @@ Cursor rule: `.cursor/rules/codebase-memory.mdc` (alwaysApply).
 
 If tools say `project not found`, use `available_projects` from the error response.
 
-## Index status (2026-07-22)
-
-- ~2630 nodes / ~7400 edges
-- Languages: Java, TypeScript (+ SQL/YAML)
-- Packages surfaced: food-catalog, user-profile, diary, auth, gateway, frontend `src`
+## Index status
 
 Re-index when the graph looks stale:
 
@@ -53,5 +51,6 @@ index_repository
 
 ## Related
 
+- Layered exploration: `AI/codebase-exploration.md`
+- Graphify: `.cursor/rules/graphify.mdc`
 - Context7 for *external* library docs: `.cursor/rules/context7.mdc`
-- This MCP is for *this repo’s* structure and symbols

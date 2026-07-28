@@ -1,0 +1,47 @@
+---
+description: Graphify knowledge graph — architecture, docs, communities (layered with Memory)
+alwaysApply: true
+---
+
+# Graphify
+
+Local graph at `graphify-out/` (AST + semantic docs/images). Strengths: communities, doc↔code links, architecture narrative, INFERRED edges, HTML report.
+
+Routing (when Graphify vs Memory vs Grep) lives in `.cursor/rules/codebase-exploration.mdc` — follow that first. **Do not** run Graphify before every code lookup.
+
+## When to invoke
+
+Use Graphify when the question is about:
+
+- System shape, community hubs, surprising connections
+- Docs, AI notes, mockups, design rationale
+- Concept neighborhoods (`explain`) or concept-to-concept paths
+- Broad orientation before a large unfamiliar area (optional; Memory `get_architecture` is fine too)
+
+Skip Graphify when:
+
+- You need a symbol definition, caller list, or exact method body → **Memory**
+- `graphify-out/graph.json` does not exist yet
+- Memory already gave a path and you only need to edit those lines
+
+## Commands
+
+```bash
+graphify query "<question>"      # BFS neighborhood (raise --budget if truncated)
+graphify path "A" "B"            # shortest path between nodes
+graphify explain "<concept>"     # node + neighbors in plain language
+graphify update .                # AST refresh after code edits (no API key)
+graphify god-nodes               # highest-degree hubs
+```
+
+## Outputs
+
+- `graphify-out/graph.html` — interactive viz
+- `graphify-out/GRAPH_REPORT.md` — god nodes, surprises, suggested questions (broad review only)
+- `graphify-out/wiki/index.md` — if present, prefer wiki over raw dumps for orientation
+
+## Honesty
+
+- Treat **INFERRED** / **AMBIGUOUS** edges as hypotheses; verify in source (prefer Memory → Read).
+- Dangling-endpoint warnings mean some semantic IDs did not match AST — do not trust those edges blindly.
+- After substantial code changes, run `graphify update .` so later queries stay useful.
