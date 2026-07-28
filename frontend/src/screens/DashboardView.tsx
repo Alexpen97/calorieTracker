@@ -65,7 +65,6 @@ export default function DashboardView({
             aria-current={day.active ? 'date' : undefined}
             aria-label={day.accessibleLabel}
             aria-pressed={day.active}
-            disabled={day.disabled}
             onClick={() => onSelectDate(day.iso)}
           >
             <span className="day-strip-weekday">{day.weekday}</span>
@@ -180,7 +179,6 @@ function buildWeekStrip(activeIso: string, todayIso: string) {
       weekday: date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2),
       accessibleLabel: formatDiaryDayLabel(iso, todayIso),
       active: iso === activeIso,
-      disabled: iso > todayIso,
     }
   })
 }

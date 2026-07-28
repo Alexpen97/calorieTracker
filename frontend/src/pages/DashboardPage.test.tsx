@@ -107,7 +107,7 @@ describe('DashboardPage', () => {
     expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
     const otherDay = screen
       .getAllByRole('button')
-      .find((button) => button.getAttribute('aria-pressed') !== 'true' && !button.hasAttribute('disabled'))
+      .find((button) => button.getAttribute('aria-pressed') !== 'true')
     expect(otherDay).toBeTruthy()
     fireEvent.click(otherDay!)
 
