@@ -1714,27 +1714,33 @@ button {
 .dashboard-page {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 0.9rem;
-  row-gap: 0.9rem;
+  column-gap: 0.55rem;
+  row-gap: 0.45rem;
   align-items: start;
+  align-content: start;
 }
 
 .dashboard-page > .dashboard-card {
   margin-top: 0;
 }
 
+.dashboard-page > .screen-header {
+  padding-bottom: 0;
+}
+
 .day-strip {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.35rem;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .day-strip-item {
   display: grid;
-  gap: 0.2rem;
+  gap: 0.15rem;
   justify-items: center;
-  padding: 0.55rem 0.2rem;
-  border-radius: 1rem;
+  padding: 0.4rem 0.15rem;
+  border-radius: 0.9rem;
   color: var(--muted);
   background: transparent;
 }
@@ -1746,8 +1752,8 @@ button {
 }
 
 .day-strip-date {
-  width: 2rem;
-  height: 2rem;
+  width: 1.85rem;
+  height: 1.85rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -1766,8 +1772,25 @@ button {
 .macro-card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.45rem;
 }
+
+.dashboard-page .dashboard-card-hero {
+  padding: 0.85rem 1rem;
+}
+
+.dashboard-page .dashboard-card-insight {
+  padding: 0.85rem 1rem;
+}
+
+.dashboard-page .metric-card {
+  padding: 0.75rem;
+}
+
+.dashboard-page .card-heading {
+  margin-bottom: 0.35rem;
+}
+
 
 .micro-grid {
   display: grid;
