@@ -19,5 +19,7 @@ resources:
   - frontend.yaml
   - ingress.yaml
 
-commonLabels:
-  app.kubernetes.io/part-of: nutritrack
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: nutritrack
+    includeSelectors: false
