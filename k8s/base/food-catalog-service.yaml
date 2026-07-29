@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: food-catalog-service
+  namespace: nutritrack
+  labels:
+    app: food-catalog-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: food-catalog-service
+  template:
+    metadata:
+      labels:
+        app: food-catalog-service
+    spec:
+      containers:
+        - name: food-catalog-service
+          image: nutritrack/food-catalog-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/food_catalog
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: JWKS_URI
+              value: http://auth-service:8080/.well-known/jwks.json
+            - name: OFF_BASE_URL
+              value: https://world.openfoodfacts.org
+            - name: OFF_USER_AGENT
+              value: "NutriTrack - Server - Version 0.1"
+            - name: FOOD_REDIS_ENABLED
+              value: "true"
+            - name: ENRICHMENT_ENABLED
+              value: "true"
+            - name: ENRICHMENT_SERVICE_URL
+              value: http://nutrient-enrichment-service:8080
+            - name: NEVO_SERVICE_URL
+              value: http://nevo-service:8080
+            - name: NEVO_ESTIMATE_ENABLED
+              value: "false"
+            - name: INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: internal-api-key
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: food-catalog-service
+  namespace: nutritrack
+spec:
+  selector:
+    app: food-catalog-service
+  ports:
+    - port: 8080
+      targetPort: 8080

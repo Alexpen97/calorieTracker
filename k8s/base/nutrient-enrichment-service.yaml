@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nutrient-enrichment-service
+  namespace: nutritrack
+  labels:
+    app: nutrient-enrichment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nutrient-enrichment-service
+  template:
+    metadata:
+      labels:
+        app: nutrient-enrichment-service
+    spec:
+      containers:
+        - name: nutrient-enrichment-service
+          image: nutritrack/nutrient-enrichment-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/enrichment
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: FDC_BASE_URL
+              value: https://api.nal.usda.gov/fdc/v1
+            - name: FDC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: fdc-api-key
+            - name: INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: internal-api-key
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nutrient-enrichment-service
+  namespace: nutritrack
+spec:
+  selector:
+    app: nutrient-enrichment-service
+  ports:
+    - port: 8080
+      targetPort: 8080

@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nevo-service
+  namespace: nutritrack
+  labels:
+    app: nevo-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nevo-service
+  template:
+    metadata:
+      labels:
+        app: nevo-service
+    spec:
+      containers:
+        - name: nevo-service
+          image: nutritrack/nevo-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/nevo
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: password
+            - name: NEVO_CSV_PATH
+              value: ""
+            - name: NEVO_VERSION
+              value: "2025/9.0"
+            - name: INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: internal-api-key
+            - name: LIBRETRANSLATE_ENABLED
+              value: "true"
+            - name: LIBRETRANSLATE_URL
+              value: http://libretranslate:5000
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nevo-service
+  namespace: nutritrack
+spec:
+  selector:
+    app: nevo-service
+  ports:
+    - port: 8080
+      targetPort: 8080
