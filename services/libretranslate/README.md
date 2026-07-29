@@ -42,6 +42,9 @@ Listens on `5000` locally (`http://localhost:5000`). Inside Compose:
 ## Smoke test
 
 ```bash
+./services/libretranslate/smoke-test.sh
+
+# or hit a running instance directly
 curl -s -X POST http://localhost:5000/translate \
   -H "Content-Type: application/json" \
   -d '{"q":"magere kwark met aardbei","source":"nl","target":"en"}'

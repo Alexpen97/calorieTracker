@@ -44,3 +44,10 @@ k8s/
 - [ ] Consider PostgreSQL operator (CloudNativePG) for production instead of single-pod Postgres
 - [ ] Add HorizontalPodAutoscaler for traffic-heavy services
 - [ ] Set up CI/CD pipeline for automated image builds and deploys
+
+## 2026-07-29 local Rancher Desktop follow-up
+
+- Added `k8s/overlays/local/kustomization.yaml` for local Traefik-based deployment.
+- Fixed `services/libretranslate/docker-entrypoint.sh` to locate the real upstream executable at `/app/venv/bin/libretranslate` when it is not on `PATH`.
+- Added `services/libretranslate/smoke-test.sh` to build the image and verify `/languages` responds on a temporary local container.
+- Dev Login empty **403**: gateway `CORS_ALLOWED_ORIGINS` was `https://nutritrack.example.com`. Browser POSTs from `http://localhost:8088` are rejected before auth-service. Local overlay now allows `http://localhost:8088` (+ vite/capacitor localhost origins).
