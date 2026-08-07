@@ -8,12 +8,19 @@ import './index.css'
 
 const queryClient = new QueryClient()
 
+// Routing base: matches Vite `base`. Defaults to '' (root, production/dev at `/`),
+// but when served under a subpath (e.g. VITE_BASE=/app) the router must share it
+// so client-side navigation and deep links resolve under that prefix.
+const basename = import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/'
+  ? import.meta.env.BASE_URL.replace(/\/$/, '')
+  : ''
+
 async function bootstrap() {
   await initTokenStorage()
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <BrowserRouter basename={basename}>
           <App />
         </BrowserRouter>
       </QueryClientProvider>

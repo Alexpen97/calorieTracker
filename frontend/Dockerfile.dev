@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+# Dev-mode frontend image: runs the Vite dev server (HMR) instead of building
+# for nginx. The source is COPYed in via build context so it works regardless
+# of bind-mount host path differences.
+FROM node:22-alpine
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+# VITE_BASE instructs Vite to serve the SPA under /app; VITE_API_BASE_URL and
+# VITE_DEV_PROXY_TARGET let it reach the gateway. Set at runtime via compose.
+ENV HOST=0.0.0.0 \
+    PORT=5173 \
+    VITE_BASE=/app
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
