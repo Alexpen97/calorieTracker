@@ -35,4 +35,12 @@ class FoodPropertiesBindingTest {
 
     assertThat(properties.off().baseUrl()).isEqualTo("https://example.test/off");
   }
+
+  @Test
+  void searchHasFuzzyDefaults() {
+    FoodProperties properties = bind(Map.of("nutritrack.food.cache.redis-enabled", "true"));
+
+    assertThat(properties.search().fuzzyMinResults()).isEqualTo(3);
+    assertThat(properties.search().similarityThreshold()).isEqualTo(0.35);
+  }
 }

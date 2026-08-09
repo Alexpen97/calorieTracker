@@ -32,7 +32,9 @@ public record FoodProperties(
 
   public record Search(
       @DefaultValue("20") int pageSize,
-      @DefaultValue("5") int localMinResultsBeforeOffFallback) {}
+      @DefaultValue("5") int localMinResultsBeforeOffFallback,
+      @DefaultValue("3") int fuzzyMinResults,
+      @DefaultValue("0.35") double similarityThreshold) {}
 
   public record BulkImport(
       @DefaultValue("false") boolean enabled,
