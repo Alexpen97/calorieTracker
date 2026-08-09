@@ -366,6 +366,158 @@ class DiaryControllerTest {
   }
 
   @Test
+  void frequentProductsReturnsRankedUsualWeightAndOmitsSingletons() throws Exception {
+    UUID productA = UUID.randomUUID();
+    UUID productB = UUID.randomUUID();
+    UUID productC = UUID.randomUUID();
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001101");
+    when(foodCatalogClient.getProduct(eq(productA), eq("Bearer caller-token")))
+        .thenReturn(product(productA, "Greek yogurt", "Farm", "100", "10"));
+    when(foodCatalogClient.getProduct(eq(productB), eq("Bearer caller-token")))
+        .thenReturn(product(productB, "Oat milk", "Oatly", "50", "1"));
+    when(foodCatalogClient.getProduct(eq(productC), eq("Bearer caller-token")))
+        .thenReturn(product(productC, "Once only", "Solo", "80", "2"));
+
+    createEntry(owner, productA, "BREAKFAST", "2026-07-21T08:00:00Z", "100");
+    createEntry(owner, productA, "LUNCH", "2026-07-22T12:00:00Z", "200");
+    createEntry(owner, productA, "LUNCH", "2026-08-01T12:30:00Z", "150");
+    createEntry(owner, productB, "SNACK", "2026-07-25T15:00:00Z", "250");
+    createEntry(owner, productB, "BREAKFAST", "2026-08-02T08:00:00Z", "250");
+    createEntry(owner, productC, "DINNER", "2026-08-03T18:00:00Z", "100");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .param("limit", "8")
+                .param("weeks", "8")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].productId").value(productA.toString()))
+        .andExpect(jsonPath("$[0].submissionId").value((Object) null))
+        .andExpect(jsonPath("$[0].productName").value("Greek yogurt"))
+        .andExpect(jsonPath("$[0].brand").value("Farm"))
+        .andExpect(jsonPath("$[0].logCount").value(3))
+        .andExpect(jsonPath("$[0].usualWeightG").value(150))
+        .andExpect(jsonPath("$[0].lastMealType").value("LUNCH"))
+        .andExpect(jsonPath("$[0].lastConsumedAt").value("2026-08-01T12:30:00Z"))
+        .andExpect(jsonPath("$[1].productId").value(productB.toString()))
+        .andExpect(jsonPath("$[1].logCount").value(2))
+        .andExpect(jsonPath("$[1].usualWeightG").value(250))
+        .andExpect(jsonPath("$[1].lastMealType").value("BREAKFAST"));
+  }
+
+  @Test
+  void frequentProductsReturnsEmptyWhenNoneQualify() throws Exception {
+    UUID productId = UUID.randomUUID();
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001102");
+    when(foodCatalogClient.getProduct(eq(productId), eq("Bearer caller-token")))
+        .thenReturn(product(productId, "Solo snack", "Brand", "90", "3"));
+    createEntry(owner, productId, "SNACK", "2026-08-01T15:00:00Z", "40");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void frequentProductsIsolatesUsers() throws Exception {
+    UUID productId = UUID.randomUUID();
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001103");
+    Jwt other = jwtForUser("00000000-0000-0000-0000-000000001104");
+    when(foodCatalogClient.getProduct(eq(productId), eq("Bearer caller-token")))
+        .thenReturn(product(productId, "Shared name", "X", "100", "5"));
+
+    createEntry(other, productId, "LUNCH", "2026-07-21T12:00:00Z", "100");
+    createEntry(other, productId, "LUNCH", "2026-07-22T12:00:00Z", "100");
+    createEntry(owner, productId, "BREAKFAST", "2026-08-01T08:00:00Z", "50");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void frequentProductsIncludesSubmissionOnlyRows() throws Exception {
+    UUID submissionId = UUID.randomUUID();
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001105");
+    when(foodCatalogClient.getProduct(eq(submissionId), eq("Bearer caller-token")))
+        .thenReturn(pendingProduct(submissionId, "Homemade soup", "Me"));
+
+    createSubmissionEntry(owner, submissionId, "LUNCH", "2026-07-21T12:00:00Z", "300");
+    createSubmissionEntry(owner, submissionId, "DINNER", "2026-08-01T18:00:00Z", "400");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].productId").value((Object) null))
+        .andExpect(jsonPath("$[0].submissionId").value(submissionId.toString()))
+        .andExpect(jsonPath("$[0].productName").value("Homemade soup"))
+        .andExpect(jsonPath("$[0].usualWeightG").value(350))
+        .andExpect(jsonPath("$[0].lastMealType").value("DINNER"));
+  }
+
+  @Test
+  void frequentProductsHonorsLimit() throws Exception {
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001106");
+    for (int i = 0; i < 3; i++) {
+      UUID productId = UUID.randomUUID();
+      when(foodCatalogClient.getProduct(eq(productId), eq("Bearer caller-token")))
+          .thenReturn(product(productId, "Item " + i, "Brand", "100", "1"));
+      createEntry(owner, productId, "SNACK", "2026-07-2%dT10:00:00Z".formatted(i + 1), "100");
+      createEntry(owner, productId, "SNACK", "2026-08-0%dT10:00:00Z".formatted(i + 1), "100");
+    }
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .param("limit", "2")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  @Test
+  void frequentProductsRejectsInvalidParams() throws Exception {
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001107");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .param("limit", "0")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isBadRequest());
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .param("weeks", "-1")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void frequentProductsDefaultsWhenParamsOmitted() throws Exception {
+    Jwt owner = jwtForUser("00000000-0000-0000-0000-000000001108");
+
+    mockMvc
+        .perform(
+            get("/api/diary/frequent")
+                .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
   void rangeSummaryReturnsEachDateInclusiveIncludingEmptyDays() throws Exception {
     UUID productId = UUID.randomUUID();
     Jwt jwt = jwtForUser("00000000-0000-0000-0000-000000001001");
@@ -421,6 +573,24 @@ class DiaryControllerTest {
         .andReturn();
   }
 
+  private MvcResult createSubmissionEntry(
+      Jwt jwt, UUID submissionId, String mealType, String consumedAt, String weightG)
+      throws Exception {
+    when(jwtDecoder.decode("caller-token")).thenReturn(jwt);
+    return mockMvc
+        .perform(
+            post("/api/diary/entries")
+                .header("Authorization", "Bearer caller-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"submissionId":"%s","weightG":%s,"mealType":"%s","consumedAt":"%s"}
+                    """
+                        .formatted(submissionId, weightG, mealType, consumedAt)))
+        .andExpect(status().isOk())
+        .andReturn();
+  }
+
   private MvcResult createWater(Jwt jwt, String amountMl, String loggedAt) throws Exception {
     return mockMvc
         .perform(
@@ -468,6 +638,26 @@ class DiaryControllerTest {
             new ProductResponse.NutrientResponse(
                 "energy_kcal", new BigDecimal(energyKcal), "kcal"),
             new ProductResponse.NutrientResponse("protein", new BigDecimal(proteinG), "g")));
+  }
+
+  private ProductResponse pendingProduct(UUID submissionId, String name, String brand) {
+    return new ProductResponse(
+        submissionId,
+        submissionId,
+        null,
+        "PENDING_SUBMISSION",
+        name,
+        brand,
+        null,
+        null,
+        null,
+        null,
+        null,
+        List.of(),
+        null,
+        List.of(
+            new ProductResponse.NutrientResponse("energy_kcal", new BigDecimal("50"), "kcal"),
+            new ProductResponse.NutrientResponse("protein", new BigDecimal("2"), "g")));
   }
 
   private UserGoalResponse goal(String nutrientCode, String dailyTarget, String unit) {

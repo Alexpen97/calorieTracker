@@ -123,6 +123,18 @@ public class DiaryController {
     waterService.delete(UUID.fromString(jwt.getSubject()), id);
   }
 
+  /**
+   * Frequently logged products for quick-add. Defaults: {@code limit=8}, {@code weeks=8}. Caps:
+   * limit ≤ 20, weeks ≤ 52. Invalid present values → 400. Empty history → {@code []}.
+   */
+  @GetMapping("/api/diary/frequent")
+  public List<DiaryEntryService.FrequentProduct> listFrequent(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestParam(required = false) Integer limit,
+      @RequestParam(required = false) Integer weeks) {
+    return entryService.listFrequent(UUID.fromString(jwt.getSubject()), limit, weeks);
+  }
+
   @GetMapping("/api/diary/summary")
   public SummaryService.DailySummary dailySummary(
       @AuthenticationPrincipal Jwt jwt,
