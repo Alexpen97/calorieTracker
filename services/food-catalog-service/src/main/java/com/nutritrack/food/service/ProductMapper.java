@@ -39,6 +39,8 @@ public class ProductMapper {
         product.getIngredientsText(),
         splitTags(product.getAllergenTags()),
         product.getOffLastSyncedAt(),
+        null,
+        null,
         product.getNutrients().stream()
             .map(
                 n ->
@@ -67,6 +69,8 @@ public class ProductMapper {
         null,
         null,
         List.of(),
+        null,
+        null,
         null,
         parseNutrients(submission.getNutrients()));
   }

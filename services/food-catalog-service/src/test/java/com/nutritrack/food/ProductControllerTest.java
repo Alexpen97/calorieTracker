@@ -1,5 +1,6 @@
 package com.nutritrack.food;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -16,10 +17,13 @@ import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.off.NormalizedOffProduct;
 import com.nutritrack.food.off.OffClient;
 import com.nutritrack.food.nevo.NevoClient;
+import com.nutritrack.food.nevo.NevoFoodSearchResponse;
+import com.nutritrack.food.nevo.NevoMatchResponse;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,6 +63,11 @@ class ProductControllerTest {
 
   @MockitoBean private OffClient offClient;
   @MockitoBean private NevoClient nevoClient;
+
+  @BeforeEach
+  void defaultNevoSearch() {
+    when(nevoClient.searchFoods(anyString(), anyInt())).thenReturn(List.of());
+  }
 
   @Test
   void barcodeLookupFetchesFromOffPersistsAndServesNutrients() throws Exception {
@@ -146,6 +155,25 @@ class ProductControllerTest {
   }
 
   @Test
+  void searchPaprikaPrependsNevoVegetables() throws Exception {
+    when(nevoClient.searchFoods(eq("paprika"), anyInt()))
+        .thenReturn(List.of(nevoItem("31", "Sweet pepper green raw", "Vegetables")));
+    when(offClient.searchByName(anyString(), eq(1))).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get("/api/products/search")
+                .param("q", "paprika")
+                .with(asUser()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].source").value("NEVO"))
+        .andExpect(jsonPath("$.items[0].nevoCode").value("31"))
+        .andExpect(jsonPath("$.items[0].foodGroup").value("Vegetables"))
+        .andExpect(jsonPath("$.items[0].name").value("Sweet pepper green raw"))
+        .andExpect(jsonPath("$.items[0].nutrients[0].code").value("energy_kcal"));
+  }
+
+  @Test
   void submitAndApproveModerationFlow() throws Exception {
     String body =
         """
@@ -230,5 +258,17 @@ class ProductControllerTest {
         .subject(MOD_ID.toString())
         .claim("roles", List.of("MODERATOR"))
         .build();
+  }
+
+  private static NevoFoodSearchResponse.Item nevoItem(
+      String nevoCode, String nameEn, String foodGroup) {
+    return new NevoFoodSearchResponse.Item(
+        nevoCode,
+        nameEn,
+        "Paprika groene rauw",
+        foodGroup,
+        null,
+        List.of(new NevoMatchResponse.NevoNutrientDto(
+            "energy_kcal", new BigDecimal("20"), "kcal")));
   }
 }

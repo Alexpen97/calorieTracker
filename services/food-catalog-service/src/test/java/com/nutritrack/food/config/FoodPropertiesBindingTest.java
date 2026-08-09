@@ -26,6 +26,7 @@ class FoodPropertiesBindingTest {
     assertThat(properties.off().baseUrl()).isEqualTo("https://world.openfoodfacts.org");
     assertThat(properties.off().userAgent()).isEqualTo("NutriTrack - Server - Version 0.1");
     assertThat(properties.cache().redisEnabled()).isFalse();
+    assertThat(properties.search().nevoSearchLimit()).isEqualTo(8);
   }
 
   @Test
