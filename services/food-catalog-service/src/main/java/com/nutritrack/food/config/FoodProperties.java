@@ -33,7 +33,9 @@ public record FoodProperties(
   public record Search(
       @DefaultValue("20") int pageSize,
       @DefaultValue("5") int localMinResultsBeforeOffFallback,
-      @DefaultValue("8") int nevoSearchLimit) {}
+      @DefaultValue("8") int nevoSearchLimit,
+      @DefaultValue("3") int fuzzyMinResults,
+      @DefaultValue("0.35") double similarityThreshold) {}
 
   public record BulkImport(
       @DefaultValue("false") boolean enabled,
