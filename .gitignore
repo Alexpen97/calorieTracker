@@ -33,3 +33,6 @@ services/nevo-service/src/main/resources/nevo/*.xlsx
 # Local agent worktrees
 .worktrees/
 
+# Local agent task reports
+.tmp/
+

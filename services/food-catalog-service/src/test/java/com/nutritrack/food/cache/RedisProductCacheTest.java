@@ -81,6 +81,8 @@ class RedisProductCacheTest {
         "sugar, palm oil",
         List.of("en:milk"),
         Instant.parse("2026-01-01T00:00:00Z"),
+        null,
+        null,
         List.of(new ProductNutrientResponse("protein", new BigDecimal("6.3"), "g", false)));
   }
 }

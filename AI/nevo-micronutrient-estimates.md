@@ -12,6 +12,10 @@ lacks vitamins/minerals.
 - Dedicated DB: `nevo` (created in `infra/postgres/init/01-create-databases.sql`)
 - CSV import into `nevo_food` + `nevo_nutrient_value`
 - Internal match API: `POST /internal/nevo/matches/best`
+- Public user lookup search: `GET /api/nevo/foods/search?q=&limit=` (alias
+  expansion + vegetable-first ranking). Catalog merges these hits into
+  `GET /api/products/search` as `source: "NEVO"`. See
+  `AI/ult-8-colloquial-food-search-plan.md` (ULT-8).
 - `food-catalog-service` after OFF upsert: USDA (`enrichIfSparse`) then NEVO
   (`enrichMissingMicros`); NEVO merges only **still-missing** micronutrient
   codes with provenance `NEVO_ESTIMATE`
@@ -151,4 +155,18 @@ Fixes: re-enrich sparse products on `GET /api/products/{id}`; backfill missing
 micro DRVs on goals list; fall back to adult 19–50 references when age has no
 band; harden diary goals client logging; wait for goals before rendering the
 dashboard grid.
+
+## Remaining / follow-up
+
+### User lookup search (ULT-8) — shipped in search/UI
+
+Colloquial vegetable queries (`paprika`, `courgette`, `aubergine`, …) return
+ranked NEVO whole foods via public search and product-search merge. Diary
+logging from a NEVO hit is **not** in that card.
+
+### Diary materialization (follow-up card)
+
+Materialize the selected NEVO food as a catalog `product` (`source=NEVO`,
+`sourceRef=nevoCode`) on Add to diary, **or** extend diary to accept
+`nevoCode` — track as a separate Linear card.
 

@@ -15,6 +15,27 @@ type BarcodeDetectorLike = {
   detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string }>>
 }
 
+function nevoPathWithMeal(nevoCode: string, mealType: ReturnType<typeof parseMealTypeParam>): string {
+  const path = `/nevo/${encodeURIComponent(nevoCode)}`
+  return mealType ? `${path}?meal=${mealType}` : path
+}
+
+function resultPath(item: Product, mealType: ReturnType<typeof parseMealTypeParam>): string {
+  if (item.source === 'NEVO' && item.nevoCode) {
+    return nevoPathWithMeal(item.nevoCode, mealType)
+  }
+  return productPathWithMeal(item.id, mealType)
+}
+
+function resultMeta(item: Product): string {
+  if (item.source === 'NEVO') {
+    return ['NEVO', item.foodGroup].filter(Boolean).join(' · ')
+  }
+  return [item.brand, item.source === 'PENDING_SUBMISSION' ? 'awaiting review' : null]
+    .filter(Boolean)
+    .join(' · ')
+}
+
 declare global {
   interface Window {
     BarcodeDetector?: new (options?: { formats?: string[] }) => BarcodeDetectorLike
@@ -274,13 +295,9 @@ export default function LookupPage() {
         <ul className="search-results">
           {results.map((item) => (
             <li key={`${item.source}-${item.id}`}>
-              <Link to={productPathWithMeal(item.id, mealType)}>
+              <Link to={resultPath(item, mealType)}>
                 <strong>{item.name}</strong>
-                <span>
-                  {[item.brand, item.source === 'PENDING_SUBMISSION' ? 'awaiting review' : null]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </span>
+                <span>{resultMeta(item)}</span>
               </Link>
             </li>
           ))}

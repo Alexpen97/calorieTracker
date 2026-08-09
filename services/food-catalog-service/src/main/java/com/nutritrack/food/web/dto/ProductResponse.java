@@ -20,4 +20,6 @@ public record ProductResponse(
     String ingredientsText,
     List<String> allergenTags,
     Instant offLastSyncedAt,
+    String nevoCode,
+    String foodGroup,
     List<ProductNutrientResponse> nutrients) {}

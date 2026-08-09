@@ -1,6 +1,10 @@
 package com.nutritrack.nevo;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -121,6 +125,41 @@ class NevoServiceIntegrationTest {
                 .content(jsonMapper.writeValueAsString(soy)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nevoCode").value("1007"));
+  }
+
+  @Test
+  void searchPaprikaReturnsSweetPeppersBeforePowder() throws Exception {
+    mockMvc
+        .perform(get("/api/nevo/foods/search").param("q", "paprika").param("limit", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.query").value("paprika"))
+        .andExpect(jsonPath("$.items[0].foodGroup").value("Vegetables"))
+        .andExpect(jsonPath("$.items[0].nameEn", containsString("Sweet pepper")))
+        .andExpect(jsonPath("$.items[*].nevoCode", hasItem("31")))
+        .andExpect(jsonPath("$.items[0].nutrients[?(@.code=='energy_kcal')].amountPer100g").exists());
+  }
+
+  @Test
+  void searchCourgetteAndAubergineReturnVegetables() throws Exception {
+    mockMvc
+        .perform(get("/api/nevo/foods/search").param("q", "courgette"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].foodGroup").value("Vegetables"))
+        .andExpect(jsonPath("$.items[0].nameEn", containsStringIgnoringCase("Courgette")));
+
+    mockMvc
+        .perform(get("/api/nevo/foods/search").param("q", "aubergine"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].foodGroup").value("Vegetables"))
+        .andExpect(jsonPath("$.items[0].nameEn", containsStringIgnoringCase("Aubergine")));
+  }
+
+  @Test
+  void sweetPepperEnglishResolvesSameFoods() throws Exception {
+    mockMvc
+        .perform(get("/api/nevo/foods/search").param("q", "sweet pepper"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[*].nevoCode", hasItem("31")));
   }
 
   @Test

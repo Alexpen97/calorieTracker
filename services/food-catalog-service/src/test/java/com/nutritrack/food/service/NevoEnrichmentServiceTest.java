@@ -45,7 +45,7 @@ class NevoEnrichmentServiceTest {
             new FoodProperties.Cache(false, java.time.Duration.ofHours(1)),
             new FoodProperties.Resilience(
                 12, 8, java.time.Duration.ofSeconds(30), 2),
-            new FoodProperties.Search(20, 5),
+            new FoodProperties.Search(20, 5, 8),
             new FoodProperties.BulkImport(false, "0 0 * * * *", ""),
             new FoodProperties.Enrichment(false, "http://localhost:8086", "key", java.time.Duration.ofSeconds(3)),
             new FoodProperties.Nevo(true, "http://localhost:8085", "key"));
@@ -137,7 +137,7 @@ class NevoEnrichmentServiceTest {
             new FoodProperties.Cache(false, java.time.Duration.ofHours(1)),
             new FoodProperties.Resilience(
                 12, 8, java.time.Duration.ofSeconds(30), 2),
-            new FoodProperties.Search(20, 5),
+            new FoodProperties.Search(20, 5, 8),
             new FoodProperties.BulkImport(false, "0 0 * * * *", ""),
             new FoodProperties.Enrichment(false, "http://localhost:8086", "key", java.time.Duration.ofSeconds(3)),
             new FoodProperties.Nevo(false, "http://localhost:8085", "key"));

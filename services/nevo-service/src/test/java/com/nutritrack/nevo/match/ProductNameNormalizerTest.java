@@ -32,4 +32,26 @@ class ProductNameNormalizerTest {
     assertThat(result.cleanedName()).doesNotContain("450").doesNotContain("biologisch");
     assertThat(result.queryTerms()).isNotEmpty();
   }
+
+  @Test
+  void expandSearchTermsIncludesWholeStringAndTokenAliases() {
+    NevoAliasRepository aliases = Mockito.mock(NevoAliasRepository.class);
+    NevoAlias paprika = alias("paprika", "sweet pepper");
+    NevoAlias bellPepper = alias("bell pepper", "sweet pepper");
+    Mockito.when(aliases.findAll()).thenReturn(List.of(paprika, bellPepper));
+
+    ProductNameNormalizer normalizer = new ProductNameNormalizer(aliases);
+
+    assertThat(normalizer.expandSearchTerms("paprika")).containsExactly("paprika", "sweet pepper");
+    assertThat(normalizer.expandSearchTerms("red bell pepper"))
+        .containsExactly("red bell pepper", "red sweet pepper");
+  }
+
+  private static NevoAlias alias(String aliasTerm, String canonicalTerm) {
+    NevoAlias alias = new NevoAlias();
+    alias.setId(UUID.randomUUID());
+    alias.setAliasTerm(aliasTerm);
+    alias.setCanonicalTerm(canonicalTerm);
+    return alias;
+  }
 }

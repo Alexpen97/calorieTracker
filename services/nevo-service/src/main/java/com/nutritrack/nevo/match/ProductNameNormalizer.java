@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -94,6 +95,52 @@ public class ProductNameNormalizer {
         cleanedName, cleanedCategories, cleanedIngredients, List.copyOf(queries));
   }
 
+  public List<String> expandSearchTerms(String raw) {
+    if (raw == null || raw.isBlank()) {
+      return List.of();
+    }
+
+    String trimmed = MULTI_SPACE.matcher(raw.trim()).replaceAll(" ");
+    String lower = trimmed.toLowerCase(Locale.ROOT);
+    Map<String, String> aliases = loadAliases();
+
+    LinkedHashSet<String> terms = new LinkedHashSet<>();
+    terms.add(trimmed);
+
+    String wholeStringAlias = aliases.get(lower);
+    if (wholeStringAlias != null && !wholeStringAlias.isBlank()) {
+      terms.add(wholeStringAlias.trim());
+    }
+
+    aliases.entrySet().stream()
+        .sorted(
+            (left, right) ->
+                Integer.compare(tokenCount(right.getKey()), tokenCount(left.getKey())))
+        .forEach(
+            entry -> {
+              String alias = entry.getKey();
+              String canonical = entry.getValue();
+              if (alias.isBlank()
+                  || canonical == null
+                  || canonical.isBlank()
+                  || alias.equals(lower)) {
+                return;
+              }
+              Pattern wholeAlias =
+                  Pattern.compile(
+                      "(?<![a-z0-9])" + Pattern.quote(alias) + "(?![a-z0-9])",
+                      Pattern.CASE_INSENSITIVE);
+              String expanded =
+                  wholeAlias.matcher(lower).replaceAll(Matcher.quoteReplacement(canonical.trim()));
+              expanded = MULTI_SPACE.matcher(expanded).replaceAll(" ").trim();
+              if (!expanded.isBlank() && !expanded.equals(lower)) {
+                terms.add(expanded);
+              }
+            });
+
+    return List.copyOf(terms);
+  }
+
   private String clean(String raw, String brand, Map<String, String> aliases) {
     if (raw == null || raw.isBlank()) {
       return "";
@@ -119,6 +166,19 @@ public class ProductNameNormalizer {
       kept.add(aliases.getOrDefault(token, token));
     }
     return String.join(" ", kept).trim();
+  }
+
+  private Map<String, String> loadAliases() {
+    return aliasRepository.findAll().stream()
+        .collect(
+            Collectors.toMap(
+                a -> a.getAliasTerm().toLowerCase(Locale.ROOT),
+                NevoAlias::getCanonicalTerm,
+                (a, b) -> a));
+  }
+
+  private static int tokenCount(String value) {
+    return value.isBlank() ? 0 : value.split("\\s+").length;
   }
 
   public record NormalizedQuery(
