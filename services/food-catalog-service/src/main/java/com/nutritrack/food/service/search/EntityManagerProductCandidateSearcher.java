@@ -101,6 +101,9 @@ public class EntityManagerProductCandidateSearcher implements ProductCandidateSe
     if (candidates.size() < searchProperties.fuzzyMinResults()) {
       addAll(candidates, filterScored(query, runH2AnchorQuery(query, fetchLimit)));
     }
+    if (candidates.size() < searchProperties.fuzzyMinResults()) {
+      addAll(candidates, filterScored(query, runH2SingleTokenFuzzyQuery(query, fetchLimit)));
+    }
     return limit(candidates, limit);
   }
 
@@ -146,6 +149,22 @@ public class EntityManagerProductCandidateSearcher implements ProductCandidateSe
     }
     sql.append(" ORDER BY p.name ASC");
     return runH2ProductQuery(sql.toString(), parameters, limit);
+  }
+
+  private List<Product> runH2SingleTokenFuzzyQuery(NormalizedQuery query, int limit) {
+    if (query.tokens().size() != 1) {
+      return List.of();
+    }
+    String token = query.tokens().get(0);
+    if (token.length() < 3) {
+      return List.of();
+    }
+
+    Map<String, String> parameters = new LinkedHashMap<>();
+    parameters.put("anchor", likeValue(token.substring(0, 3)));
+    String sql =
+        "SELECT p.* FROM product p WHERE " + DOCUMENT_SQL + " LIKE :anchor ORDER BY p.name ASC";
+    return runH2ProductQuery(sql, parameters, limit);
   }
 
   private List<Product> runH2ProductQuery(String sql, Map<String, String> parameters, int limit) {

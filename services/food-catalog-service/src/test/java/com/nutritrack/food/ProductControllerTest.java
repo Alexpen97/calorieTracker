@@ -1,7 +1,9 @@
 package com.nutritrack.food;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -125,14 +127,7 @@ class ProductControllerTest {
 
   @Test
   void searchReturnsLocalProducts() throws Exception {
-    Product product = new Product();
-    product.setId(UUID.randomUUID());
-    product.setBarcode("4006381333931");
-    product.setSource(ProductSource.OFF);
-    product.setName("Oat Milk Barista");
-    product.setBrand("Oatly");
-    product.refreshSearchDocument();
-    productRepository.save(product);
+    save("Oat Milk Barista", "Oatly", "4006381333931");
 
     when(offClient.searchByName(anyString(), eq(1))).thenReturn(List.of());
 
@@ -143,6 +138,65 @@ class ProductControllerTest {
                 .with(asUser()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items[0].name").value("Oat Milk Barista"));
+  }
+
+  @Test
+  void searchRanksNutellaAboveAlphabeticalDistractor() throws Exception {
+    save("Aardvark Nutella Spread", "Acme", "ult11-rank-1");
+    save("Nutella", "Ferrero", "ult11-rank-2");
+    when(offClient.searchByName(anyString(), eq(1))).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get("/api/products/search")
+                .param("q", "nutella")
+                .with(asUser()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].name").value("Nutella"));
+  }
+
+  @Test
+  void searchOatMilkFindsOatDrink() throws Exception {
+    save("Oat Drink - Barista", "Oatly", "ult11-oat-drink");
+    when(offClient.searchByName(anyString(), eq(1))).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get("/api/products/search")
+                .param("q", "oat milk")
+                .with(asUser()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].name").value("Oat Drink - Barista"));
+  }
+
+  @Test
+  void searchTypoNutelaFindsNutella() throws Exception {
+    save("Nutella", "Ferrero", "ult11-typo-nutella");
+    when(offClient.searchByName(anyString(), eq(1))).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get("/api/products/search")
+                .param("q", "nutela")
+                .with(asUser()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].name").value("Nutella"));
+  }
+
+  @Test
+  void searchDoesNotCallOffWhenEnoughLocalHits() throws Exception {
+    for (int i = 0; i < 5; i++) {
+      save("Milk Local Hit " + i, "Dairy", "ult11-milk-" + i);
+    }
+
+    mockMvc
+        .perform(
+            get("/api/products/search")
+                .param("q", "milk")
+                .with(asUser()))
+        .andExpect(status().isOk());
+
+    verify(offClient, never()).searchByName(anyString(), anyInt());
   }
 
   @Test
@@ -214,6 +268,17 @@ class ProductControllerTest {
     return SecurityMockMvcRequestPostProcessors.jwt()
         .jwt(modJwt())
         .authorities(new SimpleGrantedAuthority("ROLE_MODERATOR"));
+  }
+
+  private Product save(String name, String brand, String barcode) {
+    Product product = new Product();
+    product.setId(UUID.randomUUID());
+    product.setBarcode(barcode);
+    product.setSource(ProductSource.OFF);
+    product.setName(name);
+    product.setBrand(brand);
+    product.refreshSearchDocument();
+    return productRepository.save(product);
   }
 
   private static Jwt userJwt() {

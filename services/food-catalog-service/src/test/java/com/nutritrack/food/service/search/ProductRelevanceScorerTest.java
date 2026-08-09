@@ -36,4 +36,14 @@ class ProductRelevanceScorerTest {
     var q = normalizer.normalize("nutela");
     assertThat(scorer.score(q, "Nutella", "Ferrero", "nutella ferrero")).isGreaterThan(0);
   }
+
+  @Test
+  void nutelaFuzzyRanksWholeNameAboveContainingDistractor() {
+    var q = normalizer.normalize("nutela");
+    double nutella = scorer.score(q, "Nutella", "Ferrero", "nutella ferrero");
+    double distractor =
+        scorer.score(q, "Aardvark Nutella Spread", "Acme", "aardvark nutella spread acme");
+
+    assertThat(nutella).isGreaterThan(distractor);
+  }
 }

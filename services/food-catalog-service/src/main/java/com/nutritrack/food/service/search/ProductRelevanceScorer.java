@@ -46,6 +46,11 @@ public class ProductRelevanceScorer {
       }
     }
 
+    double nameSimilarity = EditDistance.normalizedSimilarity(query.normalized(), normalizedName);
+    if (nameSimilarity >= similarityThreshold) {
+      return 150 * nameSimilarity;
+    }
+
     double bestSimilarity = bestTokenSimilarity(query.tokens(), documentTokens);
     if (bestSimilarity >= similarityThreshold) {
       return 100 * bestSimilarity;

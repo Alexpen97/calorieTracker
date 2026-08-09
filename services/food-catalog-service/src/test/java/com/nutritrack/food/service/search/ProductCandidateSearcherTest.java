@@ -68,6 +68,17 @@ class ProductCandidateSearcherTest {
     assertThat(candidates).extracting(Product::getId).doesNotContain(missingAnchorToken.getId());
   }
 
+  @Test
+  void h2SingleTokenFuzzySearchFindsTypoCandidate() {
+    Product match = saveProduct("Nutella", "Ferrero");
+    Product unrelated = saveProduct("Chocolate Spread", "Acme");
+
+    List<Product> candidates = candidateSearcher.findCandidates(normalizer.normalize("nutela"), 10);
+
+    assertThat(candidates).extracting(Product::getId).contains(match.getId());
+    assertThat(candidates).extracting(Product::getId).doesNotContain(unrelated.getId());
+  }
+
   private Product saveProduct(String name, String brand) {
     Product product = new Product();
     product.setId(UUID.randomUUID());
