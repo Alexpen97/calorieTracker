@@ -24,6 +24,7 @@ import PreviewDashboardPage from './pages/preview/PreviewDashboardPage'
 import PreviewDiaryPage from './pages/preview/PreviewDiaryPage'
 import PreviewAnalyticsPage from './pages/preview/PreviewAnalyticsPage'
 import PreviewLookupPage from './pages/preview/PreviewLookupPage'
+import UpdateMessageHost from './updates/UpdateMessageHost'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) {
@@ -64,7 +65,12 @@ function RequireOnboardingComplete({ children }: { children: React.ReactNode }) 
     return <Navigate to="/onboarding" replace />
   }
 
-  return children
+  return (
+    <>
+      <UpdateMessageHost />
+      {children}
+    </>
+  )
 }
 
 function RequireNeedsOnboarding({ children }: { children: React.ReactNode }) {
