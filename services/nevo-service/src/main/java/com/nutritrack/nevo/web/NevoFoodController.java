@@ -3,11 +3,14 @@ package com.nutritrack.nevo.web;
 import com.nutritrack.nevo.domain.NevoFood;
 import com.nutritrack.nevo.domain.NevoFoodRepository;
 import com.nutritrack.nevo.domain.NevoNutrientValueRepository;
+import com.nutritrack.nevo.search.NevoFoodSearchService;
+import com.nutritrack.nevo.web.dto.NevoFoodSearchResponse;
 import com.nutritrack.nevo.web.dto.NevoMatchResponse;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,11 +21,21 @@ public class NevoFoodController {
 
   private final NevoFoodRepository foodRepository;
   private final NevoNutrientValueRepository nutrientRepository;
+  private final NevoFoodSearchService searchService;
 
   public NevoFoodController(
-      NevoFoodRepository foodRepository, NevoNutrientValueRepository nutrientRepository) {
+      NevoFoodRepository foodRepository,
+      NevoNutrientValueRepository nutrientRepository,
+      NevoFoodSearchService searchService) {
     this.foodRepository = foodRepository;
     this.nutrientRepository = nutrientRepository;
+    this.searchService = searchService;
+  }
+
+  @GetMapping("/foods/search")
+  public NevoFoodSearchResponse search(
+      @RequestParam("q") String q, @RequestParam(value = "limit", defaultValue = "10") int limit) {
+    return searchService.search(q, Math.min(Math.max(limit, 1), 25));
   }
 
   @GetMapping("/foods/{nevoCode}")
