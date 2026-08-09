@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { fetchGoals, fetchMe, fetchWeightHistory } from '../api/client'
+import { fetchGoals, fetchMe, fetchMyFeedback, fetchWeightHistory } from '../api/client'
 import { clearTokens } from '../auth/tokenStorage'
 import { objectiveLabel } from './settings/SettingsSectionShell'
+import { feedbackSummary } from './settings/SettingsFeedbackSection'
 
 export default function SettingsHomePage() {
   const navigate = useNavigate()
@@ -17,6 +18,10 @@ export default function SettingsHomePage() {
   const goalsQuery = useQuery({
     queryKey: ['goals'],
     queryFn: fetchGoals,
+  })
+  const feedbackQuery = useQuery({
+    queryKey: ['my-feedback'],
+    queryFn: fetchMyFeedback,
   })
 
   function logout() {
@@ -98,6 +103,16 @@ export default function SettingsHomePage() {
                 ? `${meQuery.data.email} · ${meQuery.data.role}`
                 : 'Email and sign out'}
             </span>
+          </span>
+          <span className="settings-row-chevron" aria-hidden="true">
+            ›
+          </span>
+        </Link>
+
+        <Link className="settings-row" to="/settings/feedback">
+          <span className="settings-row-copy">
+            <span className="settings-row-title">Feedback</span>
+            <span className="settings-row-summary">{feedbackSummary(feedbackQuery.data)}</span>
           </span>
           <span className="settings-row-chevron" aria-hidden="true">
             ›

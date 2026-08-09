@@ -37,6 +37,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/users/me", "/api/users/me/**")
                     .authenticated()
+                    .requestMatchers("/api/users/feedback/**")
+                    .hasAnyRole("MODERATOR", "ADMIN")
                     .anyRequest()
                     .authenticated())
         .oauth2ResourceServer(

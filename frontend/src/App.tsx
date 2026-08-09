@@ -9,6 +9,7 @@ import SettingsProfileSection from './pages/settings/SettingsProfileSection'
 import SettingsGoalsSection from './pages/settings/SettingsGoalsSection'
 import SettingsWeightSection from './pages/settings/SettingsWeightSection'
 import SettingsAccountSection from './pages/settings/SettingsAccountSection'
+import SettingsFeedbackSection from './pages/settings/SettingsFeedbackSection'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import LookupPage from './pages/LookupPage'
 import ProductPage from './pages/ProductPage'
@@ -253,6 +254,16 @@ export default function App() {
             <RequireAuth>
               <RequireOnboardingComplete>
                 <SettingsAccountSection />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings/feedback"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <SettingsFeedbackSection />
               </RequireOnboardingComplete>
             </RequireAuth>
           }
