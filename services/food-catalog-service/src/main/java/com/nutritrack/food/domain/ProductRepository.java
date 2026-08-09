@@ -16,8 +16,15 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
       """
       SELECT p FROM Product p
       WHERE LOWER(COALESCE(p.searchDocument, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-      ORDER BY p.name ASC
+      ORDER BY
+        CASE
+          WHEN LOWER(p.name) = LOWER(:q) THEN 0
+          WHEN LOWER(p.name) LIKE LOWER(CONCAT(:q, '%')) THEN 1
+          ELSE 2
+        END,
+        p.name ASC
       """)
+  @Deprecated(forRemoval = false)
   Page<Product> searchByDocument(@Param("q") String q, Pageable pageable);
 
   @Query(
