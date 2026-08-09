@@ -77,7 +77,7 @@ So wiring NEVO search alone is not enough — **ranking** must prefer Vegetables
 - Consumes: existing `nevo_alias(alias_term, canonical_term)` unique on `alias_term`
 - Produces: aliases usable by search expansion
 
-- [ ] **Step 1: Add Flyway V2 with high-impact seeds**
+- [x] **Step 1: Add Flyway V2 with high-impact seeds**
 
 ```sql
 -- V2__vegetable_colloquial_aliases.sql
@@ -97,7 +97,7 @@ Notes:
 - `courgette` / `aubergine` already appear in NEVO names; aliases cover EN variants.
 - Do **not** alias paprika to powder/spice.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add services/nevo-service/src/main/resources/db/migration/V2__vegetable_colloquial_aliases.sql
@@ -138,7 +138,7 @@ git push -u origin HEAD
 4. Sort by score desc, then `food_name_en` asc; return `limit` (default 10).
 5. Include nutrients (same mapping as `byCode`) so clients can show macros without a second call.
 
-- [ ] **Step 1: Extend sample CSV** with at least:
+- [x] **Step 1: Extend sample CSV** with at least:
   - Sweet pepper green raw / Paprika groene rauw (Vegetables, code 31)
   - Sweet pepper red raw / Paprika rode rauw (884)
   - Courgettes raw / Courgette rauw (922)
@@ -147,7 +147,7 @@ git push -u origin HEAD
 
 Copy real columns from `NEVO2025_v9.0.csv` (pipe format matching sample header) — enough nutrient columns for existing importer.
 
-- [ ] **Step 2: Write failing tests**
+- [x] **Step 2: Write failing tests**
 
 ```java
 @Test
@@ -176,13 +176,13 @@ void sweetPepperEnglishResolvesSameFoods() throws Exception {
 
 Also unit-test `expandSearchTerms("paprika")` contains `sweet pepper`.
 
-- [ ] **Step 3: Run tests — expect FAIL** (endpoint missing)
+- [x] **Step 3: Run tests — expect FAIL** (endpoint missing)
 
 ```bash
 cd services/nevo-service && mvn -q test -Dtest=NevoFoodSearchServiceTest,NevoServiceIntegrationTest,ProductNameNormalizerTest
 ```
 
-- [ ] **Step 4: Implement search service + controller + alias expand**
+- [x] **Step 4: Implement search service + controller + alias expand**
 
 Controller sketch:
 
@@ -197,13 +197,13 @@ public NevoFoodSearchResponse search(
 
 Keep path as `/api/nevo/foods/search` (not under `/foods/{nevoCode}`) — register **before** or use a distinct mapping so `{nevoCode}` does not capture `search`. Prefer explicit `@GetMapping("/foods/search")` alongside `@GetMapping("/foods/{nevoCode}")` (Spring matches literal `search`).
 
-- [ ] **Step 5: Run tests — expect PASS**
+- [x] **Step 5: Run tests — expect PASS**
 
 ```bash
 cd services/nevo-service && mvn -q test
 ```
 
-- [ ] **Step 6: Commit + push**
+- [x] **Step 6: Commit + push**
 
 ```bash
 git add services/nevo-service
@@ -245,7 +245,7 @@ git push -u origin HEAD
 5. Truncate to `pageSize`.
 6. Do **not** change OFF upsert/enrichment paths.
 
-- [ ] **Step 1: Write failing MockMvc test**
+- [x] **Step 1: Write failing MockMvc test**
 
 ```java
 @Test
@@ -269,13 +269,13 @@ void searchStillReturnsLocalOffProducts() throws Exception {
 
 Wire `@MockitoBean NevoClient` already present in `ProductControllerTest` — stub `searchFoods` default `List.of()` in `@BeforeEach` if needed.
 
-- [ ] **Step 2: Run test — expect FAIL**
+- [x] **Step 2: Run test — expect FAIL**
 
 ```bash
 cd services/food-catalog-service && mvn -q test -Dtest=ProductControllerTest
 ```
 
-- [ ] **Step 3: Implement client + merge**
+- [x] **Step 3: Implement client + merge**
 
 `RestNevoClient.searchFoods`:
 
@@ -290,13 +290,13 @@ return restClient.get()
 
 Note: existing match uses `/internal/...` + API key. Public search uses `/api/nevo/...` (already permitAll in nevo SecurityConfig). Prefer calling public search from catalog over inventing a second internal endpoint unless auth policy changes.
 
-- [ ] **Step 4: Run full catalog tests — expect PASS**
+- [x] **Step 4: Run full catalog tests — expect PASS**
 
 ```bash
 cd services/food-catalog-service && mvn -q test
 ```
 
-- [ ] **Step 5: Commit + push**
+- [x] **Step 5: Commit + push**
 
 ```bash
 git add services/food-catalog-service
@@ -319,17 +319,17 @@ git push -u origin HEAD
 
 **Diary UX for this card:** Show nutrients and make it clear this is a reference food. If Add-to-diary button would call diary with fake UUID, **disable it** and note “Diary logging for NEVO foods tracked separately”. Do not create broken diary entries.
 
-- [ ] **Step 1: Failing Vitest** — search results with `source: 'NEVO'` render link to `/nevo/31` and show Vegetables label
+- [x] **Step 1: Failing Vitest** — search results with `source: 'NEVO'` render link to `/nevo/31` and show Vegetables label
 
-- [ ] **Step 2: Implement UI + client**
+- [x] **Step 2: Implement UI + client**
 
-- [ ] **Step 3: Run frontend tests**
+- [x] **Step 3: Run frontend tests**
 
 ```bash
 cd frontend && npm test -- --run
 ```
 
-- [ ] **Step 4: Commit + push**
+- [x] **Step 4: Commit + push**
 
 ```bash
 git add frontend
@@ -346,13 +346,13 @@ git push -u origin HEAD
 - Modify: this file’s checklist status as you complete tasks
 - Optional: Linear comment with verification evidence
 
-- [ ] **Step 1: Document follow-up (diary materialization)**
+- [x] **Step 1: Document follow-up (diary materialization)**
 
 Add under “Remaining / follow-up” in `AI/nevo-micronutrient-estimates.md`:
 
 - Materialize selected NEVO food as a catalog `product` (`source=NEVO`, `sourceRef=nevoCode`) on Add to diary, **or** extend diary to accept `nevoCode` — separate Linear card.
 
-- [ ] **Step 2: Automated verification**
+- [x] **Step 2: Automated verification**
 
 ```bash
 cd services/nevo-service && mvn -q test
@@ -360,7 +360,7 @@ cd services/food-catalog-service && mvn -q test
 cd frontend && npm test -- --run
 ```
 
-- [ ] **Step 3: Manual / API verification (local compose or Railway with AUTH_MODE=dev)**
+- [x] **Step 3: Manual / API verification (local compose or Railway with AUTH_MODE=dev)**
 
 1. Dev login → JWT
 2. `GET /api/products/search?q=paprika` → first items include NEVO sweet peppers (`nevoCode` 31/884/…), not only chips
@@ -368,7 +368,7 @@ cd frontend && npm test -- --run
 4. Packaged query still works (e.g. existing oat milk / brand product)
 5. UI: Look up → Search → `paprika` → vegetable rows visible on first page
 
-- [ ] **Step 4: Final commit + push**
+- [x] **Step 4: Final commit + push**
 
 ```bash
 git add AI
