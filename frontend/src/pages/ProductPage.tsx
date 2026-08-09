@@ -6,9 +6,16 @@ import { mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
 import { useEffect, useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
 import {
+  canEnterByPieces,
+  defaultAmountForUnit,
+  pieceEquivalentLabel,
+  resolveWeightG as resolvePieceWeightG,
+  type AmountUnit as PieceAmountUnit,
+} from '../food/pieceEntry'
+import {
   isVolumeCapable,
-  resolveWeightG,
-  type AmountUnit,
+  resolveWeightG as resolveVolumeWeightG,
+  type AmountUnit as VolumeAmountUnit,
 } from '../food/volumeConversion'
 
 export default function ProductPage() {
@@ -17,8 +24,9 @@ export default function ProductPage() {
   const navigate = useNavigate()
   const selectedMeal = parseMealTypeParam(searchParams.get('meal'))
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
+  const [amountUnit, setAmountUnit] = useState<PieceAmountUnit>('grams')
+  const [volumeUnit, setVolumeUnit] = useState<VolumeAmountUnit>('g')
   const [amount, setAmount] = useState('100')
-  const [unit, setUnit] = useState<AmountUnit>('g')
   const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? 'BREAKFAST')
   const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
@@ -35,33 +43,82 @@ export default function ProductPage() {
     }) => createDiaryEntry(input),
     onSuccess: () => navigate('/today'),
   })
+
   const volumeCapable = isVolumeCapable(data?.densityGPerMl)
-  const helperWeightG =
-    data && unit === 'ml' && volumeCapable && Number.isFinite(Number(amount)) && Number(amount) > 0
-      ? resolveWeightG(Number(amount), unit, data.densityGPerMl)
+  const pieceModeAvailable = canEnterByPieces(data?.servingSizeG)
+  const activePieceUnit: PieceAmountUnit = pieceModeAvailable ? amountUnit : 'grams'
+  const pieceCountForLabel = activePieceUnit === 'pieces' ? Number(amount) : NaN
+  const pieceHelperText =
+    activePieceUnit === 'pieces' &&
+    pieceModeAvailable &&
+    Number.isInteger(pieceCountForLabel) &&
+    pieceCountForLabel > 0
+      ? pieceEquivalentLabel(pieceCountForLabel, data!.servingSizeG!)
+      : null
+  const volumeHelperWeightG =
+    data &&
+    activePieceUnit === 'grams' &&
+    volumeUnit === 'ml' &&
+    volumeCapable &&
+    Number.isFinite(Number(amount)) &&
+    Number(amount) > 0
+      ? resolveVolumeWeightG(Number(amount), 'ml', data.densityGPerMl)
       : null
 
   useEffect(() => {
     if (!data) {
       return
     }
+    setAmountUnit('grams')
+    setVolumeUnit(isVolumeCapable(data.densityGPerMl) ? 'ml' : 'g')
     setAmount('100')
-    setUnit(isVolumeCapable(data.densityGPerMl) ? 'ml' : 'g')
     setEntryError(null)
   }, [data?.id, data?.densityGPerMl])
+
+  function switchPieceUnit(next: PieceAmountUnit) {
+    setAmountUnit(next)
+    setAmount(defaultAmountForUnit(next))
+    setEntryError(null)
+  }
 
   async function onAddToDiary(event: FormEvent) {
     event.preventDefault()
     if (!data) {
       return
     }
-    const parsedAmount = Number(amount)
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setEntryError('Enter a positive amount.')
-      return
+
+    let weightG: number
+    if (activePieceUnit === 'pieces') {
+      const resolved = resolvePieceWeightG({
+        unit: 'pieces',
+        amount,
+        gramsPerPiece: data.servingSizeG,
+      })
+      if (!resolved.ok) {
+        setEntryError(resolved.error)
+        return
+      }
+      weightG = resolved.weightG
+    } else if (volumeCapable && volumeUnit === 'ml') {
+      const parsedAmount = Number(amount)
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        setEntryError('Enter a positive amount.')
+        return
+      }
+      weightG = resolveVolumeWeightG(parsedAmount, 'ml', data.densityGPerMl)
+    } else {
+      const resolved = resolvePieceWeightG({
+        unit: 'grams',
+        amount,
+        gramsPerPiece: data.servingSizeG,
+      })
+      if (!resolved.ok) {
+        setEntryError(resolved.error)
+        return
+      }
+      weightG = resolved.weightG
     }
-    const selectedUnit = volumeCapable ? unit : 'g'
-    const weightG = resolveWeightG(parsedAmount, selectedUnit, data.densityGPerMl)
+
     setEntryError(null)
     if (data.submissionId || data.source === 'PENDING_SUBMISSION') {
       addEntry.mutate({
@@ -73,6 +130,13 @@ export default function ProductPage() {
       addEntry.mutate({ productId: data.id, weightG, mealType })
     }
   }
+
+  const amountLabel =
+    activePieceUnit === 'pieces'
+      ? 'Amount (pieces)'
+      : volumeCapable
+        ? 'Amount'
+        : 'Amount (g)'
 
   return (
     <main className="panel product-panel">
@@ -110,33 +174,55 @@ export default function ProductPage() {
           <section className="nutrient-section">
             <h3>Add to today</h3>
             <form className="lookup-form" noValidate onSubmit={onAddToDiary}>
-              <label htmlFor="diary-amount">{volumeCapable ? 'Amount' : 'Amount (g)'}</label>
+              {pieceModeAvailable && (
+                <div className="unit-toggle" role="group" aria-label="Amount unit">
+                  <button
+                    aria-pressed={activePieceUnit === 'grams'}
+                    className={activePieceUnit === 'grams' ? 'unit-toggle-btn active' : 'unit-toggle-btn'}
+                    onClick={() => switchPieceUnit('grams')}
+                    type="button"
+                  >
+                    Grams
+                  </button>
+                  <button
+                    aria-pressed={activePieceUnit === 'pieces'}
+                    className={activePieceUnit === 'pieces' ? 'unit-toggle-btn active' : 'unit-toggle-btn'}
+                    onClick={() => switchPieceUnit('pieces')}
+                    type="button"
+                  >
+                    Pieces
+                  </button>
+                </div>
+              )}
+              <label htmlFor="diary-amount">{amountLabel}</label>
               <input
                 id="diary-amount"
-                inputMode="decimal"
+                inputMode={activePieceUnit === 'pieces' ? 'numeric' : 'decimal'}
                 min="1"
                 onChange={(event) => setAmount(event.target.value)}
+                step="any"
                 type="number"
                 value={amount}
               />
-              {volumeCapable && (
+              {activePieceUnit === 'grams' && volumeCapable && (
                 <>
                   <label htmlFor="diary-unit">Unit</label>
                   <select
                     id="diary-unit"
-                    onChange={(event) => setUnit(event.target.value as AmountUnit)}
-                    value={unit}
+                    onChange={(event) => setVolumeUnit(event.target.value as VolumeAmountUnit)}
+                    value={volumeUnit}
                   >
                     <option value="g">g</option>
                     <option value="ml">ml</option>
                   </select>
-                  {helperWeightG !== null && (
+                  {volumeHelperWeightG !== null && (
                     <p className="product-meta">
-                      ≈ {helperWeightG} g at {data.densityGPerMl} g/ml
+                      ≈ {volumeHelperWeightG} g at {data.densityGPerMl} g/ml
                     </p>
                   )}
                 </>
               )}
+              {pieceHelperText && <p className="product-meta">{pieceHelperText}</p>}
               <label htmlFor="diary-meal">Meal</label>
               <select
                 id="diary-meal"
