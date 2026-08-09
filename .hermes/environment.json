@@ -1,0 +1,11 @@
+{
+  "name": "docker-compose project (NutriTrack full)",
+  "kind": "compose",
+  "bootstrap": [],
+  "build": ["docker compose build"],
+  "test": [],
+  "start": "docker compose --profile full up -d gateway",
+  "port": 8080,
+  "readinessPath": "/actuator/health",
+  "evidence": ["Detected docker-compose.yml"]
+}
