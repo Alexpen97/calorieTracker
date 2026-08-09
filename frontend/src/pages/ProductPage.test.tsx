@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ProductPage from './ProductPage'
 import * as client from '../api/client'
 import type { DiaryEntry, Product } from '../api/client'
@@ -211,7 +211,7 @@ describe('ProductPage diary amount units', () => {
       weightG: 230,
     }))
 
-    renderProduct('oil')
+    renderProduct('oil?meal=BREAKFAST')
 
     fireEvent.change(await screen.findByLabelText(/^amount$/i), { target: { value: '250' } })
     fireEvent.click(screen.getByRole('button', { name: /add to diary/i }))
@@ -299,7 +299,7 @@ describe('ProductPage piece entry', () => {
       nutrients: [],
     })
 
-    renderProduct()
+    renderProduct('prod-1?meal=BREAKFAST')
 
     await screen.findByRole('button', { name: /^Pieces$/i })
     fireEvent.click(screen.getByRole('button', { name: /^Pieces$/i }))
@@ -351,5 +351,64 @@ describe('ProductPage piece entry', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /^Grams$/i }))
     expect(screen.getByLabelText(/Amount \(g\)/i)).toHaveValue(100)
+  })
+})
+
+describe('ProductPage meal selection', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('defaults the meal select from local browser time when no meal param exists', async () => {
+    vi.setSystemTime(new Date(2026, 6, 22, 12, 0))
+    vi.spyOn(client, 'fetchProductById').mockResolvedValue(product())
+
+    renderProduct()
+
+    expect(await screen.findByLabelText('Meal')).toHaveValue('LUNCH')
+  })
+
+  it('uses an explicit valid meal param instead of local time inference', async () => {
+    vi.setSystemTime(new Date(2026, 6, 22, 12, 0))
+    vi.spyOn(client, 'fetchProductById').mockResolvedValue(product())
+
+    renderProduct('prod-1?meal=DINNER')
+
+    expect(await screen.findByLabelText('Meal')).toHaveValue('DINNER')
+  })
+
+  it('falls back to local time when the meal param is invalid', async () => {
+    vi.setSystemTime(new Date(2026, 6, 22, 23, 0))
+    vi.spyOn(client, 'fetchProductById').mockResolvedValue(product())
+
+    renderProduct('prod-1?meal=brunch')
+
+    expect(await screen.findByLabelText('Meal')).toHaveValue('SNACK')
+  })
+
+  it('submits the user-selected meal override', async () => {
+    vi.setSystemTime(new Date(2026, 6, 22, 12, 0))
+    vi.spyOn(client, 'fetchProductById').mockResolvedValue(product())
+    const createSpy = vi.spyOn(client, 'createDiaryEntry').mockResolvedValue(diaryEntry({
+      mealType: 'SNACK',
+    }))
+
+    renderProduct()
+
+    fireEvent.change(await screen.findByLabelText('Meal'), { target: { value: 'SNACK' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add to diary' }))
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalledWith({
+        productId: 'prod-1',
+        weightG: 100,
+        mealType: 'SNACK',
+      })
+    })
   })
 })

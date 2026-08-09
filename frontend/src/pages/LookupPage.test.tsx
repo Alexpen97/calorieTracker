@@ -173,6 +173,7 @@ describe('LookupPage', () => {
           brand: null,
           quantityLabel: null,
           servingSizeG: null,
+          densityGPerMl: null,
           imageUrl: null,
           nutriScore: null,
           ingredientsText: null,
