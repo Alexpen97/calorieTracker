@@ -282,6 +282,64 @@ button {
   margin-top: 1.25rem;
 }
 
+.frequent-foods-card {
+  margin-top: 1rem;
+}
+
+.frequent-foods-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.frequent-foods-retry {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.frequent-food-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.frequent-food-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.frequent-food-copy {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.frequent-food-name {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.frequent-food-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.frequent-food-add {
+  flex: 0 0 auto;
+  min-width: 2.5rem;
+  padding-inline: 0.75rem;
+}
+
 .lookup-method-nav {
   margin-top: 0.9rem;
   display: grid;

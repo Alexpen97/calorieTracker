@@ -468,6 +468,31 @@ export async function createDiaryEntry(input: {
   return parseJson<DiaryEntry>(response)
 }
 
+export type FrequentProduct = {
+  productId: string | null
+  submissionId: string | null
+  productName: string
+  brand: string | null
+  logCount: number
+  usualWeightG: number
+  lastMealType: MealType
+  lastConsumedAt: string
+}
+
+export async function fetchFrequentProducts(options?: {
+  limit?: number
+  weeks?: number
+}): Promise<FrequentProduct[]> {
+  const params = new URLSearchParams()
+  if (options?.limit != null) params.set('limit', String(options.limit))
+  if (options?.weeks != null) params.set('weeks', String(options.weeks))
+  const qs = params.toString()
+  const response = await authenticatedFetch(
+    `${apiBase}/api/diary/frequent${qs ? `?${qs}` : ''}`,
+  )
+  return parseJson<FrequentProduct[]>(response)
+}
+
 export async function deleteDiaryEntry(id: string): Promise<void> {
   const response = await authenticatedFetch(
     `${apiBase}/api/diary/entries/${encodeURIComponent(id)}`,

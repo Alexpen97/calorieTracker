@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchProductByBarcode, searchProducts, type Product } from '../api/client'
 import { isValidBarcode, sanitizeBarcodeInput } from '../food/barcode'
+import FrequentFoodsCard from '../food/FrequentFoodsCard'
 import { parseMealTypeParam, productPathWithMeal } from '../diary/formatDay'
 import {
   isNativeBarcodeScanAvailable,
@@ -181,6 +182,7 @@ export default function LookupPage() {
     <main className="panel lookup-panel">
       <h2>Look up a food</h2>
       <p>Search by name, scan a barcode, or submit a product that is missing.</p>
+      <FrequentFoodsCard mealFromUrl={mealType} />
       <nav className="lookup-method-nav" aria-label="Add method">
         <button
           className={`lookup-method-tab ${mode === 'barcode' ? 'is-active' : ''}`}
