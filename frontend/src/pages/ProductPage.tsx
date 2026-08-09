@@ -3,6 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { createDiaryEntry, fetchProductById, type MealType } from '../api/client'
 import { mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
+import {
+  canEnterByPieces,
+  defaultAmountForUnit,
+  pieceEquivalentLabel,
+  resolveWeightG,
+  type AmountUnit,
+} from '../food/pieceEntry'
 import { useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
 
@@ -12,7 +19,8 @@ export default function ProductPage() {
   const navigate = useNavigate()
   const selectedMeal = parseMealTypeParam(searchParams.get('meal'))
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
-  const [weightG, setWeightG] = useState('100')
+  const [amountUnit, setAmountUnit] = useState<AmountUnit>('grams')
+  const [amount, setAmount] = useState(() => defaultAmountForUnit('grams'))
   const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? 'BREAKFAST')
   const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
@@ -30,25 +38,46 @@ export default function ProductPage() {
     onSuccess: () => navigate('/today'),
   })
 
+  const pieceModeAvailable = canEnterByPieces(data?.servingSizeG)
+  const activeUnit: AmountUnit = pieceModeAvailable ? amountUnit : 'grams'
+  const pieceCountForLabel = activeUnit === 'pieces' ? Number(amount) : NaN
+  const helperText =
+    activeUnit === 'pieces' &&
+    pieceModeAvailable &&
+    Number.isInteger(pieceCountForLabel) &&
+    pieceCountForLabel > 0
+      ? pieceEquivalentLabel(pieceCountForLabel, data!.servingSizeG!)
+      : null
+
+  function switchUnit(next: AmountUnit) {
+    setAmountUnit(next)
+    setAmount(defaultAmountForUnit(next))
+    setEntryError(null)
+  }
+
   async function onAddToDiary(event: FormEvent) {
     event.preventDefault()
     if (!data) {
       return
     }
-    const parsedWeight = Number(weightG)
-    if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
-      setEntryError('Enter a positive gram amount.')
+    const resolved = resolveWeightG({
+      unit: activeUnit,
+      amount,
+      gramsPerPiece: data.servingSizeG,
+    })
+    if (!resolved.ok) {
+      setEntryError(resolved.error)
       return
     }
     setEntryError(null)
     if (data.submissionId || data.source === 'PENDING_SUBMISSION') {
       addEntry.mutate({
         submissionId: data.submissionId ?? data.id,
-        weightG: parsedWeight,
+        weightG: resolved.weightG,
         mealType,
       })
     } else {
-      addEntry.mutate({ productId: data.id, weightG: parsedWeight, mealType })
+      addEntry.mutate({ productId: data.id, weightG: resolved.weightG, mealType })
     }
   }
 
@@ -87,16 +116,40 @@ export default function ProductPage() {
 
           <section className="nutrient-section">
             <h3>Add to today</h3>
-            <form className="lookup-form" onSubmit={onAddToDiary}>
-              <label htmlFor="diary-weight">Amount (g)</label>
+            <form className="lookup-form" noValidate onSubmit={onAddToDiary}>
+              {pieceModeAvailable && (
+                <div className="unit-toggle" role="group" aria-label="Amount unit">
+                  <button
+                    aria-pressed={activeUnit === 'grams'}
+                    className={activeUnit === 'grams' ? 'unit-toggle-btn active' : 'unit-toggle-btn'}
+                    onClick={() => switchUnit('grams')}
+                    type="button"
+                  >
+                    Grams
+                  </button>
+                  <button
+                    aria-pressed={activeUnit === 'pieces'}
+                    className={activeUnit === 'pieces' ? 'unit-toggle-btn active' : 'unit-toggle-btn'}
+                    onClick={() => switchUnit('pieces')}
+                    type="button"
+                  >
+                    Pieces
+                  </button>
+                </div>
+              )}
+              <label htmlFor="diary-amount">
+                {activeUnit === 'pieces' ? 'Amount (pieces)' : 'Amount (g)'}
+              </label>
               <input
-                id="diary-weight"
-                inputMode="decimal"
+                id="diary-amount"
+                inputMode={activeUnit === 'pieces' ? 'numeric' : 'decimal'}
                 min="1"
-                onChange={(event) => setWeightG(event.target.value)}
+                onChange={(event) => setAmount(event.target.value)}
+                step="any"
                 type="number"
-                value={weightG}
+                value={amount}
               />
+              {helperText && <p className="product-meta">{helperText}</p>}
               <label htmlFor="diary-meal">Meal</label>
               <select
                 id="diary-meal"
