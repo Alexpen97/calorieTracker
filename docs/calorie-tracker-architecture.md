@@ -243,10 +243,19 @@ Responsibilities:
      normalize the payload, persist it to the mirror, populate the cache, and
      return it.
 - **Name search** (`GET /api/products/search?q=...`): searches the local mirror
-  first (PostgreSQL full-text search); falls back to the Open Food Facts search
-  API only when local results are insufficient, subject to a client-side rate
-  limiter (Resilience4j `RateLimiter` capped safely below the 10 req/min OFF
-  search limit).
+  first, then falls back to the Open Food Facts search API only when local
+  catalog hits are below `localMinResultsBeforeOffFallback` (default **5**),
+  subject to a client-side rate limiter (Resilience4j `RateLimiter` capped
+  safely below the 10 req/min OFF search limit). **Production (PostgreSQL):**
+  candidate retrieval uses `websearch_to_tsquery` against the GIN FTS index on
+  `search_document` (`V4__product_fts_gin.sql`); when FTS returns fewer than
+  `fuzzyMinResults` (default **3**), a `pg_trgm` fuzzy fallback (`V5__product_trgm.sql`)
+  supplements candidates. **H2 tests:** tokenized `LIKE` on `search_document`
+  plus Java fuzzy matching — Postgres-only SQL never runs in the default test
+  Flyway path. **Both environments:** `ProductRelevanceScorer` (Java) ranks all
+  local and OFF hits by relevance (exact name, prefix, token coverage, brand,
+  fuzzy tiers); the caller's own pending/rejected submissions stay pinned at the
+  front; OFF results are re-ranked after upsert before pagination.
 - **Bulk import job**: Open Food Facts publishes full JSONL/CSV exports. A
   scheduled Spring Batch job periodically imports/refreshes the mirror (either
   the full dump or the daily delta exports) so almost every lookup is served

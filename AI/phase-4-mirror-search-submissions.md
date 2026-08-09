@@ -5,7 +5,7 @@
 Deliver Phase 4 from `docs/calorie-tracker-architecture.md` §14:
 
 - Spring Batch OFF JSONL bulk import into the local product mirror
-- Product name search (local FTS / `search_document` + OFF fallback)
+- Product name search (local FTS / `search_document` + OFF fallback; relevance ranking upgraded in **ULT-11** — see `AI/ult-11-product-search-relevance-plan.md`)
 - User product submissions + moderator approve/reject (FR-8)
 - Diary logging via `submissionId`; React search / submit / moderation UI
 

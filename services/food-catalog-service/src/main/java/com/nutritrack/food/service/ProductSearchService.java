@@ -2,7 +2,6 @@ package com.nutritrack.food.service;
 
 import com.nutritrack.food.config.FoodProperties;
 import com.nutritrack.food.domain.Product;
-import com.nutritrack.food.domain.ProductRepository;
 import com.nutritrack.food.domain.ProductSubmission;
 import com.nutritrack.food.domain.ProductSubmissionRepository;
 import com.nutritrack.food.domain.SubmissionStatus;
@@ -10,6 +9,10 @@ import com.nutritrack.food.nevo.NevoClient;
 import com.nutritrack.food.nevo.NevoFoodSearchResponse;
 import com.nutritrack.food.off.NormalizedOffProduct;
 import com.nutritrack.food.off.OffClient;
+import com.nutritrack.food.service.search.NormalizedQuery;
+import com.nutritrack.food.service.search.ProductCandidateSearcher;
+import com.nutritrack.food.service.search.ProductRelevanceScorer;
+import com.nutritrack.food.service.search.SearchQueryNormalizer;
 import com.nutritrack.food.web.dto.ProductNutrientResponse;
 import com.nutritrack.food.web.dto.ProductResponse;
 import com.nutritrack.food.web.dto.ProductSearchResponse;
@@ -30,87 +33,102 @@ public class ProductSearchService {
 
   private static final Logger log = LoggerFactory.getLogger(ProductSearchService.class);
 
-  private final ProductRepository productRepository;
   private final ProductSubmissionRepository submissionRepository;
   private final OffClient offClient;
   private final NevoClient nevoClient;
   private final OffProductUpsertService upsertService;
   private final ProductMapper productMapper;
   private final FoodProperties properties;
+  private final ProductCandidateSearcher candidateSearcher;
+  private final SearchQueryNormalizer normalizer;
+  private final ProductRelevanceScorer scorer;
 
   public ProductSearchService(
-      ProductRepository productRepository,
       ProductSubmissionRepository submissionRepository,
       OffClient offClient,
       NevoClient nevoClient,
       OffProductUpsertService upsertService,
       ProductMapper productMapper,
-      FoodProperties properties) {
-    this.productRepository = productRepository;
+      FoodProperties properties,
+      ProductCandidateSearcher candidateSearcher) {
     this.submissionRepository = submissionRepository;
     this.offClient = offClient;
     this.nevoClient = nevoClient;
     this.upsertService = upsertService;
     this.productMapper = productMapper;
     this.properties = properties;
+    this.candidateSearcher = candidateSearcher;
+    this.normalizer = new SearchQueryNormalizer();
+    this.scorer = new ProductRelevanceScorer(properties.search().similarityThreshold());
   }
 
   @Transactional
   public ProductSearchResponse search(String rawQuery, int page, UUID callerUserId) {
-    String query = rawQuery == null ? "" : rawQuery.trim();
-    if (query.length() < 2) {
+    String trimmedQuery = rawQuery == null ? "" : rawQuery.trim();
+    if (trimmedQuery.length() < 2) {
       throw new IllegalArgumentException("Search query must be at least 2 characters");
     }
+    NormalizedQuery query = normalizer.normalize(rawQuery);
     int pageSize = properties.search().pageSize();
     int zeroBasedPage = Math.max(page, 1) - 1;
 
-    Map<String, ProductResponse> merged = new LinkedHashMap<>();
+    Map<String, ScoredProduct> scored = new LinkedHashMap<>();
+    int sequence = 0;
 
     for (ProductResponse response : searchNevo(rawQuery, properties.search().nevoSearchLimit())) {
-      merged.putIfAbsent("nevo:" + response.nevoCode(), response);
+      scored.put(
+          "nevo:" + response.nevoCode(),
+          new ScoredProduct(response, 0, sequence++, ResultKind.NEVO));
     }
 
     if (callerUserId != null) {
       List<ProductSubmission> own =
           submissionRepository.searchOwn(
               callerUserId,
-              query,
+              query.normalized(),
               List.of(SubmissionStatus.PENDING, SubmissionStatus.REJECTED),
               PageRequest.of(0, pageSize));
       for (ProductSubmission submission : own) {
         ProductResponse response = productMapper.toResponse(submission);
-        merged.put("sub:" + submission.getId(), response);
+        scored.put(
+            "sub:" + submission.getId(),
+            new ScoredProduct(response, Double.POSITIVE_INFINITY, sequence++, ResultKind.SUBMISSION));
       }
     }
 
-    List<Product> local =
-        productRepository
-            .searchByDocument(query, PageRequest.of(zeroBasedPage, pageSize))
-            .getContent();
-    for (Product product : local) {
-      merged.put("prod:" + product.getId(), productMapper.toResponse(product));
+    for (Product product : candidateSearcher.findCandidates(query, pageSize * 3)) {
+      double score =
+          scorer.score(query, product.getName(), product.getBrand(), product.getSearchDocument());
+      if (score > 0) {
+        sequence = mergeProduct(scored, product, score, sequence);
+      }
     }
 
-    if (merged.size() < properties.search().localMinResultsBeforeOffFallback()) {
+    long catalogHits = scored.keySet().stream().filter(key -> key.startsWith("prod:")).count();
+    if (catalogHits < properties.search().localMinResultsBeforeOffFallback()) {
       try {
-        List<NormalizedOffProduct> remote = offClient.searchByName(query, page);
+        List<NormalizedOffProduct> remote = offClient.searchByName(query.normalized(), page);
         for (NormalizedOffProduct offProduct : remote) {
           Product saved = upsertService.upsertFromOff(offProduct);
-          merged.putIfAbsent("prod:" + saved.getId(), productMapper.toResponse(saved));
-          if (merged.size() >= pageSize + 5) {
-            break;
-          }
+          double score =
+              scorer.score(query, saved.getName(), saved.getBrand(), saved.getSearchDocument());
+          sequence = mergeProduct(scored, saved, score, sequence);
         }
       } catch (RuntimeException ignored) {
         // Degrade to local/mirror-only when OFF search is unavailable.
       }
     }
 
-    List<ProductResponse> items = new ArrayList<>(merged.values());
-    if (items.size() > pageSize) {
-      items = items.subList(0, pageSize);
+    List<ProductResponse> items =
+        scored.values().stream().sorted(ProductSearchService::compareScoredProducts)
+            .map(ScoredProduct::response)
+            .toList();
+    int fromIndex = Math.min(zeroBasedPage * pageSize, items.size());
+    int toIndex = Math.min(fromIndex + pageSize, items.size());
+    if (fromIndex > 0 || toIndex < items.size()) {
+      items = new ArrayList<>(items.subList(fromIndex, toIndex));
     }
-    return new ProductSearchResponse(query, page <= 0 ? 1 : page, pageSize, items);
+    return new ProductSearchResponse(trimmedQuery, page <= 0 ? 1 : page, pageSize, items);
   }
 
   private List<ProductResponse> searchNevo(String rawQuery, int limit) {
@@ -170,4 +188,58 @@ public class ProductSearchService {
     }
     return "NEVO " + item.nevoCode();
   }
+
+  private int mergeProduct(
+      Map<String, ScoredProduct> scored, Product product, double score, int sequence) {
+    String key = "prod:" + product.getId();
+    ScoredProduct next =
+        new ScoredProduct(productMapper.toResponse(product), score, sequence, ResultKind.CATALOG);
+    ScoredProduct existing = scored.get(key);
+    if (existing == null) {
+      scored.put(key, next);
+      return sequence + 1;
+    }
+    if (score > existing.score()) {
+      scored.put(
+          key, new ScoredProduct(next.response(), score, existing.sequence(), ResultKind.CATALOG));
+    }
+    return sequence;
+  }
+
+  private static int compareScoredProducts(ScoredProduct left, ScoredProduct right) {
+    int byKind = Integer.compare(left.kind().order(), right.kind().order());
+    if (byKind != 0) {
+      return byKind;
+    }
+    if (left.kind() == ResultKind.SUBMISSION || left.kind() == ResultKind.NEVO) {
+      return Integer.compare(left.sequence(), right.sequence());
+    }
+
+    int byScore = Double.compare(right.score(), left.score());
+    if (byScore != 0) {
+      return byScore;
+    }
+    String leftName = left.response().name() == null ? "" : left.response().name();
+    String rightName = right.response().name() == null ? "" : right.response().name();
+    return String.CASE_INSENSITIVE_ORDER.compare(leftName, rightName);
+  }
+
+  private enum ResultKind {
+    NEVO(0),
+    SUBMISSION(1),
+    CATALOG(2);
+
+    private final int order;
+
+    ResultKind(int order) {
+      this.order = order;
+    }
+
+    int order() {
+      return order;
+    }
+  }
+
+  private record ScoredProduct(
+      ProductResponse response, double score, int sequence, ResultKind kind) {}
 }
