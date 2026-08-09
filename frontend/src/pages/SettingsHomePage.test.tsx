@@ -7,6 +7,7 @@ import SettingsProfileSection from './settings/SettingsProfileSection'
 import SettingsGoalsSection from './settings/SettingsGoalsSection'
 import SettingsWeightSection from './settings/SettingsWeightSection'
 import SettingsAccountSection from './settings/SettingsAccountSection'
+import SettingsFeedbackSection from './settings/SettingsFeedbackSection'
 import * as client from '../api/client'
 import * as tokenStorage from '../auth/tokenStorage'
 
@@ -46,6 +47,7 @@ describe('SettingsHomePage', () => {
     vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
     vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
     vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(client, 'fetchMyFeedback').mockResolvedValue([])
 
     renderSettings('/settings')
 
@@ -54,6 +56,7 @@ describe('SettingsHomePage', () => {
     expect(screen.getByRole('link', { name: /Goals/i })).toHaveAttribute('href', '/settings/goals')
     expect(screen.getByRole('link', { name: /Weight/i })).toHaveAttribute('href', '/settings/weight')
     expect(screen.getByRole('link', { name: /Account/i })).toHaveAttribute('href', '/settings/account')
+    expect(screen.getByRole('link', { name: /Feedback/i })).toHaveAttribute('href', '/settings/feedback')
     expect(screen.getByRole('button', { name: /Sign out/i })).toBeInTheDocument()
 
     expect(await screen.findByText(/Alex/)).toBeInTheDocument()
@@ -61,6 +64,60 @@ describe('SettingsHomePage', () => {
     expect(screen.getByText(/computed/i)).toBeInTheDocument()
     expect(screen.getByText(/80\.5 kg/i)).toBeInTheDocument()
     expect(screen.getByText(/alex@example.com/i)).toBeInTheDocument()
+  })
+
+  it('submits feedback and shows status for prior submissions', async () => {
+    vi.spyOn(client, 'fetchMe').mockResolvedValue(profile)
+    vi.spyOn(client, 'fetchGoals').mockResolvedValue(goals)
+    vi.spyOn(client, 'fetchWeightHistory').mockResolvedValue(weights)
+    vi.spyOn(client, 'fetchMyFeedback').mockResolvedValue([
+      {
+        id: 'fb1',
+        message: 'Please improve barcode reliability.',
+        status: 'PENDING',
+        appVersion: '0.1.0',
+        createdAt: '2026-08-01T10:00:00Z',
+        updatedAt: '2026-08-01T10:00:00Z',
+      },
+      {
+        id: 'fb2',
+        message: 'Love the diary trends view.',
+        status: 'COMPLETED',
+        appVersion: '0.1.0',
+        createdAt: '2026-07-20T10:00:00Z',
+        updatedAt: '2026-07-28T10:00:00Z',
+      },
+    ])
+    const submitFeedback = vi.spyOn(client, 'submitFeedback').mockResolvedValue({
+      id: 'fb3',
+      message: 'Add export for weekly nutrition summary.',
+      status: 'PENDING',
+      appVersion: '0.1.0',
+      createdAt: '2026-08-09T12:00:00Z',
+      updatedAt: '2026-08-09T12:00:00Z',
+    })
+
+    renderSettings('/settings/feedback')
+
+    expect(await screen.findByRole('heading', { name: 'Feedback' })).toBeInTheDocument()
+    expect(await screen.findByText(/Please improve barcode reliability/i)).toBeInTheDocument()
+    expect(screen.getByText('Pending')).toBeInTheDocument()
+    expect(screen.getByText(/Love the diary trends view/i)).toBeInTheDocument()
+    expect(screen.getByText('Completed')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/Your feedback/i), {
+      target: { value: 'Add export for weekly nutrition summary.' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Send feedback/i }))
+
+    await waitFor(() => {
+      expect(submitFeedback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Add export for weekly nutrition summary.',
+        }),
+      )
+    })
+    expect(await screen.findByText(/Feedback sent/i)).toBeInTheDocument()
   })
 
   it('opens the profile section and saves profile details', async () => {
@@ -183,6 +240,7 @@ function renderSettings(path: string) {
           <Route path="/settings/goals" element={<SettingsGoalsSection />} />
           <Route path="/settings/weight" element={<SettingsWeightSection />} />
           <Route path="/settings/account" element={<SettingsAccountSection />} />
+          <Route path="/settings/feedback" element={<SettingsFeedbackSection />} />
           <Route path="/" element={<div>Signed out</div>} />
         </Routes>
       </QueryClientProvider>

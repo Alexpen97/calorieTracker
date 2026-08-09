@@ -111,6 +111,17 @@ export type ProductSearchResult = {
 
 export type SubmissionStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 
+export type FeedbackStatus = 'PENDING' | 'ACCEPTED' | 'COMPLETED'
+
+export type UserFeedback = {
+  id: string
+  message: string
+  status: FeedbackStatus
+  appVersion: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export type ProductSubmission = {
   id: string
   submitterUserId: string
@@ -357,6 +368,23 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
     body: JSON.stringify(input),
   })
   return parseJson<OnboardingResult>(response)
+}
+
+export async function fetchMyFeedback(): Promise<UserFeedback[]> {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/feedback`)
+  return parseJson<UserFeedback[]>(response)
+}
+
+export async function submitFeedback(input: {
+  message: string
+  appVersion?: string
+}): Promise<UserFeedback> {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+  return parseJson<UserFeedback>(response)
 }
 
 export async function fetchProductByBarcode(ean: string): Promise<Product> {
