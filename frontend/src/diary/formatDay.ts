@@ -34,6 +34,21 @@ export function parseMealTypeParam(value: string | null | undefined): MealType |
   return null
 }
 
+export function inferMealTypeFromLocalTime(date = new Date()): MealType {
+  const hour = date.getHours()
+
+  if (hour >= 5 && hour < 11) {
+    return 'BREAKFAST'
+  }
+  if (hour >= 11 && hour < 16) {
+    return 'LUNCH'
+  }
+  if (hour >= 16 && hour < 22) {
+    return 'DINNER'
+  }
+  return 'SNACK'
+}
+
 export function mealLookupPath(mealType: MealType): string {
   return `/lookup?meal=${mealType}`
 }

@@ -6,6 +6,7 @@ import {
   formatLocalDate,
   getMacroProgress,
   groupEntriesByMeal,
+  inferMealTypeFromLocalTime,
   mealLookupPath,
   parseMealTypeParam,
   productPathWithMeal,
@@ -69,6 +70,18 @@ describe('diary day formatting helpers', () => {
     expect(mealLookupPath('DINNER')).toBe('/lookup?meal=DINNER')
     expect(productPathWithMeal('abc', 'SNACK')).toBe('/products/abc?meal=SNACK')
     expect(productPathWithMeal('abc', null)).toBe('/products/abc')
+  })
+
+  it('infers the default meal from local clock hour boundaries', () => {
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 0, 0))).toBe('SNACK')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 4, 59))).toBe('SNACK')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 5, 0))).toBe('BREAKFAST')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 10, 59))).toBe('BREAKFAST')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 11, 0))).toBe('LUNCH')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 15, 59))).toBe('LUNCH')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 16, 0))).toBe('DINNER')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 21, 59))).toBe('DINNER')
+    expect(inferMealTypeFromLocalTime(new Date(2026, 6, 22, 22, 0))).toBe('SNACK')
   })
 
   it('builds bounded nutrient and water progress values', () => {

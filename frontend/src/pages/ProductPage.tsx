@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { createDiaryEntry, fetchProductById, type MealType } from '../api/client'
-import { mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
+import { inferMealTypeFromLocalTime, mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
 import { useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
 
@@ -13,7 +13,7 @@ export default function ProductPage() {
   const selectedMeal = parseMealTypeParam(searchParams.get('meal'))
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
   const [weightG, setWeightG] = useState('100')
-  const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? 'BREAKFAST')
+  const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? inferMealTypeFromLocalTime())
   const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
     queryKey: ['product', id],
