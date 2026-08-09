@@ -182,7 +182,7 @@ services:
       NEVO_SERVICE_URL: http://nevo-service:8080
       RECO_SERVICE_URL: http://recommendation-service:8080
       JWKS_URI: http://auth-service:8080/.well-known/jwks.json
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://localhost,http://localhost:5173,http://localhost,http://localhost:8088,https://static.128.216.108.65.clients.your-server.de}
       SWAGGER_UI_ENABLED: "true"
       JAVA_TOOL_OPTIONS: -Xmx256m
     depends_on:

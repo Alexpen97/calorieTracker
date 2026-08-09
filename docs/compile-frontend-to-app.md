@@ -52,7 +52,7 @@ cd frontend
 # Production API + Google web client id must be present at build time.
 # The web client id is used both by the SPA build and (via the native plugin)
 # to obtain the server auth code.
-export VITE_API_BASE_URL=https://gateway-production-777b.up.railway.app
+export VITE_API_BASE_URL=https://static.128.216.108.65.clients.your-server.de
 export VITE_GOOGLE_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
 export VITE_AUTH_MODE=prod        # hides the Dev login button
 
@@ -96,8 +96,10 @@ npm run android:open
 ```
 
 For local development against the local backend, set:
-`VITE_API_BASE_URL=https://static.128.216.108.65.clients.your-server.de/calorietracker`
-(or the gateway URL appropriate to your environment).
+`VITE_API_BASE_URL=https://static.128.216.108.65.clients.your-server.de`
+(or the gateway URL appropriate to your environment). The live gateway serves
+`/api/**` at that origin; the `/calorietracker` reverse-proxy base path below is
+only used for the web deploy, not the app.
 
 ---
 
