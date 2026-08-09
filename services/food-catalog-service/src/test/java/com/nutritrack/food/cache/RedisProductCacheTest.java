@@ -74,6 +74,7 @@ class RedisProductCacheTest {
         "Nutella",
         "Ferrero",
         "400 g",
+        null,
         new BigDecimal("15"),
         "https://example.test/n.jpg",
         "E",

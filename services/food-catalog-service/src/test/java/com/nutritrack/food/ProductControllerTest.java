@@ -1,5 +1,6 @@
 package com.nutritrack.food;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -90,6 +91,7 @@ class ProductControllerTest {
         .andExpect(jsonPath("$.name").value("Nutella"))
         .andExpect(jsonPath("$.brand").value("Ferrero"))
         .andExpect(jsonPath("$.source").value("OFF"))
+        .andExpect(jsonPath("$.densityGPerMl").value(nullValue()))
         .andExpect(jsonPath("$.nutrients[0].code").exists());
 
     mockMvc
@@ -97,9 +99,40 @@ class ProductControllerTest {
             get("/api/products/barcode/3017620422003")
                 .with(asUser()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Nutella"));
+        .andExpect(jsonPath("$.name").value("Nutella"))
+        .andExpect(jsonPath("$.densityGPerMl").value(nullValue()));
 
     verify(offClient, times(1)).fetchByBarcode("3017620422003");
+  }
+
+  @Test
+  void barcodeLookupReturnsDensityForVolumeProducts() throws Exception {
+    when(offClient.fetchByBarcode(eq("5449000000996")))
+        .thenReturn(
+            Optional.of(
+                new NormalizedOffProduct(
+                    "5449000000996",
+                    "Coca-Cola",
+                    "Coca-Cola",
+                    null,
+                    "330 ml",
+                    new BigDecimal("330"),
+                    "https://example.test/coke.jpg",
+                    "E",
+                    "carbonated water, sugar",
+                    List.of(),
+                    List.of(
+                        new NormalizedOffProduct.NormalizedNutrient(
+                            "energy_kcal", new BigDecimal("42"), "kcal")))));
+
+    mockMvc
+        .perform(
+            get("/api/products/barcode/5449000000996")
+                .with(asUser()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Coca-Cola"))
+        .andExpect(jsonPath("$.quantityLabel").value("330 ml"))
+        .andExpect(jsonPath("$.densityGPerMl").value(1.0));
   }
 
   @Test

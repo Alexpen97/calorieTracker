@@ -13,6 +13,7 @@ public record ProductResponse(
     String name,
     String brand,
     String quantityLabel,
+    BigDecimal densityGPerMl,
     BigDecimal servingSizeG,
     String imageUrl,
     String nutriScore,
