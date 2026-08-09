@@ -2,6 +2,15 @@
 
 ## Completed
 
+- 2026-08-09: ULT-13 in-app user feedback from Settings — submit + list with
+  Accepted/Pending/Completed status. Notes: `AI/in-app-user-feedback.md`.
+- 2026-08-09: ULT-12 server-driven in-app update message — opens once per user
+  per push, configured via API. Spec: `docs/superpowers/specs/2026-08-09-ult-12-update-message-card-design.md`.
+- 2026-08-09: ULT-11 product name search relevance — ranked candidates
+  (FTS/trgm + tokenized), `ProductRelevanceScorer`, OFF re-rank, fuzzy config.
+  Plan: `AI/ult-11-product-search-relevance-plan.md`.
+- 2026-08-09: ULT-10 count-based (pieces) entry — Grams/Pieces toggle where the
+  product has a detectable count. Notes: `AI/ult-10-count-based-entry.md`.
 - 2026-08-09: ULT-9 ml entry via `densityGPerMl` on products (derived at map time); ProductPage g|ml toggle converts ml→g client-side; diary still stores grams only. Plan: `AI/ult-9-gram-to-ml-conversion-plan.md`.
 
 - 2026-07-25: Replaced top-level Profile with a Settings hub and focused

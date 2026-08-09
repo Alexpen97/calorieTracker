@@ -1,9 +1,14 @@
 # NutriTrack — Architecture & Design Document
 
-Status: Draft v1.1 (2026-07-21)
+Status: Draft v1.2 (2026-08-09)
 
 Changelog:
 
+- v1.2 — document shipped post-phase features (Linear ULT-6…ULT-13):
+  product density for gram↔ml entry (ULT-9), count-based/pieces entry
+  (ULT-10), relevance-ranked product search with fuzzy matching (ULT-11),
+  frequently-added-product quick-add (ULT-7), server-driven in-app update
+  messages (ULT-12), and in-app user feedback with status tracking (ULT-13).
 - v1.1 — monorepo layout (one folder per service), Docker local / Railway cloud
   deployment, nutrient education content, moderated user food submissions,
   body-weight tracking, water-intake tracking, computed nutrient goals
@@ -303,6 +308,12 @@ mirror-only mode.
 - Portion math: every stored nutrient value is per 100 g, so
   `amount = value_per_100g × weight_g / 100`. Computed server-side and returned
   with each entry and each daily summary.
+- **Volume / piece entry (ULT-9, ULT-10):** products expose a
+  `densityGPerMl` (parsed from the quantity label where possible); the UI lets
+  the user enter ml and converts client-side to grams. Where a product has a
+  detectable count (pieces per package), the UI offers a Grams/Pieces toggle
+  with per-piece gram conversion helpers. The diary still stores canonical
+  grams only; unit conversions are resolved before submission.
 - **Water intake** (FR-11): lightweight `water_intake` rows (amount in ml,
   timestamp). The daily summary includes total water vs. the user's water
   target (from `user-profile-service`; default target derived from body
@@ -408,6 +419,7 @@ product                                         -- published catalog only
   brand               TEXT
   quantity_label      TEXT                      -- e.g. "500 g"
   serving_size_g      NUMERIC NULL
+  density_g_per_ml    NUMERIC NULL              -- for ml entry (ULT-9), parsed from qty label
   image_url           TEXT NULL
   nutri_score         CHAR(1) NULL
   ingredients_text    TEXT NULL
@@ -569,6 +581,7 @@ GET  /api/diary/water?date=
 DELETE /api/diary/water/{id}
 GET  /api/diary/summary?date=       per-nutrient totals + water vs. targets
 GET  /api/diary/summary/range?from=&to=
+GET  /api/diary/frequent            most frequently logged products (quick-add, ULT-7)
 
 GET  /api/users/me
 PUT  /api/users/me                  profile incl. sex, height, activity, objective
@@ -577,6 +590,10 @@ GET  /api/users/me/weight?from=&to= weight history for trend chart
 GET  /api/users/me/goals            current targets + origin (computed/override)
 PUT  /api/users/me/goals            override individual targets
 POST /api/users/me/goals/recalculate  recompute suggestions from profile (FR-12)
+GET  /api/users/me/updates          server-driven in-app update messages (ULT-12)
+GET  /api/users/me/updates/{id}/dismiss  mark an update message as seen/dismissed
+POST /api/users/me/feedback         submit in-app feedback (ULT-13)
+GET  /api/users/me/feedback         list own feedback submissions + status (Accepted/Pending/Completed)
 
 GET  /api/recommendations/meals?date=   ranked meal/cooking suggestions (FR-13, later)
 ```
