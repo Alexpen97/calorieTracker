@@ -23,11 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class EntityManagerProductCandidateSearcher implements ProductCandidateSearcher {
 
   private static final String DOCUMENT_SQL = "LOWER(COALESCE(p.search_document, ''))";
+  private static final SearchQueryNormalizer QUERY_NORMALIZER = new SearchQueryNormalizer();
 
   private final EntityManager entityManager;
   private final DataSource dataSource;
   private final FoodProperties.Search searchProperties;
-  private final SearchQueryNormalizer normalizer = new SearchQueryNormalizer();
+  private final SearchQueryNormalizer normalizer = QUERY_NORMALIZER;
   private final ProductRelevanceScorer scorer;
   private volatile Boolean postgres;
 
@@ -53,11 +54,65 @@ public class EntityManagerProductCandidateSearcher implements ProductCandidateSe
 
   private List<Product> findPostgresCandidates(NormalizedQuery query, int limit) {
     Map<UUID, Product> candidates = new LinkedHashMap<>();
-    addAll(candidates, runPostgresFts(query.normalized(), limit));
+    List<String> queryTexts = postgresQueryTexts(query);
+    for (String queryText : queryTexts) {
+      addAll(candidates, runPostgresFts(queryText, limit));
+    }
     if (candidates.size() < searchProperties.fuzzyMinResults()) {
-      addAll(candidates, runPostgresTrigram(query.normalized(), limit));
+      for (String queryText : queryTexts) {
+        addAll(candidates, runPostgresTrigram(queryText, limit));
+      }
     }
     return limit(candidates, limit);
+  }
+
+  static List<String> postgresQueryTexts(NormalizedQuery query) {
+    if (query == null || query.tokens().isEmpty()) {
+      return List.of();
+    }
+
+    LinkedHashSet<String> queryTexts = new LinkedHashSet<>();
+    if (query.normalized() != null && !query.normalized().isBlank()) {
+      queryTexts.add(query.normalized());
+    }
+    addSynonymSubstitutedQueryTexts(
+        queryTexts,
+        tokenVariantGroups(query.tokens(), query.expandedTokens()),
+        new ArrayList<>(),
+        0);
+    return List.copyOf(queryTexts);
+  }
+
+  private static void addSynonymSubstitutedQueryTexts(
+      Set<String> queryTexts, List<List<String>> tokenGroups, List<String> current, int tokenIndex) {
+    if (tokenIndex == tokenGroups.size()) {
+      queryTexts.add(String.join(" ", current));
+      return;
+    }
+
+    for (String variant : tokenGroups.get(tokenIndex)) {
+      current.add(variant);
+      addSynonymSubstitutedQueryTexts(queryTexts, tokenGroups, current, tokenIndex + 1);
+      current.remove(current.size() - 1);
+    }
+  }
+
+  private static List<List<String>> tokenVariantGroups(
+      List<String> tokens, Set<String> expandedTokens) {
+    List<List<String>> tokenGroups = new ArrayList<>();
+    for (String token : tokens) {
+      List<String> alternatives =
+          QUERY_NORMALIZER.normalize(token).expandedTokens().stream()
+              .filter(expandedTokens::contains)
+              .filter(variant -> !variant.equals(token))
+              .sorted()
+              .toList();
+      List<String> tokenGroup = new ArrayList<>();
+      tokenGroup.add(token);
+      tokenGroup.addAll(alternatives);
+      tokenGroups.add(List.copyOf(tokenGroup));
+    }
+    return List.copyOf(tokenGroups);
   }
 
   private List<Product> runPostgresFts(String queryText, int limit) {
