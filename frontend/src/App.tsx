@@ -12,6 +12,7 @@ import SettingsAccountSection from './pages/settings/SettingsAccountSection'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import LookupPage from './pages/LookupPage'
 import ProductPage from './pages/ProductPage'
+import NevoFoodPage from './pages/NevoFoodPage'
 import DiaryPage from './pages/DiaryPage'
 import DashboardPage from './pages/DashboardPage'
 import AnalyticsPage from './pages/AnalyticsPage'
@@ -192,6 +193,16 @@ export default function App() {
             <RequireAuth>
               <RequireOnboardingComplete>
                 <ProductPage />
+              </RequireOnboardingComplete>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/nevo/:code"
+          element={
+            <RequireAuth>
+              <RequireOnboardingComplete>
+                <NevoFoodPage />
               </RequireOnboardingComplete>
             </RequireAuth>
           }

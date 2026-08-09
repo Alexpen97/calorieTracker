@@ -99,6 +99,8 @@ export type Product = {
   ingredientsText: string | null
   allergenTags: string[]
   offLastSyncedAt: string | null
+  nevoCode?: string | null
+  foodGroup?: string | null
   nutrients: ProductNutrient[]
 }
 
@@ -107,6 +109,18 @@ export type ProductSearchResult = {
   page: number
   pageSize: number
   items: Product[]
+}
+
+export type NevoFood = {
+  matched: boolean
+  nevoCode: string
+  foodName: string
+  foodGroup: string | null
+  nevoVersion: string | null
+  confidence: string
+  score: number
+  reasons: string[]
+  nutrients: ProductNutrient[]
 }
 
 export type SubmissionStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
@@ -375,6 +389,13 @@ export async function searchProducts(q: string, page = 1): Promise<ProductSearch
   const params = new URLSearchParams({ q, page: String(page) })
   const response = await authenticatedFetch(`${apiBase}/api/products/search?${params}`)
   return parseJson<ProductSearchResult>(response)
+}
+
+export async function fetchNevoFood(nevoCode: string): Promise<NevoFood> {
+  const response = await authenticatedFetch(
+    `${apiBase}/api/nevo/foods/${encodeURIComponent(nevoCode)}`,
+  )
+  return parseJson<NevoFood>(response)
 }
 
 export async function createProductSubmission(input: {
