@@ -2,6 +2,8 @@
 
 ## Completed
 
+- 2026-08-09: ULT-9 ml entry via `densityGPerMl` on products (derived at map time); ProductPage g|ml toggle converts ml→g client-side; diary still stores grams only. Plan: `AI/ult-9-gram-to-ml-conversion-plan.md`.
+
 - 2026-07-25: Replaced top-level Profile with a Settings hub and focused
   subsections (profile, goals, weight, account). Notes:
   `AI/settings-profile-menu.md`.

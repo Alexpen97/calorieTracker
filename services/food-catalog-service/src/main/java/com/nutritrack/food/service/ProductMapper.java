@@ -33,6 +33,8 @@ public class ProductMapper {
         product.getName(),
         product.getBrand(),
         product.getQuantityLabel(),
+        ProductDensityResolver.resolve(
+            product.getQuantityLabel(), product.getName(), product.getGenericName()),
         product.getServingSizeG(),
         product.getImageUrl(),
         product.getNutriScore(),
@@ -61,6 +63,7 @@ public class ProductMapper {
         "PENDING_SUBMISSION",
         submission.getName(),
         submission.getBrand(),
+        null,
         null,
         submission.getServingSizeG(),
         null,

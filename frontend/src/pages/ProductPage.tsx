@@ -3,8 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { createDiaryEntry, fetchProductById, type MealType } from '../api/client'
 import { mealLookupPath, parseMealTypeParam } from '../diary/formatDay'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import NutrientSheet from '../food/NutrientSheet'
+import {
+  isVolumeCapable,
+  resolveWeightG,
+  type AmountUnit,
+} from '../food/volumeConversion'
 
 export default function ProductPage() {
   const { id = '' } = useParams()
@@ -12,7 +17,8 @@ export default function ProductPage() {
   const navigate = useNavigate()
   const selectedMeal = parseMealTypeParam(searchParams.get('meal'))
   const [selectedNutrient, setSelectedNutrient] = useState<string | null>(null)
-  const [weightG, setWeightG] = useState('100')
+  const [amount, setAmount] = useState('100')
+  const [unit, setUnit] = useState<AmountUnit>('g')
   const [mealType, setMealType] = useState<MealType>(() => selectedMeal ?? 'BREAKFAST')
   const [entryError, setEntryError] = useState<string | null>(null)
   const { data, error, isLoading } = useQuery({
@@ -29,26 +35,42 @@ export default function ProductPage() {
     }) => createDiaryEntry(input),
     onSuccess: () => navigate('/today'),
   })
+  const volumeCapable = isVolumeCapable(data?.densityGPerMl)
+  const helperWeightG =
+    data && unit === 'ml' && volumeCapable && Number.isFinite(Number(amount)) && Number(amount) > 0
+      ? resolveWeightG(Number(amount), unit, data.densityGPerMl)
+      : null
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+    setAmount('100')
+    setUnit(isVolumeCapable(data.densityGPerMl) ? 'ml' : 'g')
+    setEntryError(null)
+  }, [data?.id, data?.densityGPerMl])
 
   async function onAddToDiary(event: FormEvent) {
     event.preventDefault()
     if (!data) {
       return
     }
-    const parsedWeight = Number(weightG)
-    if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
-      setEntryError('Enter a positive gram amount.')
+    const parsedAmount = Number(amount)
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      setEntryError('Enter a positive amount.')
       return
     }
+    const selectedUnit = volumeCapable ? unit : 'g'
+    const weightG = resolveWeightG(parsedAmount, selectedUnit, data.densityGPerMl)
     setEntryError(null)
     if (data.submissionId || data.source === 'PENDING_SUBMISSION') {
       addEntry.mutate({
         submissionId: data.submissionId ?? data.id,
-        weightG: parsedWeight,
+        weightG,
         mealType,
       })
     } else {
-      addEntry.mutate({ productId: data.id, weightG: parsedWeight, mealType })
+      addEntry.mutate({ productId: data.id, weightG, mealType })
     }
   }
 
@@ -87,16 +109,34 @@ export default function ProductPage() {
 
           <section className="nutrient-section">
             <h3>Add to today</h3>
-            <form className="lookup-form" onSubmit={onAddToDiary}>
-              <label htmlFor="diary-weight">Amount (g)</label>
+            <form className="lookup-form" noValidate onSubmit={onAddToDiary}>
+              <label htmlFor="diary-amount">{volumeCapable ? 'Amount' : 'Amount (g)'}</label>
               <input
-                id="diary-weight"
+                id="diary-amount"
                 inputMode="decimal"
                 min="1"
-                onChange={(event) => setWeightG(event.target.value)}
+                onChange={(event) => setAmount(event.target.value)}
                 type="number"
-                value={weightG}
+                value={amount}
               />
+              {volumeCapable && (
+                <>
+                  <label htmlFor="diary-unit">Unit</label>
+                  <select
+                    id="diary-unit"
+                    onChange={(event) => setUnit(event.target.value as AmountUnit)}
+                    value={unit}
+                  >
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                  </select>
+                  {helperWeightG !== null && (
+                    <p className="product-meta">
+                      ≈ {helperWeightG} g at {data.densityGPerMl} g/ml
+                    </p>
+                  )}
+                </>
+              )}
               <label htmlFor="diary-meal">Meal</label>
               <select
                 id="diary-meal"

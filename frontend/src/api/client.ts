@@ -94,6 +94,7 @@ export type Product = {
   brand: string | null
   quantityLabel: string | null
   servingSizeG: number | null
+  densityGPerMl: number | null
   imageUrl: string | null
   nutriScore: string | null
   ingredientsText: string | null
