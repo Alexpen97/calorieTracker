@@ -12,6 +12,9 @@ User profile container — profile, body-weight log, goals engine. See
 - Onboarding: `POST /api/users/me/onboarding` saves height/weight/diet goal
   (plus sex, birth date, activity) and applies computed nutrient goals.
 - Weight API: `POST/GET /api/users/me/weight`, `DELETE /api/users/me/weight/{id}`.
+- Feedback API: `POST/GET /api/users/me/feedback` (user submissions with
+  Pending/Accepted/Completed status); moderators/admins update status via
+  `PATCH /api/users/feedback/{id}/status`.
 
 ## Container
 
