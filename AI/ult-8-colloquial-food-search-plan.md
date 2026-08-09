@@ -20,6 +20,7 @@
 - Never invent third-party APIs — use Context7 if touching Spring/Flyway/React APIs beyond existing project patterns.
 - Use Codebase Memory (`project: "D-repos-calorieTracker"`) when available; otherwise targeted Read of paths below.
 - Keep commits small and push to the feature branch frequently.
+- **Coordination:** [ULT-11](https://linear.app/ultimateconcept/issue/ULT-11) also changes `ProductSearchService` (relevance / FTS). Keep NEVO merge additive (prepend NEVO, then existing local/OFF pipeline). If ULT-11 landed first, rebase and preserve both behaviours.
 
 ## Design decision (locked)
 
