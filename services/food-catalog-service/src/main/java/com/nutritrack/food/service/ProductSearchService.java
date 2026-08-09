@@ -143,6 +143,7 @@ public class ProductSearchService {
         null,
         null,
         null,
+        null,
         List.of(),
         null,
         nevoCode,
