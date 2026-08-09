@@ -1,5 +1,6 @@
 package com.nutritrack.food.service;
 
+import com.nutritrack.food.config.FoodProperties;
 import com.nutritrack.food.domain.Product;
 import com.nutritrack.food.domain.ProductNutrient;
 import com.nutritrack.food.domain.NutrientSource;
@@ -8,6 +9,10 @@ import com.nutritrack.food.domain.ProductSource;
 import com.nutritrack.food.domain.ProductSubmission;
 import com.nutritrack.food.domain.ProductSubmissionRepository;
 import com.nutritrack.food.domain.SubmissionStatus;
+import com.nutritrack.food.service.search.NormalizedQuery;
+import com.nutritrack.food.service.search.ProductCandidateSearcher;
+import com.nutritrack.food.service.search.ProductRelevanceScorer;
+import com.nutritrack.food.service.search.SearchQueryNormalizer;
 import com.nutritrack.food.web.ProductNotFoundException;
 import com.nutritrack.food.web.SubmissionConflictException;
 import com.nutritrack.food.web.dto.CreateSubmissionRequest;
@@ -15,10 +20,9 @@ import com.nutritrack.food.web.dto.ProductNutrientResponse;
 import com.nutritrack.food.web.dto.SubmissionResponse;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +32,22 @@ public class SubmissionService {
   private final ProductSubmissionRepository submissionRepository;
   private final ProductRepository productRepository;
   private final ProductMapper productMapper;
+  private final ProductCandidateSearcher candidateSearcher;
+  private final SearchQueryNormalizer normalizer;
+  private final ProductRelevanceScorer scorer;
 
   public SubmissionService(
       ProductSubmissionRepository submissionRepository,
       ProductRepository productRepository,
-      ProductMapper productMapper) {
+      ProductMapper productMapper,
+      ProductCandidateSearcher candidateSearcher,
+      FoodProperties properties) {
     this.submissionRepository = submissionRepository;
     this.productRepository = productRepository;
     this.productMapper = productMapper;
+    this.candidateSearcher = candidateSearcher;
+    this.normalizer = new SearchQueryNormalizer();
+    this.scorer = new ProductRelevanceScorer(properties.search().similarityThreshold());
   }
 
   @Transactional
@@ -144,10 +156,19 @@ public class SubmissionService {
                   warnings.add(
                       "Barcode already exists in catalog as \"" + p.getName() + "\" (" + p.getId() + ")"));
     }
-    String needle = name == null ? "" : name.trim();
+    String needle = buildSearchNeedle(name, brand);
     if (needle.length() >= 2) {
-      productRepository
-          .findNameOrBrandMatches(needle, PageRequest.of(0, 5))
+      NormalizedQuery query = normalizer.normalize(needle);
+      candidateSearcher.findCandidates(query, 5).stream()
+          .map(
+              product ->
+                  new ScoredProduct(
+                      product,
+                      scorer.score(
+                          query, product.getName(), product.getBrand(), product.getSearchDocument())))
+          .filter(scored -> scored.score() > 0)
+          .sorted(Comparator.comparingDouble(ScoredProduct::score).reversed())
+          .map(ScoredProduct::product)
           .forEach(
               p ->
                   warnings.add(
@@ -156,15 +177,18 @@ public class SubmissionService {
                           + "\""
                           + (p.getBrand() == null ? "" : " / " + p.getBrand())));
     }
-    if (brand != null && !brand.isBlank() && needle.length() >= 2) {
-      String combined = (needle + " " + brand).toLowerCase(Locale.ROOT);
-      // brand already covered by name/brand match query above
-      if (combined.isBlank()) {
-        // no-op
-      }
-    }
     return warnings.stream().distinct().toList();
   }
+
+  private static String buildSearchNeedle(String name, String brand) {
+    String needle = name == null ? "" : name.trim();
+    if (brand != null && !brand.isBlank()) {
+      needle = (needle + " " + brand.trim()).trim();
+    }
+    return needle;
+  }
+
+  private record ScoredProduct(Product product, double score) {}
 
   private SubmissionResponse toResponse(ProductSubmission submission, List<String> warnings) {
     return new SubmissionResponse(

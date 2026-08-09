@@ -200,6 +200,33 @@ class ProductControllerTest {
   }
 
   @Test
+  void submitNutelaWarnsAboutExistingNutellaWhenForceFalse() throws Exception {
+    save("Nutella", "Ferrero", "ult11-sub-dup-nutella");
+
+    String body =
+        """
+        {
+          "name": "nutela",
+          "brand": "Ferrero",
+          "servingSizeG": 100,
+          "nutrients": [
+            {"code": "energy_kcal", "amountPer100g": 500, "unit": "kcal"}
+          ],
+          "force": false
+        }
+        """;
+
+    mockMvc
+        .perform(
+            post("/api/products/submissions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .with(asUser()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.warnings[0]").value("Similar catalog product: \"Nutella\" / Ferrero"));
+  }
+
+  @Test
   void submitAndApproveModerationFlow() throws Exception {
     String body =
         """

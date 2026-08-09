@@ -27,6 +27,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
   @Deprecated(forRemoval = false)
   Page<Product> searchByDocument(@Param("q") String q, Pageable pageable);
 
+  /**
+   * Legacy naive name/brand LIKE match. Submission duplicate warnings use
+   * {@link com.nutritrack.food.service.search.ProductCandidateSearcher} instead.
+   */
+  @Deprecated(forRemoval = false)
   @Query(
       """
       SELECT p FROM Product p
