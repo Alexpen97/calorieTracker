@@ -211,6 +211,16 @@ export type DaySummary = {
   }
 }
 
+export type UpdateMessage = {
+  id: string
+  title: string
+  body: string
+  imageUrl: string | null
+  actionLabel: string | null
+  actionUrl: string | null
+  pushedAt: string
+}
+
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -586,4 +596,20 @@ export async function fetchDiarySummaryRange(from: string, to: string): Promise<
   const params = new URLSearchParams({ from, to, zone: browserTimeZone() })
   const response = await authenticatedFetch(`${apiBase}/api/diary/summary/range?${params}`)
   return parseJson<DaySummary[]>(response)
+}
+
+export async function fetchPendingUpdateMessage(): Promise<UpdateMessage | null> {
+  const response = await authenticatedFetch(`${apiBase}/api/users/me/update-messages/pending`)
+  if (response.status === 204) {
+    return null
+  }
+  return parseJson<UpdateMessage>(response)
+}
+
+export async function acknowledgeUpdateMessage(id: string): Promise<void> {
+  const response = await authenticatedFetch(
+    `${apiBase}/api/users/me/update-messages/${encodeURIComponent(id)}/acknowledge`,
+    { method: 'POST' },
+  )
+  return parseNoContent(response)
 }
