@@ -17,3 +17,19 @@ export function resolveViteBase(env: NodeJS.ProcessEnv = process.env): string {
   }
   return '/'
 }
+
+/**
+ * Router basename that must mirror the Vite `base` so client-side routing and
+ * deep links resolve under the same prefix.
+ *
+ * - Absolute root (`/`) and Capacitor's relative base (`./`) both map to ''
+ *   (root), so routes like `/today` match the WebView URL directly.
+ * - A URL subpath (e.g. `/app`) maps to `/app`.
+ */
+export function resolveRouterBasename(viteBase: string | undefined): string {
+  const trimmed = (viteBase ?? '').replace(/\/+$/, '')
+  if (!trimmed || trimmed === '/' || trimmed === '.' || trimmed === './') {
+    return ''
+  }
+  return trimmed
+}

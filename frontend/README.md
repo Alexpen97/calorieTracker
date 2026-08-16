@@ -37,11 +37,52 @@ Phase 5 wraps this SPA in Capacitor (`com.nutritrack.app`). Native adapters:
 - Auth: native Google Sign-In → server auth code → same `/api/auth/google/callback`
 - Tokens: Android Keystore via `@aparajita/capacitor-secure-storage`
 
-```bash
-VITE_API_BASE_URL=https://gateway-production-777b.up.railway.app \
-  VITE_GOOGLE_CLIENT_ID=<web-client-id> npm run cap:sync
-npm run android:open
+The app talks only to the **gateway back-end**, baked in at build time via
+`VITE_API_BASE_URL`. Current production API base (self-hosted, behind Caddy):
+
 ```
+https://static.128.216.108.65.clients.your-server.de/calorietracker
+```
+
+(Details: `docs/compile-frontend-to-app.md`, `AI/production-debug.md`.)
+
+### Build a debug APK (recommended)
+
+```bash
+./scripts/build-android.sh
+```
+
+This self-contained build script downloads Node, JDK 21, and the Android SDK
+into the git-ignored `frontend/../.build-tools/`, then runs
+`npm install` → `vite build` (Capacitor relative base) → `cap sync android` →
+`gradlew assembleDebug`. Output lands at:
+
+```
+builds/NutriTrack-app-debug.apk
+```
+
+It defaults to the production API base + `VITE_AUTH_MODE=prod` (Dev login
+hidden). Point at a different back-end, or provide the Google web client id:
+
+```bash
+BACKEND_URL=https://your-gateway.example.com \
+  GOOGLE_CLIENT_ID=<web-client-id> \
+  ./scripts/build-android.sh
+```
+
+### Manual / Android Studio workflow
+
+```bash
+cd frontend
+# Build with the API base + web client id baked in:
+VITE_API_BASE_URL=https://static.128.216.108.65.clients.your-server.de/calorietracker \
+  VITE_GOOGLE_CLIENT_ID=<web-client-id> \
+  VITE_AUTH_MODE=prod \
+  npm run cap:sync
+npm run android:open   # opens Android Studio
+```
+
+Dev login shows only when `VITE_AUTH_MODE=dev`.
 
 Play Store checklist: `docs/android-play-store.md`. Notes: `AI/phase-5-android.md`.
 

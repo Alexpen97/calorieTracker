@@ -36,3 +36,9 @@ services/nevo-service/src/main/resources/nevo/*.xlsx
 # Local agent task reports
 .tmp/
 
+# Local Android build toolchain (Node/JDK/Android SDK downloaded by the build script)
+.build-tools/
+
+# Built Android APKs
+builds/
+
